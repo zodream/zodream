@@ -12,7 +12,7 @@ use Zodream\Infrastructure\Database\Engine\Pdo;
 use Zodream\Infrastructure\Event\EventManger;
 use Zodream\Service\Config;
 use Zodream\Service\Factory;
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
+use Zodream\Helpers\Str;
 use Zodream\Infrastructure\Traits\SingletonPattern;
 
 class Command extends ConfigObject {
@@ -154,7 +154,7 @@ class Command extends ConfigObject {
             return sprintf('`%s`%s', $table, $alias);
         }
         return sprintf('`%s`%s', $prefix.
-            StringExpand::firstReplace($table, $prefix), $alias);;
+            Str::firstReplace($table, $prefix), $alias);;
     }
 
     /**

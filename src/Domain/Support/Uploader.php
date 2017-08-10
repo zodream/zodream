@@ -1,7 +1,7 @@
 <?php
 namespace Zodream\Domain\Support;
 
-use Zodream\Infrastructure\Disk\File;
+use Zodream\Disk\File;
 class Uploader {
 
     /**

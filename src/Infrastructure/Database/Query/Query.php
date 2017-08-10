@@ -7,7 +7,7 @@ namespace Zodream\Infrastructure\Database\Query;
  * Time: 10:30
  */
 use Zodream\Domain\Html\Page;
-use Zodream\Infrastructure\ObjectExpand\ArrayExpand;
+use Zodream\Helpers\Arr;
 
 class Query extends BaseQuery {
 
@@ -185,7 +185,7 @@ class Query extends BaseQuery {
             if (count($on) == 2) {
                 $on = $on[0].' = '.$on[1];
             } else {
-                list($key, $value) = ArrayExpand::split($on);
+                list($key, $value) = Arr::split($on);
                 $on = $key.' = '.$value;
             }
         }

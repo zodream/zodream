@@ -12,13 +12,13 @@ use Zodream\Infrastructure\Traits\ConfigTrait;
 use Zodream\Service\Factory;
 use Zodream\Service\Routing\Url;
 use Zodream\Infrastructure\Caching\FileCache;
-use Zodream\Infrastructure\Disk\Directory;
-use Zodream\Infrastructure\Disk\File;
+use Zodream\Disk\Directory;
+use Zodream\Disk\File;
 use Zodream\Infrastructure\Interfaces\EngineObject;
-use Zodream\Infrastructure\Disk\FileException;
+use Zodream\Disk\FileException;
 use Zodream\Infrastructure\Support\Html;
 use Zodream\Infrastructure\Base\MagicObject;
-use Zodream\Infrastructure\ObjectExpand\ArrayExpand;
+use Zodream\Helpers\Arr;
 
 class ViewFactory extends MagicObject {
 
@@ -202,7 +202,7 @@ class ViewFactory extends MagicObject {
 
     public function registerJsFile($url, $options = [], $key = null) {
         $key = $key ?: $url;
-        $position = ArrayExpand::remove($options, 'position', View::HTML_FOOT);
+        $position = Arr::remove($options, 'position', View::HTML_FOOT);
         $options['src'] = Url::to($this->getAssetFile($url));
         $this->jsFiles[$position][$key] = Html::script(null, $options);
         return $this;

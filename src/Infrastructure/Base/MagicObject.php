@@ -10,8 +10,8 @@ use ArrayIterator;
 use ArrayAccess;
 use IteratorAggregate;
 use Zodream\Infrastructure\Interfaces\JsonAble;
-use Zodream\Infrastructure\ObjectExpand\ArrayExpand;
-use Zodream\Infrastructure\ObjectExpand\JsonExpand;
+use Zodream\Helpers\Arr;
+use Zodream\Helpers\JsonExpand;
 
 class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggregate {
 	
@@ -34,9 +34,9 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
 			return $this->_data[$key];
 		}
 		if (strpos($key, ',') !== false) {
-			$result = ArrayExpand::getValues($key, $this->_data, $default);
+			$result = Arr::getValues($key, $this->_data, $default);
 		} else {
-			$result = ArrayExpand::getChild($key, $this->_data, is_object($default) ? null : $default);
+			$result = Arr::getChild($key, $this->_data, is_object($default) ? null : $default);
 		}
 		if (is_object($default)) {
 			return $default($result);

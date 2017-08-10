@@ -13,7 +13,7 @@ use Zodream\Infrastructure\Http\Input\Header;
 use Zodream\Infrastructure\Http\Input\Post;
 use Zodream\Infrastructure\Http\Input\Server;
 use Zodream\Infrastructure\Http\Input\Argv;
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
+use Zodream\Helpers\Str;
 use Zodream\Service\Config;
 
 defined('APP_SAFE') || define('APP_SAFE', Config::app('safe', true));
@@ -190,7 +190,7 @@ final class Request {
      */
     public static function is() {
         foreach (func_get_args() as $pattern) {
-            if (StringExpand::is($pattern, static::decodedPath())) {
+            if (Str::is($pattern, static::decodedPath())) {
                 return true;
             }
         }
@@ -285,7 +285,7 @@ final class Request {
 	        return false;
         }
         $args = explode(';', $accept);
-	    return StringExpand::contains($args[0], ['/json', '+json']);
+	    return Str::contains($args[0], ['/json', '+json']);
     }
 
     /**
@@ -311,7 +311,7 @@ final class Request {
      */
     public static function bearerToken() {
         $header = static::header('Authorization', '');
-        if (StringExpand::startsWith($header, 'Bearer ')) {
+        if (Str::startsWith($header, 'Bearer ')) {
             return substr($header, 7);
         }
         return null;

@@ -7,7 +7,7 @@ namespace Zodream\Infrastructure\Interfaces;
  * Date: 2016/7/16
  * Time: 15:20
  */
-use Zodream\Infrastructure\Disk\File;
+use Zodream\Disk\File;
 
 interface EngineObject {
     /**

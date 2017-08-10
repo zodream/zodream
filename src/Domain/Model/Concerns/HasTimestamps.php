@@ -1,7 +1,7 @@
 <?php
 namespace Zodream\Domain\Model\Concerns;
 
-use Zodream\Infrastructure\ObjectExpand\TimeExpand;
+use Zodream\Helpers\Time;
 
 trait HasTimestamps {
     /**
@@ -83,7 +83,7 @@ trait HasTimestamps {
      * @return string
      */
     public function freshTimestampString() {
-        return TimeExpand::format($this->freshTimestamp());
+        return Time::format($this->freshTimestamp());
     }
 
     /**

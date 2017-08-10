@@ -7,7 +7,7 @@ namespace Zodream\Infrastructure\Database\Query;
  * Time: 9:38
  */
 use Zodream\Infrastructure\Database\Schema\BaseSchema;
-use Zodream\Infrastructure\ObjectExpand\ArrayExpand;
+use Zodream\Helpers\Arr;
 use Closure;
 
 abstract class BaseQuery extends BaseSchema  {
@@ -202,7 +202,7 @@ abstract class BaseQuery extends BaseSchema  {
         if (!is_array($arg)) {
             return null;
         }
-        if (ArrayExpand::isAssoc($arg)) {
+        if (Arr::isAssoc($arg)) {
             return $this->getCondition($arg);
         }
         // [[], 'or']

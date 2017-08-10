@@ -2,7 +2,7 @@
 namespace Zodream\Domain\Model\Concerns;
 
 use Zodream\Domain\Model\Relations\Relation;
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
+use Zodream\Helpers\Str;
 /**
  * Created by PhpStorm.
  * User: ZoDream
@@ -24,7 +24,7 @@ trait HasAttributes {
         if ($this->has($key)) {
             return $this->_data[$key];
         }
-        $method = sprintf('get%sAttribute', StringExpand::studly($key));
+        $method = sprintf('get%sAttribute', Str::studly($key));
         if (method_exists($this, $method)) {
             $result = call_user_func([$this, $method]);
             return $this->_data[$key] = $result;

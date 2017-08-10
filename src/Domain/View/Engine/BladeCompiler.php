@@ -9,8 +9,8 @@ namespace Zodream\Domain\View\Engine;
  * Date: 2016/7/16
  * Time: 11:24
  */
-use Zodream\Infrastructure\ObjectExpand\ArrayExpand;
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
+use Zodream\Helpers\Arr;
+use Zodream\Helpers\Str;
 
 class BladeCompiler extends CompilerEngine {
     /**
@@ -221,9 +221,9 @@ class BladeCompiler extends CompilerEngine {
     protected function compileStatements($value) {
         $callback = function ($match) {
             if (method_exists($this, $method = 'compile'.ucfirst($match[1]))) {
-                $match[0] = $this->$method(ArrayExpand::get($match, 3));
+                $match[0] = $this->$method(Arr::get($match, 3));
             } elseif (isset($this->customDirectives[$match[1]])) {
-                $match[0] = call_user_func($this->customDirectives[$match[1]], ArrayExpand::get($match, 3));
+                $match[0] = call_user_func($this->customDirectives[$match[1]], Arr::get($match, 3));
             }
 
             return isset($match[3]) ? $match[0] : $match[0].$match[2];
@@ -621,7 +621,7 @@ class BladeCompiler extends CompilerEngine {
      * @return string
      */
     protected function compileExtends($expression) {
-        if (StringExpand::startsWith($expression, '(')) {
+        if (Str::startsWith($expression, '(')) {
             $expression = substr($expression, 1, -1);
         }
 
@@ -639,7 +639,7 @@ class BladeCompiler extends CompilerEngine {
      * @return string
      */
     protected function compileInclude($expression) {
-        if (StringExpand::startsWith($expression, '(')) {
+        if (Str::startsWith($expression, '(')) {
             $expression = substr($expression, 1, -1);
         }
 

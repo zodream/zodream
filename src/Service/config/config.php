@@ -129,7 +129,7 @@ if (defined('APP_MODULE')) {
 }
 if (in_array(Request::ip(), ['unknown', '::1', '127.0.0.1'])){
     $configs['modules'] = array(   //模块
-        'gzo' => 'Zodream\Module\Gzo'
+        'gzo' => 'Zodream\Gzo'
     );
 }
 return $configs;

@@ -7,7 +7,7 @@ namespace Zodream\Infrastructure\Http\Input;
  * Time: 9:29
  */
 use Zodream\Infrastructure\Http\Request;
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
+use Zodream\Helpers\Str;
 
 class Get extends BaseInput {
     public function __construct() {

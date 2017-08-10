@@ -8,7 +8,7 @@ namespace Zodream\Infrastructure\Session;
  * Time: 9:56
  */
 use Zodream\Infrastructure\Base\ConfigObject;
-use Zodream\Infrastructure\Disk\Directory;
+use Zodream\Disk\Directory;
 use Zodream\Service\Factory;
 
 class Session extends ConfigObject implements \ArrayAccess {

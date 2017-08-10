@@ -3,7 +3,7 @@ namespace Zodream\Infrastructure\Log;
 
 
 use Zodream\Infrastructure\Base\ConfigObject;
-use Zodream\Infrastructure\Disk\File;
+use Zodream\Disk\File;
 use Zodream\Service\Factory;
 
 class Logger extends ConfigObject {

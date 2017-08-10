@@ -17,7 +17,7 @@ use Zodream\Domain\Model\UserModel;
 use Zodream\Domain\View\ViewFactory;
 use Zodream\Infrastructure\Caching\Cache;
 use Zodream\Infrastructure\Caching\FileCache;
-use Zodream\Infrastructure\Disk\Directory;
+use Zodream\Disk\Directory;
 use Zodream\Infrastructure\Exceptions\Handler;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Http\Input\Header;

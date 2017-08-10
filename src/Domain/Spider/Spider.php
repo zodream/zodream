@@ -2,8 +2,8 @@
 namespace Zodream\Domain\Spider;
 
 use Zodream\Infrastructure\Database\Query\Record;
-use Zodream\Infrastructure\Disk\File;
-use Zodream\Infrastructure\ObjectExpand\JsonExpand;
+use Zodream\Disk\File;
+use Zodream\Helpers\JsonExpand;
 use Zodream\Infrastructure\Support\Curl;
 
 class Spider {

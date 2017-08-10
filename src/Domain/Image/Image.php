@@ -1,7 +1,7 @@
 <?php
 namespace Zodream\Domain\Image;
 
-use Zodream\Infrastructure\ObjectExpand\ArrayExpand;
+use Zodream\Helpers\Arr;
 
 class Image {
 	
@@ -65,7 +65,7 @@ class Image {
 	
 	public function create($width, $height, $type = 'jpeg') {
 		$this->type = $type;
-		$this->realType = ArrayExpand::inArray($this->type, $this->allowTypes);
+		$this->realType = Arr::inArray($this->type, $this->allowTypes);
 		if ($this->type == 'gif') {
 			$this->image = imagecreate($width, $height);
 		} else {
@@ -99,7 +99,7 @@ class Image {
 	
 	public function setRealType($type) {
 		if (!empty($type)) {
-			$this->realType = ArrayExpand::inArray($type, $this->allowTypes);
+			$this->realType = Arr::inArray($type, $this->allowTypes);
 		}
 	}
 	

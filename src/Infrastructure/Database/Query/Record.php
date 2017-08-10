@@ -6,7 +6,7 @@ namespace Zodream\Infrastructure\Database\Query;
  * Date: 2016/7/12
  * Time: 19:24
  */
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
+use Zodream\Helpers\Str;
 
 class Record extends BaseQuery  {
     
@@ -80,7 +80,7 @@ class Record extends BaseQuery  {
         }
         $addFields = implode('`,`', array_keys($this->_data));
         return $this->command()
-            ->insert("`{$addFields}`", StringExpand::repeat('?', count($this->_data)),
+            ->insert("`{$addFields}`", Str::repeat('?', count($this->_data)),
                 array_values($this->_data));
     }
 
@@ -190,7 +190,7 @@ class Record extends BaseQuery  {
     public function replace() {
         $addFields = implode('`,`', array_keys($this->_data));
         return $this->command()
-            ->insertOrReplace("`{$addFields}`", StringExpand::repeat('?', count($this->_data)),
+            ->insertOrReplace("`{$addFields}`", Str::repeat('?', count($this->_data)),
                 array_values($this->_data));
     }
 

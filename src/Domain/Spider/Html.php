@@ -1,8 +1,8 @@
 <?php
 namespace Zodream\Domain\Spider;
 
-use Zodream\Infrastructure\ObjectExpand\JsonExpand;
-use Zodream\Infrastructure\ObjectExpand\XmlExpand;
+use Zodream\Helpers\JsonExpand;
+use Zodream\Helpers\XmlExpand;
 
 class Html {
     protected $data;

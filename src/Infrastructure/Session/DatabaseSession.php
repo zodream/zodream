@@ -8,7 +8,7 @@ namespace Zodream\Infrastructure\Session;
  */
 use Zodream\Infrastructure\Database\Command;
 use Zodream\Infrastructure\Error\Error;
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
+use Zodream\Helpers\Str;
 
 class DatabaseSession extends Session {
 
@@ -42,7 +42,7 @@ class DatabaseSession extends Session {
                 $row = current($data);
                 $row['id'] = $newID;
                 $this->command()->insert('`'.implode('`,`', array_keys($row)).'`',
-                    StringExpand::repeat('?', count($row)), array_values($row));
+                    Str::repeat('?', count($row)), array_values($row));
             }
         } else {
             $this->command()->insert('id', '?', [$newID]);

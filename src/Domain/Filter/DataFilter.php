@@ -2,7 +2,7 @@
 namespace Zodream\Domain\Filter;
 
 use Zodream\Infrastructure\Interfaces\FilterObject;
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
+use Zodream\Helpers\Str;
 
 defined('PHP_INT_MIN') || define('PHP_INT_MIN', 0);
 defined('PHP_INT_MAX') || define('PHP_INT_MAX', 99999);
@@ -171,7 +171,7 @@ class DataFilter {
      * @throws \ErrorException
      */
     public static function createFilter($arg) {
-        list($filter, $option) = StringExpand::explode($arg, ':', 2);
+        list($filter, $option) = Str::explode($arg, ':', 2);
         $filter = strtolower($filter);
         if (in_array($filter, static::$filterMap)) {
             $class = 'Zodream\\Domain\\Filter\\Filters\\'.ucfirst($filter).'Filter';

@@ -8,7 +8,7 @@ namespace Zodream\Domain\Access;
 use Zodream\Infrastructure\Cookie;
 use Zodream\Infrastructure\Interfaces\AuthObject;
 use Zodream\Infrastructure\Interfaces\UserObject;
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
+use Zodream\Helpers\Str;
 use Zodream\Service\Config;
 use Zodream\Service\Factory;
 
@@ -84,7 +84,7 @@ class Auth implements AuthObject {
      */
     protected static function setRememberToken(UserObject $user) {
         if (empty($user->getRememberToken())) {
-            $user->setRememberToken(StringExpand::random(60));
+            $user->setRememberToken(Str::random(60));
         }
         Cookie::forever(static::getRememberName(), $user->getIdentity().'|'. $user->getRememberToken());
     }
@@ -154,7 +154,7 @@ class Auth implements AuthObject {
             return;
         }
         static::user()
-            ->setRememberToken(StringExpand::random(60));
+            ->setRememberToken(Str::random(60));
         Factory::session()->destroy();
         //throw new AuthenticationException();
     }

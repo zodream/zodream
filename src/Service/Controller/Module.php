@@ -8,7 +8,7 @@ namespace Zodream\Service\Controller;
  * @author Jason
  * @time 2015-12-19
  */
-use Zodream\Infrastructure\Disk\Directory;
+use Zodream\Disk\Directory;
 
 abstract class Module extends Action {
 

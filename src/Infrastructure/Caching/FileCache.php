@@ -5,8 +5,8 @@ namespace Zodream\Infrastructure\Caching;
 * 
 * @author Jason
 */
-use Zodream\Infrastructure\Disk\Directory;
-use Zodream\Infrastructure\Disk\File;
+use Zodream\Disk\Directory;
+use Zodream\Disk\File;
 use Zodream\Service\Factory;
 
 class FileCache extends Cache {

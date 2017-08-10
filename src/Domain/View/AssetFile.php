@@ -7,7 +7,7 @@ namespace Zodream\Domain\View;
  * Date: 2016/12/25
  * Time: 10:28
  */
-use Zodream\Infrastructure\Disk\File;
+use Zodream\Disk\File;
 use Zodream\Infrastructure\Http\Request;
 
 class AssetFile extends File {

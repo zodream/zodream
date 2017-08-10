@@ -7,11 +7,11 @@ namespace Zodream\Domain\View;
  * Date: 2016/8/3
  * Time: 9:19
  */
-use Zodream\Infrastructure\Disk\File;
+use Zodream\Disk\File;
 use Zodream\Infrastructure\Error\FileException;
 use Zodream\Service\Factory;
 use Zodream\Infrastructure\Http\Component\Uri;
-use Zodream\Infrastructure\ObjectExpand\TimeExpand;
+use Zodream\Helpers\Time;
 use Zodream\Infrastructure\Traits\ConditionTrait;
 use Zodream\Service\Routing\Url;
 
@@ -134,7 +134,7 @@ class View {
         if (is_null($time)) {
             return null;
         }
-        return TimeExpand::format($time);
+        return Time::format($time);
     }
 
     /**
@@ -143,7 +143,7 @@ class View {
      * @return string
      */
     public function ago($time) {
-        return TimeExpand::isTimeAgo($time);
+        return Time::isTimeAgo($time);
     }
 
     /**

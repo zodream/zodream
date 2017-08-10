@@ -2,7 +2,7 @@
 namespace Zodream\Domain\Model;
 
 use Zodream\Infrastructure\Database\Query\Query as BaseQuery;
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
+use Zodream\Helpers\Str;
 
 class Query extends BaseQuery {
 
@@ -112,7 +112,7 @@ class Query extends BaseQuery {
      * @return $this
      */
     public function __call($name, $arguments) {
-        $method = 'scope'.StringExpand::studly($name);
+        $method = 'scope'.Str::studly($name);
         array_unshift($arguments, $this);
         call_user_func_array([$this->getModel(), $method], $arguments);
         return $this;

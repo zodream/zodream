@@ -8,14 +8,14 @@ namespace Zodream\Infrastructure\Http\Input;
  * Time: 9:29
  */
 use Zodream\Infrastructure\Http\Request;
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
+use Zodream\Helpers\Str;
 
 class Header extends BaseInput {
     public function __construct() {
         $server = Request::server();
         foreach ($server as $key => $value) {
-            if (StringExpand::startsWith($key, 'http_')) {
-                $this->set(StringExpand::firstReplace($key, 'http_'), $value);
+            if (Str::startsWith($key, 'http_')) {
+                $this->set(Str::firstReplace($key, 'http_'), $value);
             }
         }
     }

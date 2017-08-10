@@ -8,7 +8,7 @@ namespace Zodream\Domain\Upload;
  * Time: 14:17
  */
  use Zodream\Infrastructure\Base\ConfigObject;
- use Zodream\Infrastructure\Disk\File;
+ use Zodream\Disk\File;
  use Zodream\Infrastructure\FileSystem;
  
 abstract class BaseUpload extends ConfigObject {

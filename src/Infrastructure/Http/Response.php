@@ -7,13 +7,13 @@ namespace Zodream\Infrastructure\Http;
  * Time: 12:55
  */
 use Zodream\Domain\Image\Image;
-use Zodream\Infrastructure\Disk\File;
+use Zodream\Disk\File;
 use Zodream\Infrastructure\Interfaces\ExpertObject;
-use Zodream\Infrastructure\Disk\FileException;
+use Zodream\Disk\FileException;
 use Zodream\Infrastructure\Http\Component\Header;
-use Zodream\Infrastructure\ObjectExpand\JsonExpand;
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
-use Zodream\Infrastructure\ObjectExpand\XmlExpand;
+use Zodream\Helpers\JsonExpand;
+use Zodream\Helpers\Str;
+use Zodream\Helpers\XmlExpand;
 use Zodream\Infrastructure\Http\Component\Uri;
 use Zodream\Service\Config;
 use Zodream\Service\Factory;
@@ -258,7 +258,7 @@ class Response {
      */
     public function html($data) {
         $this->header->setContentType('html');
-        return $this->setParameter(StringExpand::value($data));
+        return $this->setParameter(Str::value($data));
     }
 
     /**
@@ -273,7 +273,7 @@ class Response {
 
     public function rss($data) {
         $this->header->setContentType('rss');
-        return $this->setParameter(StringExpand::value($data));
+        return $this->setParameter(Str::value($data));
     }
 
     /**
@@ -350,7 +350,7 @@ class Response {
             return null;
         }
         $range = preg_replace('/[\s|,].*/', '', $range);
-        $range = StringExpand::explode(substr($range, 6), '-', 2, array(0, $fileSize));
+        $range = Str::explode(substr($range, 6), '-', 2, array(0, $fileSize));
         return array(
             'start' => $range[0],
             'end' => $range[1]
@@ -411,7 +411,7 @@ class Response {
         $this->header->setWWWAuthenticate(
             $name,
             'auth',
-            StringExpand::random(6),
+            Str::random(6),
             md5($name));
         return $this;
     }

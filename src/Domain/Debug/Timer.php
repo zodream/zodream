@@ -2,7 +2,7 @@
 namespace Zodream\Domain\Debug;
 
 use Zodream\Service\Factory;
-use Zodream\Infrastructure\ObjectExpand\TimeExpand;
+use Zodream\Helpers\Time;
 class Timer {
 	protected $startTime;
 
@@ -11,12 +11,12 @@ class Timer {
     protected $times = [];
 	
 	public function begin() {
-        $this->lastTime = $this->startTime = TimeExpand::millisecond();
+        $this->lastTime = $this->startTime = Time::millisecond();
         $this->times['begin'] = 0;
 	}
 
 	public function record($name) {
-	    $arg = TimeExpand::millisecond();
+	    $arg = Time::millisecond();
         if (array_key_exists($name, $this->times)) {
             $name .= time();
         }
@@ -42,7 +42,7 @@ class Timer {
 
     public function log() {
         $handle = fopen(Factory::root()->childFile('log/timer.log'), 'w');
-        fwrite($handle, TimeExpand::format()."\r\n");
+        fwrite($handle, Time::format()."\r\n");
         fwrite($handle, $this->startTime."\r\n");
         foreach ($this->times as $key => $item) {
             fwrite($handle, $key.':'.$item."\r\n");

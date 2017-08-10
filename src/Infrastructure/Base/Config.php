@@ -3,7 +3,7 @@ namespace Zodream\Infrastructure\Base;
 
 use JsonSerializable;
 use Zodream\Infrastructure\Interfaces\JsonAble;
-use Zodream\Infrastructure\ObjectExpand\JsonExpand;
+use Zodream\Helpers\JsonExpand;
 
 class Config extends MagicObject implements JsonAble, JsonSerializable {
 
@@ -85,7 +85,7 @@ class Config extends MagicObject implements JsonAble, JsonSerializable {
                 $data[] = $arg;
             }
         }
-        $this->_data = call_user_func_array('Zodream\Infrastructure\ObjectExpand\ArrayExpand::merge2D', $data);
+        $this->_data = call_user_func_array('Zodream\Helpers\Arr::merge2D', $data);
         return $this;
     }
 

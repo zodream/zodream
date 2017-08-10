@@ -6,12 +6,12 @@ namespace Zodream\Service\Routing;
  * @author Jason
  */
 use Zodream\Domain\Filter\DataFilter;
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
+use Zodream\Helpers\Str;
 use Zodream\Service\Config;
 use Zodream\Service\Controller\BaseController;
 use Zodream\Service\Controller\Module;
 use Zodream\Service\Factory;
-use Zodream\Infrastructure\ObjectExpand\ArrayExpand;
+use Zodream\Helpers\Arr;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Http\Response;
 use Zodream\Service\Rest\OAuth\Grant\RefreshTokenGrant;
@@ -83,7 +83,7 @@ class Route {
 	}
 
 	protected function findCallable(array $action) {
-		return ArrayExpand::first($action, function ($key, $value) {
+		return Arr::first($action, function ($key, $value) {
 			return is_callable($value) && is_numeric($key);
 		});
 	}
@@ -188,7 +188,7 @@ class Route {
             $modules = Config::modules();
             foreach ($modules as $key => $module) {
                 if ($this->isMatch($path, $key)) {
-                    return $this->runModule(StringExpand::firstReplace($path, $key), $module);
+                    return $this->runModule(Str::firstReplace($path, $key), $module);
                 }
             }
         }
@@ -250,7 +250,7 @@ class Route {
             return ['Home', 'index'];
         }
         $args = array_map(function ($arg) {
-            return StringExpand::studly($arg);
+            return Str::studly($arg);
         }, explode('/', $path));
         if (count($args) == 1) {
             return [ucfirst($path), 'index'];

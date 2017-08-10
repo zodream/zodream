@@ -12,8 +12,8 @@ use IteratorAggregate;
 use InvalidArgumentException;
 use Zodream\Infrastructure\Interfaces\ArrayAble;
 use Zodream\Infrastructure\Interfaces\JsonAble;
-use Zodream\Infrastructure\ObjectExpand\ArrayExpand;
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
+use Zodream\Helpers\Arr;
+use Zodream\Helpers\Str;
 use Zodream\Infrastructure\Traits\MacroTrait;
 
 class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate, JsonAble, JsonSerializable {
@@ -119,7 +119,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      * @return static
      */
     public function collapse() {
-        return new static(ArrayExpand::collapse($this->items));
+        return new static(Arr::collapse($this->items));
     }
     /**
      * Determine if an item exists in the collection.
@@ -131,7 +131,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
     public function contains($key, $value = null) {
         if (func_num_args() == 2) {
             return $this->contains(function ($item) use ($key, $value) {
-                return ArrayExpand::dataGet($item, $key) == $value;
+                return Arr::dataGet($item, $key) == $value;
             });
         }
         if ($this->useAsCallable($key)) {
@@ -149,7 +149,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
     public function containsStrict($key, $value = null) {
         if (func_num_args() == 2) {
             return $this->contains(function ($item) use ($key, $value) {
-                return ArrayExpand::dataGet($item, $key) === $value;
+                return Arr::dataGet($item, $key) === $value;
             });
         }
         if ($this->useAsCallable($key)) {
@@ -215,7 +215,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      */
     public function except($keys) {
         $keys = is_array($keys) ? $keys : func_get_args();
-        return new static(ArrayExpand::except($this->items, $keys));
+        return new static(Arr::except($this->items, $keys));
     }
     /**
      * Run a filter over each of the items.
@@ -254,7 +254,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      */
     protected function operatorForWhere($key, $operator, $value) {
         return function ($item) use ($key, $operator, $value) {
-            $retrieved = ArrayExpand::dataGet($item, $key);
+            $retrieved = Arr::dataGet($item, $key);
             switch ($operator) {
                 default:
                 case '=':
@@ -291,7 +291,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
     public function whereIn($key, $values, $strict = false) {
         $values = $this->getArrayAbleItems($values);
         return $this->filter(function ($item) use ($key, $values, $strict) {
-            return in_array(ArrayExpand::dataGet($item, $key), $values, $strict);
+            return in_array(Arr::dataGet($item, $key), $values, $strict);
         });
     }
     /**
@@ -312,7 +312,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      * @return mixed
      */
     public function first(callable $callback = null, $default = null) {
-        return ArrayExpand::first($this->items, $callback, $default);
+        return Arr::first($this->items, $callback, $default);
     }
     /**
      * Get a flattened array of the items in the collection.
@@ -321,7 +321,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      * @return static
      */
     public function flatten($depth = INF) {
-        return new static(ArrayExpand::flatten($this->items, $depth));
+        return new static(Arr::flatten($this->items, $depth));
     }
     /**
      * Flip the items in the collection.
@@ -354,7 +354,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
         if ($this->offsetExists($key)) {
             return $this->items[$key];
         }
-        return StringExpand::value($default);
+        return Str::value($default);
     }
     /**
      * Group an associative array by a field or using a callback.
@@ -463,7 +463,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      * @return mixed
      */
     public function last(callable $callback = null, $default = null) {
-        return ArrayExpand::last($this->items, $callback, $default);
+        return Arr::last($this->items, $callback, $default);
     }
     /**
      * Get the values of a given key.
@@ -473,7 +473,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      * @return static
      */
     public function pluck($value, $key = null) {
-        return new static(ArrayExpand::pluck($this->items, $value, $key));
+        return new static(Arr::pluck($this->items, $value, $key));
     }
     /**
      * Run a map over each of the items.
@@ -570,7 +570,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
             return new static($this->items);
         }
         $keys = is_array($keys) ? $keys : func_get_args();
-        return new static(ArrayExpand::only($this->items, $keys));
+        return new static(Arr::only($this->items, $keys));
     }
     /**
      * "Paginate" the collection by slicing it into a smaller collection.
@@ -620,7 +620,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      * @return $this
      */
     public function prepend($value, $key = null) {
-        $this->items = ArrayExpand::prepend($this->items, $value, $key);
+        $this->items = Arr::prepend($this->items, $value, $key);
         return $this;
     }
     /**
@@ -641,7 +641,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      * @return mixed
      */
     public function pull($key, $default = null) {
-        return ArrayExpand::pull($this->items, $key, $default);
+        return Arr::pull($this->items, $key, $default);
     }
     /**
      * Put an item in the collection by key.
@@ -940,7 +940,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
             return $value;
         }
         return function ($item) use ($value) {
-            return ArrayExpand::dataGet($item, $value);
+            return Arr::dataGet($item, $value);
         };
     }
     /**

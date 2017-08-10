@@ -1,7 +1,7 @@
 <?php
 namespace Zodream\Infrastructure\Support;
 
-use Zodream\Infrastructure\Disk\File;
+use Zodream\Disk\File;
 use Zodream\Infrastructure\Http\Component\Uri;
 
 /**

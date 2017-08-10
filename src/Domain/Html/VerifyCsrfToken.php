@@ -2,7 +2,7 @@
 namespace Zodream\Domain\Html;
 
 use Zodream\Service\Factory;
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
+use Zodream\Helpers\Str;
 use Zodream\Infrastructure\Http\Request;
 
 class VerifyCsrfToken {
@@ -11,7 +11,7 @@ class VerifyCsrfToken {
 	 * @return string
      */
 	public static function create() {
-        $token = StringExpand::random(10);
+        $token = Str::random(10);
 		Factory::session()->set('_token', $token);
 		Factory::response()->header->setCookie('XSRF-TOKEN', $token);
 		Factory::view()->set('_token', $token);
