@@ -11,7 +11,7 @@ use ArrayAccess;
 use IteratorAggregate;
 use Zodream\Infrastructure\Interfaces\JsonAble;
 use Zodream\Helpers\Arr;
-use Zodream\Helpers\JsonExpand;
+use Zodream\Helpers\Json;
 
 class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggregate {
 	
@@ -146,6 +146,94 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
 		$this->del($offset);
 	}
 
+    /**
+     * Count
+     *
+     * @see https://secure.php.net/manual/en/countable.count.php
+     *
+     * @param void
+     *
+     * @return int The number of elements stored in the Array.
+     *
+     * @access public
+     */
+    public function count() {
+        return (int) count($this->_data);
+    }
+
+    /**
+     * Current
+     *
+     * @see https://secure.php.net/manual/en/iterator.current.php
+     *
+     * @param void
+     *
+     * @return mixed Data at the current position.
+     *
+     * @access public
+     */
+    public function current() {
+        return current($this->_data);
+    }
+
+    /**
+     * Next
+     *
+     * @see https://secure.php.net/manual/en/iterator.next.php
+     *
+     * @param void
+     *
+     * @return void
+     *
+     * @access public
+     */
+    public function next() {
+        next($this->_data);
+    }
+
+    /**
+     * Key
+     *
+     * @see https://secure.php.net/manual/en/iterator.key.php
+     *
+     * @param void
+     *
+     * @return mixed Case-Sensitive key at current position.
+     *
+     * @access public
+     */
+    public function key() {
+        return key($this->_data);
+    }
+
+    /**
+     * Valid
+     *
+     * @see https://secure.php.net/manual/en/iterator.valid.php
+     *
+     * @return bool If the current position is valid.
+     *
+     * @access public
+     */
+    public function valid() {
+        return (bool) !(key($this->_data) === null);
+    }
+
+    /**
+     * Rewind
+     *
+     * @see https://secure.php.net/manual/en/iterator.rewind.php
+     *
+     * @param void
+     *
+     * @return void
+     *
+     * @access public
+     */
+    public function rewind() {
+        reset($this->_data);
+    }
+
 	/**
 	 * 允许使用 foreach 直接执行
 	 */
@@ -168,6 +256,6 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
      * @return string
      */
     public function toJson($options = JSON_UNESCAPED_UNICODE) {
-        return JsonExpand::encode($this->toArray(), $options);
+        return Json::encode($this->toArray(), $options);
     }
 }
