@@ -13,11 +13,12 @@ use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Zodream\Domain\Access\Auth;
 use Zodream\Domain\Debug\Timer;
-use Zodream\Domain\Model\UserModel;
+use Zodream\Database\Model\UserModel;
 use Zodream\Domain\View\ViewFactory;
 use Zodream\Infrastructure\Caching\Cache;
 use Zodream\Infrastructure\Caching\FileCache;
 use Zodream\Disk\Directory;
+use Zodream\Infrastructure\Error\Exception;
 use Zodream\Infrastructure\Exceptions\Handler;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Http\Input\Header;
@@ -42,7 +43,7 @@ class Factory {
      */
     public static function getInstance($key, $default = null) {
         if (!array_key_exists($key, static::$_instance)) {
-            $class = Config::getInstance()->get($key, $default);
+            $class = static::config($key, $default);
             if (is_array($class)) {
                 $class = $class['driver'] ?: current($class);
             }
@@ -56,26 +57,75 @@ class Factory {
 
     /**
      * DO YOU NEED A SESSION , HERE!
-     * @return Session
+     * @param null $key
+     * @param null $default
+     * @return Session|mixed
      */
-    public static function session() {
-        return self::getInstance('session', Session::class);
+    public static function session($key = null, $default = null) {
+        /** @var Session $session */
+        $session = self::getInstance('session', Session::class);
+        if (is_null($key)) {
+            return $session;
+        }
+
+        if (is_array($key)) {
+            return $session->set($key);
+        }
+        return $session->get($key, $default);
     }
 
     /**
      * DO YO WANT TO CACHE MODEL? HERE!
-     * @return Cache
+     * @return Cache|mixed
      */
     public static function cache() {
-        return self::getInstance('cache', FileCache::class);
+        /** @var Cache $cache */
+        $cache = self::getInstance('cache', FileCache::class);
+        $arguments = func_get_args();
+        if (empty($arguments)) {
+            return $cache;
+        }
+
+        if (count($arguments) == 1) {
+            return $cache->get($arguments[0]);
+        }
+        return $cache->set($arguments[0], $arguments[1], isset($arguments[2]) ? $arguments[2] : 0);
+    }
+
+    /**
+     * Get / set the specified configuration value.
+     *
+     * If an array is passed as the key, we will assume you want to set an array of values.
+     * @param null $key
+     * @param null $default
+     * @return $this|array|null|string|static
+     */
+    public static function config($key = null, $default = null) {
+        if (is_null($key)) {
+            return Config::getInstance();
+        }
+
+        if (is_array($key)) {
+            return Config::getInstance()->set($key);
+        }
+
+        return Config::getInstance()->get($key, $default);
     }
 
     /**
      * DO YOU WANT TO SHOW LOCAL LANGUAGE? HERE!
-     * @return I18n
+     * @param null $message
+     * @param array $param
+     * @param null $name
+     * @return I18n|string
      */
-    public static function i18n() {
-        return self::getInstance('i18n', PhpSource::class);
+    public static function i18n($message = null, $param = [], $name = null) {
+        /** @var I18n $i18n */
+        $i18n = self::getInstance('i18n', PhpSource::class);
+        if (is_null($message)) {
+            return $i18n;
+        }
+        return $i18n->translate($message, $param, $name);
     }
 
     /**

@@ -8,8 +8,8 @@ namespace Zodream\Domain\Support;
  * Time: 9:30
  */
 use Zodream\Disk\File;
-use Zodream\Infrastructure\Http\Component\Header;
-use Zodream\Infrastructure\Http\Component\Uri;
+use Zodream\Http\Header;
+use Zodream\Http\Uri;
 use Zodream\Infrastructure\Support\Curl;
 
 class Http {

@@ -2,7 +2,7 @@
 namespace Zodream\Infrastructure\Support;
 
 use Zodream\Disk\File;
-use Zodream\Infrastructure\Http\Component\Uri;
+use Zodream\Http\Uri;
 
 /**
  * MAKE CURL WITH MY KIND

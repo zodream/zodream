@@ -9,7 +9,7 @@ namespace Zodream\Service\Routing;
 use Zodream\Service\Config;
 use Zodream\Infrastructure\Interfaces\RouteObject;
 use Zodream\Service\Factory;
-use Zodream\Infrastructure\Http\Component\Uri;
+use Zodream\Http\Uri;
 use Zodream\Infrastructure\ Http\Request;
 
 class Router {

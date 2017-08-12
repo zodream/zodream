@@ -1,7 +1,7 @@
 <?php
 namespace Zodream\Domain\Spider;
 
-use Zodream\Infrastructure\Http\Component\Uri;
+use Zodream\Http\Uri;
 use Zodream\Infrastructure\Support\Curl;
 use Zodream\Infrastructure\Traits\EventTrait;
 

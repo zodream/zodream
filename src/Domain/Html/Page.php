@@ -2,7 +2,7 @@
 namespace Zodream\Domain\Html;
 
 use Zodream\Infrastructure\Base\MagicObject;
-use Zodream\Infrastructure\Database\Query\Query;
+use Zodream\Database\Query\Query;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Interfaces\ArrayAble;
 use Zodream\Infrastructure\Interfaces\JsonAble;

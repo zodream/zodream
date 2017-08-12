@@ -10,7 +10,7 @@ namespace Zodream\Domain\View;
 use Zodream\Disk\File;
 use Zodream\Infrastructure\Error\FileException;
 use Zodream\Service\Factory;
-use Zodream\Infrastructure\Http\Component\Uri;
+use Zodream\Http\Uri;
 use Zodream\Helpers\Time;
 use Zodream\Infrastructure\Traits\ConditionTrait;
 use Zodream\Service\Routing\Url;

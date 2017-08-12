@@ -10,11 +10,11 @@ use Zodream\Domain\Image\Image;
 use Zodream\Disk\File;
 use Zodream\Infrastructure\Interfaces\ExpertObject;
 use Zodream\Disk\FileException;
-use Zodream\Infrastructure\Http\Component\Header;
+use Zodream\Http\Header;
 use Zodream\Helpers\JsonExpand;
 use Zodream\Helpers\Str;
 use Zodream\Helpers\XmlExpand;
-use Zodream\Infrastructure\Http\Component\Uri;
+use Zodream\Http\Uri;
 use Zodream\Service\Config;
 use Zodream\Service\Factory;
 
