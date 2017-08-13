@@ -5,6 +5,7 @@ namespace Zodream\Service;
 * 
 * @author Jason
 */
+use Zodream\Disk\File;
 use Zodream\Infrastructure\Base\Config as BaseConfig;
 use Zodream\Infrastructure\Traits\SingletonPattern;
 
@@ -16,6 +17,14 @@ class Config extends BaseConfig {
 	private function __construct($args = array()) {
         $this->reset($args);
 	}
+
+    /**
+     * 当前配置文件
+     * @return File
+     */
+	public function getCurrentFile() {
+	    return $this->getDirectory()->file(APP_MODULE.'.php');
+    }
 
     /**
      * 重新加载配置

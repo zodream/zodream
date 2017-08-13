@@ -205,7 +205,8 @@ abstract class Controller extends BaseController {
             $data = $name;
             $name = null;
         }
-        return Factory::view()->render($this->getViewFile($name), $data);
+        return Factory::view()
+            ->render($this->getViewFile($name), $data);
     }
 
     /**

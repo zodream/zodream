@@ -8,6 +8,7 @@ namespace Zodream\Infrastructure\Http;
  */
 use Zodream\Domain\Image\Image;
 use Zodream\Disk\File;
+use Zodream\Infrastructure\Http\Output\Console;
 use Zodream\Infrastructure\Interfaces\ExpertObject;
 use Zodream\Disk\FileException;
 use Zodream\Http\Header;
@@ -19,6 +20,8 @@ use Zodream\Service\Config;
 use Zodream\Service\Factory;
 
 class Response {
+
+    use Console;
 
     protected $statusCode = 200;
 
@@ -260,6 +263,7 @@ class Response {
         $this->header->setContentType('html');
         return $this->setParameter(Str::value($data));
     }
+
 
     /**
      * 响应页面

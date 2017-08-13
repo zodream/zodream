@@ -82,6 +82,14 @@ final class Request {
         return self::getValue(__FUNCTION__, $name, $default);
     }
 
+    /**
+     * CLI 读取输入值
+     * @return string
+     */
+    public static function read() {
+        return trim(fgets(STDIN));
+    }
+
 	/**
 	 * $_POST
 	 * @param string $name

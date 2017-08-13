@@ -98,7 +98,7 @@ class Factory {
      * If an array is passed as the key, we will assume you want to set an array of values.
      * @param null $key
      * @param null $default
-     * @return $this|array|null|string|static
+     * @return Config|array|null|string
      */
     public static function config($key = null, $default = null) {
         if (is_null($key)) {
