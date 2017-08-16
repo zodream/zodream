@@ -35,7 +35,6 @@ class UploadInput extends BaseUpload {
         while ($buff = fread($fileOpen, 4096)) {
             fwrite($fileOutput, $buff);
         }
-
         @fclose($fileOutput);
         @fclose($fileOpen);
         $this->size = $this->file->size();

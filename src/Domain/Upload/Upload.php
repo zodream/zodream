@@ -79,6 +79,13 @@ class Upload extends MagicObject {
         }
         return $this->upload($file);
     }
+
+    public function each(callable $callback) {
+        foreach ($this->_data as $item) {
+            call_user_func($callback, $item);
+        }
+        return $this;
+    }
     
     public function save() {
         $result = true;
@@ -106,7 +113,9 @@ class Upload extends MagicObject {
     }
     
     public function saveOne($file, $index = 0) {
-        return $this->_data[$index]->setFile($file)->save();
+        return $this->_data[$index]
+            ->setFile($file)
+            ->save();
     }
 
     public function getError($index = null) {

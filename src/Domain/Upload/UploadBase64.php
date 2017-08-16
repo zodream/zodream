@@ -16,7 +16,12 @@ class UploadBase64 extends BaseUpload {
     }
 
     public function load($key = null) {
-        $this->name = base64_decode(Request::request($key));
+        $content = Request::request($key);
+        if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $content, $result)){
+            $this->setType($result[2]);
+            $content = substr($content, strlen($result[1]));
+        }
+        $this->name = base64_decode($content);
         $this->size = strlen($this->name);
     }
 
