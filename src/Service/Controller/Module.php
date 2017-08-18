@@ -48,7 +48,7 @@ abstract class Module extends Action {
     /**
      * 安装
      */
-    public function insert() {
+    public function install() {
         $migration = $this->getMigration();
         if (!$migration instanceof Migration) {
             return;

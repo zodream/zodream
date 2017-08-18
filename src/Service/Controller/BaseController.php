@@ -124,7 +124,7 @@ abstract class BaseController extends Action {
                 $arguments[] = $param->getDefaultValue();
                 continue;
             }
-            throw new Exception($action.' ACTION`S '.$name, ' DOES NOT HAVE VALUE!');
+            throw new Exception(sprintf('%s ACTION`S %s DOES NOT HAVE VALUE!', $action, $name));
         }
         return $arguments;
     }
