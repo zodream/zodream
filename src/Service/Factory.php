@@ -47,12 +47,28 @@ class Factory {
             if (is_array($class)) {
                 $class = $class['driver'] ?: current($class);
             }
-            if (!class_exists($class)) {
-                throw new \InvalidArgumentException($class.'CLASS IS NOT EXCITE!');
-            }
-            static::$_instance[$key] = new $class;
+            static::addInstance($key, $class);
         }
         return static::$_instance[$key];
+    }
+
+    /**
+     * 新增加单利类
+     * @param $key
+     * @param $class
+     * @return mixed
+     */
+    public static function addInstance($key, $class) {
+        if (is_object($class)) {
+            return static::$_instance[$key] = $class;
+        }
+        if (is_callable($class.'::getInstance')) {
+            return static::$_instance[$key] = call_user_func($class.'::getInstance');
+        }
+        if (!class_exists($class)) {
+            throw new \InvalidArgumentException($class.'CLASS IS NOT EXCITE!');
+        }
+        return static::$_instance[$key] = new $class;
     }
 
     /**
@@ -209,5 +225,9 @@ class Factory {
             static::$_instance['log'] = $log;
         }
         return static::$_instance['log'];
+    }
+
+    public static function __callStatic($name, $arguments) {
+        return static::getInstance($name);
     }
 }

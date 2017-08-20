@@ -186,9 +186,15 @@ class Session extends ConfigObject implements \ArrayAccess {
         return isset($_SESSION[$key]) ? $_SESSION[$key] : $defaultValue;
     }
 
-    public function set($key, $value) {
+    public function set($key, $value = null) {
         $this->open();
-        $_SESSION[$key] = $value;
+        if (!is_array($key)) {
+            $_SESSION[$key] = $value;
+            return;
+        }
+        foreach ($key as $k => $v) {
+            $_SESSION[$k] = $v;
+        }
     }
 
     protected function updateFlashCounters() {

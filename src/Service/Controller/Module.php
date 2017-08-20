@@ -46,6 +46,13 @@ abstract class Module extends Action {
     }
 
     /**
+     * 启动
+     */
+    public function boot() {
+
+    }
+
+    /**
      * 安装
      */
     public function install() {
