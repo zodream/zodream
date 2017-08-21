@@ -86,6 +86,9 @@ abstract class BaseUpload extends ConfigObject {
     }
     
     public function getSize() {
+        if (is_null($this->size)) {
+            $this->size = $this->getFile()->size();
+        }
         return $this->size;
     }
     
