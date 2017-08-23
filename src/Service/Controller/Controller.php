@@ -10,6 +10,7 @@ use Zodream\Domain\Html\VerifyCsrfToken;
 use Zodream\Infrastructure\Event\EventManger;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Http\Response;
+use Zodream\Infrastructure\Traits\JsonResponseTrait;
 use Zodream\Service\Config;
 use Zodream\Service\Factory;
 use Zodream\Infrastructure\Loader;
@@ -19,7 +20,7 @@ use Zodream\Service\Routing\Url;
 
 abstract class Controller extends BaseController {
 	
-	use LoaderTrait;
+	use LoaderTrait, JsonResponseTrait;
 
     protected $canCache;
 
@@ -234,21 +235,7 @@ abstract class Controller extends BaseController {
         return Factory::response()->html($html);
     }
 
-    /**
-     * ajax 返回
-     * @param $data
-     * @param string $type
-     * @return Response
-     */
-    public function json($data, $type = 'json') {
-        switch (strtolower($type)) {
-            case 'xml':
-                return Factory::response()->xml($data);
-            case 'jsonp':
-                return Factory::response()->jsonp($data);
-        }
-        return Factory::response()->json($data);
-    }
+
 
     public function redirectWithMessage($url, $message, $time = 4, $status = 404) {
         return $this->redirect($url, $time);

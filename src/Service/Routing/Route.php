@@ -192,6 +192,7 @@ class Route {
                 }
             }
         }
+
         list($class, $action) = $this->getClassAndAction($path);
         return $this->runController('Service\\'.APP_MODULE.'\\'.$class, $action);
     }

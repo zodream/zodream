@@ -8,13 +8,13 @@ namespace Zodream\Infrastructure\Http;
  */
 use Zodream\Domain\Image\Image;
 use Zodream\Disk\File;
+use Zodream\Helpers\Json;
+use Zodream\Helpers\Xml;
 use Zodream\Infrastructure\Http\Output\Console;
 use Zodream\Infrastructure\Interfaces\ExpertObject;
 use Zodream\Disk\FileException;
 use Zodream\Http\Header;
-use Zodream\Helpers\JsonExpand;
 use Zodream\Helpers\Str;
-use Zodream\Helpers\XmlExpand;
 use Zodream\Http\Uri;
 use Zodream\Service\Config;
 use Zodream\Service\Factory;
@@ -226,7 +226,7 @@ class Response {
      */
     public function json($data) {
         $this->header->setContentType('json');
-        return $this->setParameter(JsonExpand::encode($data));
+        return $this->setParameter(Json::encode($data));
     }
 
     /**
@@ -251,7 +251,7 @@ class Response {
         if (!is_array($data)) {
             return $this->setParameter($data);
         }
-        return $this->setParameter(XmlExpand::encode($data));
+        return $this->setParameter(Xml::encode($data));
     }
 
     /**
