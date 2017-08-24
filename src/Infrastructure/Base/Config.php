@@ -3,6 +3,7 @@ namespace Zodream\Infrastructure\Base;
 
 use JsonSerializable;
 use Zodream\Disk\Directory;
+use Zodream\Disk\File;
 use Zodream\Helpers\Json;
 use Zodream\Infrastructure\Interfaces\JsonAble;
 use Zodream\Service\Factory;
@@ -103,21 +104,21 @@ class Config extends MagicObject implements JsonAble, JsonSerializable {
      */
     protected function getConfigByFile($file) {
         $file = $this->getRealFile($file);
-        if (!is_file($file)) {
+        if (!$file->exist()) {
             return [];
         }
-        return include $file;
+        return include (string)$file;
     }
 
     /**
      * @param $name
-     * @return string
+     * @return File
      */
     protected function getRealFile($name) {
         if (!preg_match('/^\w+$/', $name, $m) && is_file($name)) {
-            return $name;
+            return new File($name);
         }
-        return $this->getDirectory().$name.'.php';
+        return $this->getDirectory()->file($name.'.php');
     }
 
     /**

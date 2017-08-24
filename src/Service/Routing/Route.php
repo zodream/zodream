@@ -192,7 +192,6 @@ class Route {
                 }
             }
         }
-
         list($class, $action) = $this->getClassAndAction($path);
         return $this->runController('Service\\'.APP_MODULE.'\\'.$class, $action);
     }
@@ -256,7 +255,6 @@ class Route {
         if (count($args) == 1) {
             return [ucfirst($path), 'index'];
         }
-
         $action = array_pop($args);
         return [implode('\\', $args), lcfirst($action)];
     }

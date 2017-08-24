@@ -29,6 +29,16 @@ abstract class BaseController extends Action {
 	}
 
     /**
+     * 方法未找到
+     * @param $action
+     * @return Response|mixed
+     * @throws Exception
+     */
+	public function throwErrorMethod($action) {
+        throw new Exception(sprintf('%s Method Error!', $action));
+    }
+
+    /**
      * 执行方法
      * @param string $action
      * @param array $vars
@@ -39,7 +49,7 @@ abstract class BaseController extends Action {
         Factory::timer()->record('controllerStart');
 		$this->action = $action;
 		if (!$this->hasMethod($action)) {
-			throw new Exception('URI ERROR!');
+			return $this->throwErrorMethod($action);
 		}
 		if (true !==
             ($arg = $this->beforeFilter($action))) {
