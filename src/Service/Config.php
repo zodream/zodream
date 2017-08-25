@@ -5,7 +5,6 @@ namespace Zodream\Service;
 * 
 * @author Jason
 */
-use Zodream\Disk\File;
 use Zodream\Infrastructure\Base\Config as BaseConfig;
 use Zodream\Infrastructure\Traits\SingletonPattern;
 
@@ -15,16 +14,8 @@ class Config extends BaseConfig {
 	use SingletonPattern;
 
 	private function __construct($args = array()) {
-        $this->reset($args);
+		$this->reset($args);
 	}
-
-    /**
-     * 当前配置文件
-     * @return File
-     */
-	public function getCurrentFile() {
-	    return $this->getDirectory()->file(APP_MODULE.'.php');
-    }
 
     /**
      * 重新加载配置
@@ -61,39 +52,32 @@ class Config extends BaseConfig {
 	}
 
 	public function __call($method, $value) {
-	    if (empty($value)) {
-	        return $this->get($method);
-        }
-        $param = end($value);
-	    if (!is_string($param)) {
-	        $param = array_pop($value);
-	        return $this->get($method.'.'.
-                implode('.', $value),
-                $param);
-        }
-        return $this->get($method.'.'.implode('.', $value));
+		$this->getMultidimensional($method, $value);
+	}
 
+	/**
+	 * 静态方法获取
+	 * @param null $key
+	 * @param null $default
+	 * @return array|string
+	 */
+	public static function getValue($key = null, $default = null) {
+		return static::getInstance()
+            ->get($key, $default);
+	}
+
+	public static function setValue($key, $value = null) {
+        return static::getInstance()
+            ->set($key, $value);
     }
 
 	/**
+	 *
 	 * @param string $method
 	 * @param array $value
 	 * @return mixed
 	 */
 	public static function __callStatic($method, $value) {
-	    if (false === static::getInstance()) {
-	        // 初始化未完成时
-	        return null;
-        }
-        return call_user_func_array([
-            static::getInstance(), $method], $value);
+		return static::getInstance()->getMultidimensional($method, $value);
 	}
-
-    /**
-     * 判断是否是调试模式
-     * @return bool
-     */
-	public static function isDebug() {
-	    return defined('DEBUG') && DEBUG;
-    }
 }

@@ -1,19 +1,20 @@
 <?php
 namespace Zodream\Domain\Html;
 
-use Zodream\Infrastructure\Base\MagicObject;
-use Zodream\Database\Query\Query;
+use Zodream\Infrastructure\Database\Query\Query;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Interfaces\ArrayAble;
 use Zodream\Infrastructure\Interfaces\JsonAble;
-use Zodream\Helpers\JsonExpand;
+use Zodream\Infrastructure\ObjectExpand\JsonExpand;
 
-class Page extends MagicObject implements JsonAble, ArrayAble {
+class Page implements JsonAble, ArrayAble {
 	private $_total = 0;
 
 	private $_index = 1;
 	
 	private $_pageSize = 20;
+	
+	private $_data = array();
 
 	private $_key = 'page';
 
@@ -39,7 +40,7 @@ class Page extends MagicObject implements JsonAble, ArrayAble {
 	 */
 	public function setTotal($total) {
 		if ($total instanceof Query) {
-			$this->_total = intval($total->count());
+			$this->_total = intval($total->count()->scalar());
 			return $this;
 		}
 		$this->_total = intval($total);
@@ -92,7 +93,7 @@ class Page extends MagicObject implements JsonAble, ArrayAble {
 	public function getLink($option = array()) {
 		$option['total'] = $this->_total;
 		$option['pageSize'] = $this->_pageSize;
-		$option['page'] = $this->_index;
+		$option['index'] = $this->_index;
 		$option['key'] = $this->_key;
 		return PageLink::show($option);
 	}
@@ -120,9 +121,9 @@ class Page extends MagicObject implements JsonAble, ArrayAble {
         return [
             'total' => $this->getTotal(),
             'page' => $this->_index,
-            'pageSize' => $this->_pageSize,
+            'size' => $this->_pageSize,
             'key' => $this->_key,
-            'pagelist' => $this->_data
+            'page_list' => $this->_data
         ];
     }
 }

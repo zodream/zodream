@@ -7,17 +7,17 @@ namespace Zodream\Infrastructure\Security;
  * Time: 17:23
  */
 class Hash {
-
-    protected static $rounds = 10;
+    public static $round = 10;
 
     /**
      * 生成hash值
      * @param string $value
-     * @param array $options
+     * @param array $option
      * @return bool|string
      */
-    public static function make($value, $options = array()) {
-        return password_hash($value, PASSWORD_BCRYPT, ['cost' => static::cost($options)]);
+    public static function make($value, $option = array()) {
+        $cost = isset($option['rounds']) ? $option['rounds'] : self::$round;
+        return password_hash($value, PASSWORD_BCRYPT, ['cost' => $cost]);
     }
 
     /**
@@ -28,38 +28,5 @@ class Hash {
      */
     public static function verify($value, $hash) {
         return password_verify($value, $hash);
-    }
-
-    /**
-     * Check if the given hash has been hashed using the given options.
-     *
-     * @param  string  $hashedValue
-     * @param  array   $options
-     * @return bool
-     */
-    public static function needsRehash($hashedValue, array $options = []) {
-        return password_needs_rehash($hashedValue, PASSWORD_BCRYPT, [
-            'cost' => static::cost($options),
-        ]);
-    }
-
-    /**
-     * Set the default password work factor.
-     *
-     * @param  int  $rounds
-     * @return $this
-     */
-    public static function setRounds($rounds) {
-        static::$rounds = (int) $rounds;
-    }
-
-    /**
-     * Extract the cost value from the options array.
-     *
-     * @param  array  $options
-     * @return int
-     */
-    protected static function cost(array $options = []) {
-        return isset($options['rounds']) ? $options['rounds'] : static::$rounds;
     }
 }

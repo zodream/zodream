@@ -10,7 +10,6 @@ use Zodream\Domain\Html\VerifyCsrfToken;
 use Zodream\Infrastructure\Event\EventManger;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Http\Response;
-use Zodream\Infrastructure\Traits\JsonResponseTrait;
 use Zodream\Service\Config;
 use Zodream\Service\Factory;
 use Zodream\Infrastructure\Loader;
@@ -20,7 +19,7 @@ use Zodream\Service\Routing\Url;
 
 abstract class Controller extends BaseController {
 	
-	use LoaderTrait, JsonResponseTrait;
+	use LoaderTrait;
 
     protected $canCache;
 
@@ -30,13 +29,13 @@ abstract class Controller extends BaseController {
      */
     protected $canCSRFValidate;
 	
-	public function __construct($loader = null) {
+	function __construct($loader = null) {
 		$this->loader = $loader instanceof Loader ? $loader : new Loader();
 		if (is_bool($this->canCache)) {
-			$this->canCache = Config::cache('auto', false);
+			$this->canCache = Config::getValue('cache.auto', false);
 		}
 		if (is_bool($this->canCSRFValidate)) {
-			$this->canCSRFValidate = Config::safe('csrf', false);
+			$this->canCSRFValidate = Config::getValue('safe.csrf', false);
 		}
 	}
 
@@ -153,7 +152,7 @@ abstract class Controller extends BaseController {
             return Auth::guest() ?: $this->redirect('/');
         }
         if ($role === '@') {
-            return $this->checkUser() ?: $this->redirect([Config::auth('home'), 'redirect_uri' => Url::to()]);
+            return $this->checkUser() ?: $this->redirect([Config::getValue('auth.home'), 'ReturnUrl' => Url::to()]);
         }
         if ($role === 'p' || $role === 'post') {
             return Request::isPost() ?: $this->redirectWithMessage('/', '您不能直接访问此页面！', 4,'400');
@@ -206,8 +205,7 @@ abstract class Controller extends BaseController {
             $data = $name;
             $name = null;
         }
-        return Factory::view()
-            ->render($this->getViewFile($name), $data);
+        return Factory::view()->render($this->getViewFile($name), $data);
     }
 
     /**
@@ -232,10 +230,24 @@ abstract class Controller extends BaseController {
      * @return Response
      */
     public function showContent($html) {
-        return Factory::response()->html($html);
+        return Factory::response()->sendHtml($html);
     }
 
-
+    /**
+     * ajax 返回
+     * @param $data
+     * @param string $type
+     * @return Response
+     */
+    public function ajax($data, $type = 'json') {
+        switch (strtolower($type)) {
+            case 'xml':
+                return Factory::response()->sendXml($data);
+            case 'jsonp':
+                return Factory::response()->sendJsonp($data);
+        }
+        return Factory::response()->sendJson($data);
+    }
 
     public function redirectWithMessage($url, $message, $time = 4, $status = 404) {
         return $this->redirect($url, $time);
@@ -249,7 +261,7 @@ abstract class Controller extends BaseController {
      */
     public function redirect($url, $time = 0) {
         return Factory::response()
-            ->redirect(Url::to($url), $time);
+            ->sendRedirect(Url::to($url), $time);
     }
 
     public function goHome() {

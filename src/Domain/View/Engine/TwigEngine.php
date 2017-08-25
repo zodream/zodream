@@ -6,7 +6,7 @@ namespace Zodream\Domain\View\Engine;
  * Date: 2016/7/16
  * Time: 15:51
  */
-use Zodream\Disk\File;
+use Zodream\Infrastructure\Disk\File;
 use Zodream\Infrastructure\Interfaces\EngineObject;
 use Twig_Loader_Filesystem;
 use Twig_Environment;
@@ -17,7 +17,7 @@ class TwigEngine implements EngineObject {
     protected $compiler;
     
     public function __construct() {
-        $config = Config::twig([
+        $config = Config::getValue('twig', [
             'template' => Factory::root()->childDirectory('UserInterface/'.APP_MODULE),
             'cache' => Factory::root()->childDirectory('cache/template')
         ]);

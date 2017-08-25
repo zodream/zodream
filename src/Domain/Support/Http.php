@@ -7,9 +7,9 @@ namespace Zodream\Domain\Support;
  * Date: 2016/8/17
  * Time: 9:30
  */
-use Zodream\Disk\File;
-use Zodream\Http\Header;
-use Zodream\Http\Uri;
+use Zodream\Infrastructure\Disk\File;
+use Zodream\Infrastructure\Http\Component\Header;
+use Zodream\Infrastructure\Http\Component\Uri;
 use Zodream\Infrastructure\Support\Curl;
 
 class Http {

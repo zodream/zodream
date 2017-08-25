@@ -9,7 +9,7 @@ namespace Zodream\Service\Routing;
 use Zodream\Service\Config;
 use Zodream\Infrastructure\Interfaces\RouteObject;
 use Zodream\Service\Factory;
-use Zodream\Http\Uri;
+use Zodream\Infrastructure\Http\Component\Uri;
 use Zodream\Infrastructure\ Http\Request;
 
 class Router {
@@ -23,7 +23,7 @@ class Router {
 	}
 	
 	protected function load() {
-		$configs = Config::route([]);
+		$configs = Config::getValue('route', []);
 		$file = array_key_exists('file', $configs) ? $configs['file'] : null;
 		unset($configs['file'], $configs['driver']);
 		foreach ($configs as $key => $item) {

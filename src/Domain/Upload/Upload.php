@@ -6,7 +6,7 @@ namespace Zodream\Domain\Upload;
  * Date: 2016/6/28
  * Time: 10:58
  */
-use Zodream\Disk\Directory;
+use Zodream\Infrastructure\Disk\Directory;
 use Zodream\Infrastructure\Base\MagicObject;
 
 class Upload extends MagicObject {
@@ -79,13 +79,6 @@ class Upload extends MagicObject {
         }
         return $this->upload($file);
     }
-
-    public function each(callable $callback) {
-        foreach ($this->_data as $item) {
-            call_user_func($callback, $item);
-        }
-        return $this;
-    }
     
     public function save() {
         $result = true;
@@ -113,9 +106,7 @@ class Upload extends MagicObject {
     }
     
     public function saveOne($file, $index = 0) {
-        return $this->_data[$index]
-            ->setFile($file)
-            ->save();
+        return $this->_data[$index]->setFile($file)->save();
     }
 
     public function getError($index = null) {

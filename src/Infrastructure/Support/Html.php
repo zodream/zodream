@@ -8,7 +8,6 @@ namespace Zodream\Infrastructure\Support;
  * Time: 16:50
  */
 use Zodream\Service\Routing\Url;
-
 class Html {
     /**
      * @var array 无内容的标签
@@ -77,7 +76,7 @@ class Html {
      */
     public static function tag($name, $content = '', $options = array()) {
         $html = '<'.$name . static::renderTagAttributes($options) . '>';
-        return isset(static::$voidTags[strtolower($name)]) ? $html.PHP_EOL : "{$html}{$content}</{$name}>".PHP_EOL;
+        return isset(static::$voidTags[strtolower($name)]) ? $html : "{$html}{$content}</{$name}>";
     }
 
     /**
@@ -182,19 +181,15 @@ class Html {
         return static::tag('meta', null, $option);
     }
 
-
     /**
      * LINK OUTSIDE RESOURCE
      * @param string $url
-     * @param array $attributes
+     * @param array $option
      * @return string
-     * @internal param array $option
      */
-    public static function link($url, $attributes = []) {
-        $defaults = ['media' => 'all', 'type' => 'text/css', 'rel' => 'stylesheet'];
-        $attributes = $attributes + $defaults;
-        $attributes['href'] = Url::to($url);
-        return static::tag('link', null, $attributes);
+    public static function link($url, $option = array()) {
+        $option['href'] = Url::to($url);
+        return static::tag('link', null, $option);
     }
 
     /**
@@ -204,13 +199,6 @@ class Html {
      * @return string
      */
     public static function script($content, $options = array()) {
-        if (is_array($content)) {
-            $options = $content;
-            $content = null;
-        }
-        if (array_key_exists('src', $options)) {
-            $options['src'] = Url::to($options['src']);
-        }
         return static::tag('script', $content, $options);
     }
 

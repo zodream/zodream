@@ -3,7 +3,7 @@ namespace Zodream\Infrastructure\Security;
 
 
 
-use Zodream\Disk\File;
+use Zodream\Infrastructure\Disk\File;
 
 class Rsa extends BaseSecurity {
     protected $privateKey;

@@ -7,8 +7,8 @@ namespace Zodream\Infrastructure\Support;
  * Time: 21:28
  */
 use Zodream\Infrastructure\Base\MagicObject;
-use Zodream\Disk\Directory;
-use Zodream\Disk\File;
+use Zodream\Infrastructure\Disk\Directory;
+use Zodream\Infrastructure\Disk\File;
 
 class Template extends  MagicObject {
     /**

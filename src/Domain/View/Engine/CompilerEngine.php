@@ -8,7 +8,7 @@ namespace Zodream\Domain\View\Engine;
  * Time: 10:24
  */
 use Zodream\Domain\View\ViewFactory;
-use Zodream\Disk\File;
+use Zodream\Infrastructure\Disk\File;
 use Zodream\Infrastructure\Interfaces\EngineObject;
 
 abstract class CompilerEngine implements EngineObject {

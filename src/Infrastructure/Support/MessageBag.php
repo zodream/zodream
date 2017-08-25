@@ -5,7 +5,7 @@ use Countable;
 use JsonSerializable;
 use Zodream\Infrastructure\Base\ArrayAble;
 use Zodream\Infrastructure\Base\JsonAble;
-use Zodream\Helpers\Str;
+use Zodream\Infrastructure\ObjectExpand\StringExpand;
 
 class MessageBag implements ArrayAble, JsonAble, Countable, JsonSerializable {
     /**
@@ -134,7 +134,7 @@ class MessageBag implements ArrayAble, JsonAble, Countable, JsonSerializable {
                 $this->messages[$key], $this->checkFormat($format), $key
             );
         }
-        if (Str::contains($key, '*')) {
+        if (StringExpand::contains($key, '*')) {
             return $this->getMessagesForWildcardKey($key, $format);
         }
         return [];
@@ -149,7 +149,7 @@ class MessageBag implements ArrayAble, JsonAble, Countable, JsonSerializable {
     protected function getMessagesForWildcardKey($key, $format) {
         return (new Collection($this->messages))
             ->filter(function ($messages, $messageKey) use ($key) {
-                return Str::is($key, $messageKey);
+                return StringExpand::is($key, $messageKey);
             })
             ->map(function ($messages, $messageKey) use ($format) {
                 return $this->transform(

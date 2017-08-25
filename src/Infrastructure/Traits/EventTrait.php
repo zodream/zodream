@@ -12,18 +12,15 @@ trait EventTrait {
     protected $events = [];
 
     /**
-     * 监听事件允许多个
-     * @param string|array $events
+     * @param $event
      * @param callable $callback
      * @return $this
      */
-    public function on($events, callable $callback) {
-        foreach ((array)$events as $event) {
-            if (!array_key_exists($event, $this->events)) {
-                $this->events[$event] = [];
-            }
-            $this->events[$event][] = $callback;
+    public function on($event, callable $callback) {
+        if (!array_key_exists($event, $this->events)) {
+            $this->events[$event] = [];
         }
+        $this->events[$event][] = $callback;
         return $this;
     }
 

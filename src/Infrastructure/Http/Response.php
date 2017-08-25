@@ -7,21 +7,17 @@ namespace Zodream\Infrastructure\Http;
  * Time: 12:55
  */
 use Zodream\Domain\Image\Image;
-use Zodream\Disk\File;
-use Zodream\Helpers\Json;
-use Zodream\Helpers\Xml;
-use Zodream\Infrastructure\Http\Output\Console;
+use Zodream\Infrastructure\Disk\File;
 use Zodream\Infrastructure\Interfaces\ExpertObject;
-use Zodream\Disk\FileException;
-use Zodream\Http\Header;
-use Zodream\Helpers\Str;
-use Zodream\Http\Uri;
+use Zodream\Infrastructure\Error\FileException;
+use Zodream\Infrastructure\Http\Component\Header;
+use Zodream\Infrastructure\ObjectExpand\JsonExpand;
+use Zodream\Infrastructure\ObjectExpand\StringExpand;
+use Zodream\Infrastructure\ObjectExpand\XmlExpand;
+use Zodream\Infrastructure\Http\Component\Uri;
 use Zodream\Service\Config;
-use Zodream\Service\Factory;
 
 class Response {
-
-    use Console;
 
     protected $statusCode = 200;
 
@@ -49,7 +45,7 @@ class Response {
         303 => 'See Other',
         304 => 'Not Modified',
         305 => 'Use Proxy',
-        307 => 'Temporary Redirect', // 重定向不会把POST 转为GET
+        307 => 'Temporary Redirect',
         308 => 'Permanent Redirect',    // RFC7238
         400 => 'Bad Requests',
         401 => 'Unauthorized',
@@ -104,7 +100,7 @@ class Response {
 
     public function __construct($parameter = null, $statusCode = 200, array $headers = array()) {
         $this->header = new Header();
-        $headers['Content-Security-Policy'] = Config::safe('csp');
+        $headers['Content-Security-Policy'] = Config::getValue('safe.csp');
         if (defined('DEBUG') && DEBUG) {
             $headers['Access-Control-Allow-Origin'] = '*'; //ajax 跨域
         }
@@ -224,9 +220,12 @@ class Response {
      * @param array|string $data
      * @return Response
      */
-    public function json($data) {
+    public function sendJson($data) {
         $this->header->setContentType('json');
-        return $this->setParameter(Json::encode($data));
+        if (!is_array($data)) {
+            return $this->setParameter($data);
+        }
+        return $this->setParameter(JsonExpand::encode($data));
     }
 
     /**
@@ -234,8 +233,8 @@ class Response {
      * @param array $data
      * @return Response
      */
-    public function jsonp(array $data) {
-       return $this->json(
+    public function sendJsonp(array $data) {
+       return $this->sendJson(
            Request::get('callback', 'jsonpReturn').
            '('.JsonExpand::encode($data).');'
        );
@@ -246,12 +245,12 @@ class Response {
      * @param array|string $data
      * @return Response
      */
-    public function xml($data) {
+    public function sendXml($data) {
         $this->header->setContentType('xml');
         if (!is_array($data)) {
             return $this->setParameter($data);
         }
-        return $this->setParameter(Xml::encode($data));
+        return $this->setParameter(XmlExpand::encode($data));
     }
 
     /**
@@ -259,25 +258,14 @@ class Response {
      * @param string|callable $data
      * @return Response
      */
-    public function html($data) {
+    public function sendHtml($data) {
         $this->header->setContentType('html');
-        return $this->setParameter(Str::value($data));
+        return $this->setParameter(StringExpand::value($data));
     }
 
-
-    /**
-     * 响应页面
-     * @param $file
-     * @param array $data
-     * @return Response
-     */
-    public function view($file, array $data = []) {
-        return $this->html(Factory::view()->render($file, $data));
-    }
-
-    public function rss($data) {
+    public function sendRss($data) {
         $this->header->setContentType('rss');
-        return $this->setParameter(Str::value($data));
+        return $this->setParameter(StringExpand::value($data));
     }
 
     /**
@@ -287,7 +275,7 @@ class Response {
      * @return Response
      * @throws FileException
      */
-    public function file(File $file, $speed = 512) {
+    public function sendFile(File $file, $speed = 512) {
         $args = [
             'file' => $file,
             'speed' => intval($speed),
@@ -354,29 +342,19 @@ class Response {
             return null;
         }
         $range = preg_replace('/[\s|,].*/', '', $range);
-        $range = Str::explode(substr($range, 6), '-', 2, array(0, $fileSize));
+        $range = StringExpand::explode(substr($range, 6), '-', 2, array(0, $fileSize));
         return array(
             'start' => $range[0],
             'end' => $range[1]
         );
     }
 
-    /**
-     * 响应图片
-     * @param Image $image
-     * @return Response
-     */
-    public function image(Image $image) {
+    public function sendImage(Image $image) {
         $this->header->setContentType('image', $image->getRealType());
         return $this->setParameter($image);
     }
 
-    /**
-     * 响应导出
-     * @param ExpertObject $expert
-     * @return Response
-     */
-    public function export(ExpertObject $expert) {
+    public function sendExport(ExpertObject $expert) {
         $this->header->setContentType($expert->getName());
         $this->header->setContentDisposition($expert->getName());
         $this->header->setCacheControl('must-revalidate,post-check=0,pre-check=0');
@@ -390,33 +368,8 @@ class Response {
      * @param int $time
      * @return $this
      */
-    public function redirect($url, $time = 0) {
+    public function sendRedirect($url, $time = 0) {
         $this->header->setRedirect($url, $time);
-        return $this;
-    }
-
-    /**
-     * 基本验证
-     * @return $this
-     */
-    public function basicAuth() {
-        $this->setStatusCode(401);
-        $this->header->setWWWAuthenticate(Config::app('name'));
-        return $this;
-    }
-
-    /**
-     * 摘要验证
-     * @return $this
-     */
-    public function digestAuth() {
-        $this->setStatusCode(401);
-        $name = Config::app('name');
-        $this->header->setWWWAuthenticate(
-            $name,
-            'auth',
-            Str::random(6),
-            md5($name));
         return $this;
     }
 }

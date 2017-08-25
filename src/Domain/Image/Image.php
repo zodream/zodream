@@ -1,8 +1,7 @@
 <?php
 namespace Zodream\Domain\Image;
 
-use Zodream\Helpers\Arr;
-
+use Zodream\Infrastructure\ObjectExpand\ArrayExpand;
 class Image {
 	
 	protected $allowTypes = array(
@@ -65,7 +64,7 @@ class Image {
 	
 	public function create($width, $height, $type = 'jpeg') {
 		$this->type = $type;
-		$this->realType = Arr::inArray($this->type, $this->allowTypes);
+		$this->realType = ArrayExpand::inArray($this->type, $this->allowTypes);
 		if ($this->type == 'gif') {
 			$this->image = imagecreate($width, $height);
 		} else {
@@ -99,7 +98,7 @@ class Image {
 	
 	public function setRealType($type) {
 		if (!empty($type)) {
-			$this->realType = Arr::inArray($type, $this->allowTypes);
+			$this->realType = ArrayExpand::inArray($type, $this->allowTypes);
 		}
 	}
 	
@@ -422,26 +421,25 @@ class Image {
 	}
 
 	/**
-     * 保存，如果路径不存在则输出
 	 * @return bool
 	 */
 	public function save() {
-		return $this->saveAs($this->file);
+		if (!empty($this->file)) {
+			return call_user_func('image'.$this->realType, $this->image, $this->file);
+		}
+		return false;
 	}
 
 	/**
 	 * 另存为
-	 * @param string|null $output 如果为null 表示输出
+	 * @param string $output 如果为null 表示输出
 	 * @param string $type
 	 * @return bool
 	 */
-    public function saveAs($output = null, $type = null) {
-        $this->setRealType($type);
-        if (!is_null($output)) {
-            $output = (string)$output;
-        }
-        return call_user_func('image'.$this->realType, $this->image, $output);
-    }
+	public function saveAs($output = null, $type = null) {
+		$this->setRealType($type);
+		return call_user_func('image'.$this->realType, $this->image, $output);
+	}
 	
 	public function close() {
 		if (!empty($this->image)) {

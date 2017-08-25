@@ -2,24 +2,18 @@
 namespace Zodream\Infrastructure\Base;
 
 use JsonSerializable;
-use Zodream\Disk\Directory;
-use Zodream\Disk\File;
-use Zodream\Helpers\Json;
 use Zodream\Infrastructure\Interfaces\JsonAble;
-use Zodream\Service\Factory;
+use Zodream\Infrastructure\ObjectExpand\JsonExpand;
 
 class Config extends MagicObject implements JsonAble, JsonSerializable {
 
-    /**
-     * @var Directory
-     */
     protected $directory;
 
     public function setDirectory($value = null) {
         if (!is_dir($value) && defined('APP_DIR') && is_dir(APP_DIR)) {
-            $value = 'Service/config'; ;
+            $value = APP_DIR.'/Service/config/';
         }
-        $this->directory = Factory::root()->directory($value);
+        $this->directory = rtrim($value, '/').'/';
         return $this;
     }
 
@@ -54,11 +48,8 @@ class Config extends MagicObject implements JsonAble, JsonSerializable {
         return parent::set($key, $value);
     }
 
-    /**
-     * @return Directory
-     */
     public function getDirectory() {
-        if (!$this->directory instanceof Directory) {
+        if (!is_dir($this->directory)) {
             $this->setDirectory();
         }
         return $this->directory;
@@ -84,17 +75,11 @@ class Config extends MagicObject implements JsonAble, JsonSerializable {
         if (!is_array($args)) {
             $args = func_get_args();
         }
-        $data = [];
-        if ($this->has()) {
-            $data[] = $this->get();
-        }
+        $data = [$this->get()];
         foreach ($args as $arg) {
-            $arg = $this->getConfigByFile($arg);
-            if (!empty($arg)) {
-                $data[] = $arg;
-            }
+            $data[] = $this->getDataByFile($arg);
         }
-        $this->_data = call_user_func_array('Zodream\Helpers\Arr::merge2D', $data);
+        $this->_data = call_user_func_array('Zodream\Infrastructure\ObjectExpand\ArrayExpand::merge2D', $data);
         return $this;
     }
 
@@ -102,23 +87,23 @@ class Config extends MagicObject implements JsonAble, JsonSerializable {
      * @param $file
      * @return array
      */
-    protected function getConfigByFile($file) {
+    protected function getDataByFile($file) {
         $file = $this->getRealFile($file);
-        if (!$file->exist()) {
+        if (!is_file($file)) {
             return [];
         }
-        return include (string)$file;
+        return include $file;
     }
 
     /**
      * @param $name
-     * @return File
+     * @return string
      */
     protected function getRealFile($name) {
-        if (!preg_match('/^\w+$/', $name, $m) && is_file($name)) {
-            return new File($name);
+        if (is_file($name)) {
+            return $name;
         }
-        return $this->getDirectory()->file($name.'.php');
+        return $this->getDirectory().$name.'.php';
     }
 
     /**
@@ -128,12 +113,15 @@ class Config extends MagicObject implements JsonAble, JsonSerializable {
      * @return string
      */
     public function toJson($options = JSON_UNESCAPED_UNICODE) {
-        return Json::encode($this->toArray(), $options);
+        return JsonExpand::encode($this->toArray(), $options);
     }
 
     public function save($name = null) {
         if (empty($name)) {
             $name = APP_MODULE;
+        }
+        if (!is_file($name)) {
+            $name = $this->getDirectory().$name.'.php';
         }
         //$generate = new Generate();
         //return $generate->setReplace(true)->makeConfig(static::getValue(), $name);
@@ -163,5 +151,4 @@ class Config extends MagicObject implements JsonAble, JsonSerializable {
     public function jsonSerialize() {
         return $this->toArray();
     }
-
 }

@@ -2,8 +2,8 @@
 namespace Zodream\Domain\Spider;
 
 use Zodream\Infrastructure\Database\Query\Record;
-use Zodream\Disk\File;
-use Zodream\Helpers\JsonExpand;
+use Zodream\Infrastructure\Disk\File;
+use Zodream\Infrastructure\ObjectExpand\JsonExpand;
 use Zodream\Infrastructure\Support\Curl;
 
 class Spider {
@@ -42,7 +42,7 @@ class Spider {
         return $this;
     }
 
-    public function each(callable $callback) {
+    public function switch(callable $callback) {
         if (!is_array($this->data)) {
             return $this->map($callback);
         }

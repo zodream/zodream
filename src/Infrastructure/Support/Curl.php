@@ -1,8 +1,8 @@
 <?php
 namespace Zodream\Infrastructure\Support;
 
-use Zodream\Disk\File;
-use Zodream\Http\Uri;
+use Zodream\Infrastructure\Disk\File;
+use Zodream\Infrastructure\Http\Component\Uri;
 
 /**
  * MAKE CURL WITH MY KIND

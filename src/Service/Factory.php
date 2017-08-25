@@ -13,19 +13,16 @@ use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Zodream\Domain\Access\Auth;
 use Zodream\Domain\Debug\Timer;
-use Zodream\Database\Model\UserModel;
+use Zodream\Domain\Model\UserModel;
 use Zodream\Domain\View\ViewFactory;
 use Zodream\Infrastructure\Caching\Cache;
 use Zodream\Infrastructure\Caching\FileCache;
-use Zodream\Disk\Directory;
-use Zodream\Infrastructure\Error\Exception;
-use Zodream\Infrastructure\Exceptions\Handler;
+use Zodream\Infrastructure\Disk\Directory;
 use Zodream\Infrastructure\Http\Request;
-use Zodream\Infrastructure\Http\Input\Header;
+use Zodream\Infrastructure\Http\Requests\Header;
 use Zodream\Infrastructure\Http\Response;
 use Zodream\Infrastructure\I18n\I18n;
 use Zodream\Infrastructure\I18n\PhpSource;
-use Zodream\Infrastructure\Interfaces\ExceptionHandler;
 use Zodream\Infrastructure\Session\Session;
 use Zodream\Service\Routing\Router;
 
@@ -43,105 +40,40 @@ class Factory {
      */
     public static function getInstance($key, $default = null) {
         if (!array_key_exists($key, static::$_instance)) {
-            $class = static::config($key, $default);
+            $class = Config::getValue($key, $default);
             if (is_array($class)) {
                 $class = $class['driver'] ?: current($class);
             }
-            static::addInstance($key, $class);
+            if (!class_exists($class)) {
+                throw new \InvalidArgumentException($class.'CLASS IS NOT EXCITE!');
+            }
+            static::$_instance[$key] = new $class;
         }
         return static::$_instance[$key];
     }
 
     /**
-     * 新增加单利类
-     * @param $key
-     * @param $class
-     * @return mixed
-     */
-    public static function addInstance($key, $class) {
-        if (is_object($class)) {
-            return static::$_instance[$key] = $class;
-        }
-        if (is_callable($class.'::getInstance')) {
-            return static::$_instance[$key] = call_user_func($class.'::getInstance');
-        }
-        if (!class_exists($class)) {
-            throw new \InvalidArgumentException($class.'CLASS IS NOT EXCITE!');
-        }
-        return static::$_instance[$key] = new $class;
-    }
-
-    /**
      * DO YOU NEED A SESSION , HERE!
-     * @param null $key
-     * @param null $default
-     * @return Session|mixed
+     * @return Session
      */
-    public static function session($key = null, $default = null) {
-        /** @var Session $session */
-        $session = self::getInstance('session', Session::class);
-        if (is_null($key)) {
-            return $session;
-        }
-
-        if (is_array($key)) {
-            return $session->set($key);
-        }
-        return $session->get($key, $default);
+    public static function session() {
+        return self::getInstance('session', Session::class);
     }
 
     /**
      * DO YO WANT TO CACHE MODEL? HERE!
-     * @return Cache|mixed
+     * @return Cache
      */
     public static function cache() {
-        /** @var Cache $cache */
-        $cache = self::getInstance('cache', FileCache::class);
-        $arguments = func_get_args();
-        if (empty($arguments)) {
-            return $cache;
-        }
-
-        if (count($arguments) == 1) {
-            return $cache->get($arguments[0]);
-        }
-        return $cache->set($arguments[0], $arguments[1], isset($arguments[2]) ? $arguments[2] : 0);
-    }
-
-    /**
-     * Get / set the specified configuration value.
-     *
-     * If an array is passed as the key, we will assume you want to set an array of values.
-     * @param null $key
-     * @param null $default
-     * @return Config|array|null|string
-     */
-    public static function config($key = null, $default = null) {
-        if (is_null($key)) {
-            return Config::getInstance();
-        }
-
-        if (is_array($key)) {
-            return Config::getInstance()->set($key);
-        }
-
-        return Config::getInstance()->get($key, $default);
+        return self::getInstance('cache', FileCache::class);
     }
 
     /**
      * DO YOU WANT TO SHOW LOCAL LANGUAGE? HERE!
-     * @param null $message
-     * @param array $param
-     * @param null $name
-     * @return I18n|string
+     * @return I18n
      */
-    public static function i18n($message = null, $param = [], $name = null) {
-        /** @var I18n $i18n */
-        $i18n = self::getInstance('i18n', PhpSource::class);
-        if (is_null($message)) {
-            return $i18n;
-        }
-        return $i18n->translate($message, $param, $name);
+    public static function i18n() {
+        return self::getInstance('i18n', PhpSource::class);
     }
 
     /**
@@ -195,13 +127,6 @@ class Factory {
     }
 
     /**
-     * @return ExceptionHandler
-     */
-    public static function handler() {
-        return self::getInstance('exception', Handler::class);
-    }
-
-    /**
      * @return Directory
      */
     public static function root() {
@@ -216,7 +141,7 @@ class Factory {
      */
     public static function log() {
         if (!array_key_exists('log', static::$_instance)) {
-            $args = Config::log();
+            $args = Config::getValue('log');
             $log = new Logger($args['name']);
             $log->pushHandler(new StreamHandler((string)static::root()
                 ->childFile($args['file']),
@@ -225,9 +150,5 @@ class Factory {
             static::$_instance['log'] = $log;
         }
         return static::$_instance['log'];
-    }
-
-    public static function __callStatic($name, $arguments) {
-        return static::getInstance($name);
     }
 }

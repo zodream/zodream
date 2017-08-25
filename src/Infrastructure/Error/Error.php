@@ -5,123 +5,54 @@ namespace Zodream\Infrastructure\Error;
 * 
 * @author Jason
 */
-use Exception;
-use ErrorException;
-use Zodream\Service\Config;
+use Zodream\Domain\Response\ResponseResult;
 use Zodream\Service\Factory;
+use Zodream\Service\Routing\Url;
+use Zodream\Infrastructure\Log;
+use Zodream\Infrastructure\ObjectExpand\TimeExpand;
 
-class Error {
+class Error{
 
-    /**
-     * 启动 如果有 xdebug 就用 xdebug
-     */
-    public function bootstrap() {
-        if (Config::isDebug() && function_exists('xdebug_get_function_stack')) {
-            error_reporting(E_ALL);
-            return;
-        }
-        error_reporting(-1);
-        set_error_handler([$this, 'handleError']);
-        set_exception_handler([$this, 'handleException']);
-        register_shutdown_function([$this, 'handleShutdown']);
-        if (! Config::isDebug()) {
-            ini_set('display_errors', 'Off');
-        }
-    }
+	/**
+	 * 注册的错误提示
+	 * @param int $errorNo
+	 * @param string $errorStr
+	 * @param string $errorFile
+	 * @param string $errorLine
+	 */
+	public static function outByError($errorNo, $errorStr, $errorFile, $errorLine) {
+		if (function_exists('error_clear_last')) {
+			error_clear_last();
+		}
+		self::out("{$errorStr}； 错误级别：{$errorNo} ", $errorFile, $errorLine);
+	}
 
-    /**
-     * Convert PHP errors to ErrorException instances.
-     *
-     * @param  int $level
-     * @param  string $message
-     * @param  string $file
-     * @param  int $line
-     * @return void
-     * @throws ErrorException
-     * @internal param array $context
-     */
-    public function handleError($level, $message, $file = '', $line = 0) {
-        if (error_reporting() & $level) {
-            throw new \ErrorException($message, 0, $level, $file, $line);
-        }
-    }
+	/**
+	 * 注册的程序结束事件
+	 */
+	public static function outByShutDown() {
+		$error = error_get_last();
+		if (empty($error)) {
+			return;
+		}
+		self::out($error['message'], $error['file'], $error['line']);
+	}
 
-    /**
-     * Handle an uncaught exception from the application.
-     *
-     * Note: Most exceptions can be handled via the try / catch block in
-     * the HTTP and Console kernels. But, fatal error exceptions must
-     * be handled differently since they are not normal exceptions.
-     *
-     * @param  \Throwable  $e
-     * @return void
-     */
-    public function handleException($e)
-    {
-        if (! $e instanceof Exception) {
-            $e = new FatalThrowableError($e);
-        }
-
-        $this->getExceptionHandler()->report($e);
-
-        $this->renderHttpResponse($e);
-    }
-
-    /**
-     * Render an exception to the console.
-     *
-     * @param  \Exception  $e
-     * @return void
-     */
-    protected function renderForConsole(Exception $e) {
-        // 命令行输出
-    }
-
-    /**
-     * Render an exception as an HTTP response and send it.
-     *
-     * @param Exception $e
-     * @return void
-     */
-    protected function renderHttpResponse(Exception $e) {
-        $this->getExceptionHandler()->render($e)->send();
-    }
-
-    /**
-     * Handle the PHP shutdown event.
-     *
-     * @return void
-     */
-    public function handleShutdown() {
-        if (! is_null($error = error_get_last()) && $this->isFatal($error['type'])) {
-            $this->handleException($this->fatalExceptionFromError($error, 0));
-        }
-    }
-
-    /**
-     * Create a new fatal exception instance from an error array.
-     *
-     * @param  array $error
-     * @param  int|null $traceOffset
-     * @return FatalErrorException
-     */
-    protected function fatalExceptionFromError(array $error, $traceOffset = null) {
-        return new FatalErrorException(
-            $error['message'], $error['type'], 0, $error['file'], $error['line'], $traceOffset
-        );
-    }
-
-    /**
-     * Determine if the error type is fatal.
-     *
-     * @param  int  $type
-     * @return bool
-     */
-    protected function isFatal($type) {
-        return in_array($type, [E_COMPILE_ERROR, E_CORE_ERROR, E_ERROR, E_PARSE]);
-    }
-
-    protected function getExceptionHandler() {
-        return Factory::handler();
-    }
+	/**
+	 * 输出错误信息
+	 * @param string $error
+	 * @param string $file
+	 * @param string $line
+	 * @throws \Exception
+	 */
+	public static function out($error, $file = null, $line = null) {
+		$errorInfo = "ERROR: {$error} , in {$file} on line {$line}, URL:".Url::to();
+		if (!defined('APP_MODULE')) {   //作为插件使用时
+			Factory::log()->info(TimeExpand::format().':'.$errorInfo);
+			exit($errorInfo);
+		}
+		if (DEBUG) {
+			throw (new Exception($error, '200'))->setFile($file)->setLine($line);
+		}
+	}
 }

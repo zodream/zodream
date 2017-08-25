@@ -8,7 +8,7 @@ namespace Zodream\Domain\Html\Bootstrap;
  */
 use Zodream\Domain\Html\Widget;
 use Zodream\Infrastructure\Base\MagicObject;
-use Zodream\Helpers\Str;
+use Zodream\Infrastructure\ObjectExpand\StringExpand;
 
 class DetailWidget extends Widget {
 
@@ -35,7 +35,7 @@ class DetailWidget extends Widget {
         $isInt = $this->get('int');
         $content = '';
         foreach ($args as $key => $arg) {
-            list($value, $tag) = Str::explode($arg, ':', 2);
+            list($value, $tag) = StringExpand::explode($arg, ':', 2);
             if (is_integer($key) && !$isInt) {
                 $key = $value;
             }

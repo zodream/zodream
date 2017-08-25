@@ -7,9 +7,9 @@ namespace Zodream\Domain\Upload;
  * Date: 2016/6/28
  * Time: 14:17
  */
- use Zodream\Disk\FileSystem;
  use Zodream\Infrastructure\Base\ConfigObject;
- use Zodream\Disk\File;
+ use Zodream\Infrastructure\Disk\File;
+ use Zodream\Infrastructure\FileSystem;
  
 abstract class BaseUpload extends ConfigObject {
 
@@ -86,9 +86,6 @@ abstract class BaseUpload extends ConfigObject {
     }
     
     public function getSize() {
-        if (is_null($this->size)) {
-            $this->size = $this->getFile()->size();
-        }
         return $this->size;
     }
     

@@ -19,9 +19,12 @@ trait SingletonPattern {
 	 */
 	public static function getInstance($args = array()) {
 		if (is_null(static::$instance)) {
-            static::$instance = false; // 初始化未完成
 			static::$instance = new static($args);
 		}
 		return static::$instance;
+	}
+	
+	public static function __callStatic($action, $arguments = array()) {
+		return call_user_func_array(array(static::getInstance(), $action), $arguments);
 	}
 }

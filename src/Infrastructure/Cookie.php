@@ -42,33 +42,9 @@ class Cookie {
 	 * @param boolean $secure 是否通过安全的 HTTPS 连接来传输 cookie。
 	 * @param boolean $httpOnly 是否只通过http协议 不允许js等脚本进入，防止xss
 	 */
-	public static function set($name, $value = '', $expire = 0, $path = null, $domain = null, $secure = FALSE, $httpOnly = true) {
-        Factory::response()->header->setCookie($name, $value, time() + $expire, $path, $domain, $secure, $httpOnly);
+	public static function set($name, $value = '', $expire = 0, $path = null, $domain = null, $secure = FALSE, $httpOnly = FALSE) {
+		Factory::response()->header->setCookie($name, $value, time() + $expire, $path, $domain, $secure, $httpOnly);
 	}
-
-    /**
-     * 设置永久cookie
-     * @param $name
-     * @param $value
-     * @param null $path
-     * @param null $domain
-     * @param bool $secure
-     * @param bool $httpOnly
-     */
-    public static function forever($name, $value, $path = null, $domain = null, $secure = false, $httpOnly = true) {
-        static::set($name, $value, 2628000 * 60, $path, $domain, $secure, $httpOnly);
-    }
-
-    /**
-     * 过期 cookie.
-     *
-     * @param  string  $name
-     * @param  string  $path
-     * @param  string  $domain
-     */
-    public static function forget($name, $path = null, $domain = null) {
-        static::set($name, null, -2628000 * 60, $path, $domain);
-    }
 	
 	/**
 	 * DELETE COOKIE NO YOU DELETE. 

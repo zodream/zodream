@@ -8,8 +8,7 @@ namespace Zodream\Service\Controller;
  * @author Jason
  * @time 2015-12-19
  */
-use Zodream\Database\Migrations\Migration;
-use Zodream\Disk\Directory;
+use Zodream\Infrastructure\Disk\Directory;
 
 abstract class Module extends Action {
 
@@ -43,42 +42,6 @@ abstract class Module extends Action {
             return substr($class, 0, $pos) . '\\Service';
         }
         return '';
-    }
-
-    /**
-     * 启动
-     */
-    public function boot() {
-
-    }
-
-    /**
-     * 安装
-     */
-    public function install() {
-        $migration = $this->getMigration();
-        if (!$migration instanceof Migration) {
-            return;
-        }
-        $migration->up();
-    }
-
-    /**
-     * 卸载
-     */
-    public function uninstall() {
-        $migration = $this->getMigration();
-        if (!$migration instanceof Migration) {
-            return;
-        }
-        $migration->down();
-    }
-
-    /**
-     * @return Migration
-     */
-    public function getMigration() {
-        return;
     }
 
 }

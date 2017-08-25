@@ -10,23 +10,43 @@ abstract class ModuleController extends Controller {
      */
     public function configAction() {}
 
+    /**
+     * ajax 成功返回
+     * @param null $data
+     * @return \Zodream\Infrastructure\Http\Response
+     */
+    public function ajaxSuccess($data = null) {
+        return $this->ajax([
+            'code' => 0,
+            'status' => 'success',
+            'data' => $data
+        ]);
+    }
 
+    /**
+     * ajax 失败返回
+     * @param string $message
+     * @param int $code
+     * @return \Zodream\Infrastructure\Http\Response
+     */
+    public function ajaxFailure($message = '', $code = 1) {
+        return $this->ajax(array(
+            'code' => $code,
+            'status' => 'failure',
+            'msg' => $message
+        ));
+    }
 
     protected function getActionName($action) {
-        if (Request::expectsJson()) {
+        if (Request::isAjax()) {
             return $this->getAjaxActionName($action);
         }
         return parent::getActionName($action);
     }
 
     protected function getAjaxActionName($action) {
-        $arg = parent::getActionName($action).'Json';
-        return method_exists($this, $arg) ? $arg : parent::getActionName($action);
-    }
-
-    public function hasMethod($action) {
-        return array_key_exists($action, $this->actions())
-            || method_exists($this, $this->getActionName($action));
+        $arg = parent::getActionName($action.'Ajax');
+        return method_exists($this, $arg) ? $arg : $action;
     }
 
     protected function getViewFile($name = null) {

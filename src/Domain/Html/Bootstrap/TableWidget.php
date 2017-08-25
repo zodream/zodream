@@ -8,7 +8,7 @@ namespace Zodream\Domain\Html\Bootstrap;
  */
 use Zodream\Domain\Html\Page;
 use Zodream\Domain\Html\Widget;
-use Zodream\Helpers\Arr;
+use Zodream\Infrastructure\ObjectExpand\ArrayExpand;
 
 class TableWidget extends Widget {
     protected $default = array(
@@ -70,7 +70,7 @@ class TableWidget extends Widget {
             if (is_array($value) && array_key_exists('format', $value)) {
                 $format = $value['format'];
             }
-            $content .= Html::tag('td', $this->format((array)Arr::getValues($k, $item), $format));
+            $content .= Html::tag('td', $this->format((array)ArrayExpand::getValues($k, $item), $format));
         }
         return Html::tag('tr', $content);
     }

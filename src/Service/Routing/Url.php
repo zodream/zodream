@@ -4,14 +4,11 @@ namespace Zodream\Service\Routing;
 /**
  * url生成
  */
-use Zodream\Http\Uri;
+use Zodream\Infrastructure\Http\Component\Uri;
 use Zodream\Infrastructure\Http\Request;
-use Zodream\Service\Config;
 
 defined('APP_URL') || define('APP_URL', Url::getRoot());
-
 class Url {
-
     private static $_host;
 
     public static function setHost($host) {
@@ -24,8 +21,7 @@ class Url {
      */
     public static function getHost() {
         if (empty(self::$_host)) {
-            // 出现配置循环 bug
-            static::setHost(Config::app('host') ?: Request::host());
+            static::setHost(Request::host());
         }
         return self::$_host;
     }
@@ -46,10 +42,9 @@ class Url {
      * @param bool $complete
      * @return string|Uri
      */
-	public static function to($file = null, $extra = null, $complete = true) {
+	public static function to($file = null, $extra = null, $complete = false) {
         if (is_string($file) &&
-            ($file === '#'
-                || strpos($file, 'javascript:') === 0)) {
+            ($file === '#' || strpos($file, 'javascript:') === 0)) {
             return $file;
         }
 	    if (!$file instanceof Uri) {
@@ -109,10 +104,7 @@ class Url {
     }
 
     protected static function addScript($path) {
-	    if (strpos($path, '.') > 0
-            || strpos($path, '/') === 0) {
-	        return $path;
-        }
+        $path = ltrim($path, '/');
         $name = Request::server('script_name');
         if ($name === '/index.php') {
             return '/'.$path;

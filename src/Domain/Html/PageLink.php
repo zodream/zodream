@@ -3,7 +3,7 @@ namespace Zodream\Domain\Html;
 /**
  * 分页类
  * 使用方式:
- * $page = new PageLink();
+ * $page = new Page();
  */
 use Zodream\Service\Routing\Url;
 
@@ -13,7 +13,7 @@ class PageLink extends Widget {
 		'total' => 0, //总条数
 		'pageSize' => 20,
         'key' => 'page',
-		'page' => 1,
+		'index' => 1,
 		'length' => 8, //数字分页显示
 		/**
 		 * 分页显示模板
@@ -22,67 +22,48 @@ class PageLink extends Widget {
 		 * {pageSize}   每页显示条数
 		 * {start}      本页开始条数
 		 * {end}        本页结束条数
-		 * {pageTotal}  共有多少页
-         * {url}        生成的链接
-         * {key}        页码所对应的键
-         * {page}       当前页
-		 * {previous}   上一页
+		 * {pageNum}    共有多少页
+		 * {pre}        上一页
 		 * {next}       下一页
 		 * {list}       数字分页
 		 * {goto}       跳转按钮
 		 */
-		'template' => '<nav><ul class="pagination pagination-lg">{previous}{list}{next}</ul></nav>',
-		'active' => '<li class="active"><span>{text}</span></li>',
-		'common' => '<li><a href="{url}">{text}</a></li>',
-		'previous' => '《',
-		'next' => '》',
-        'omit' => '...',
-        'goto' => '&nbsp;<input type="text" value="{page}" 
-            onkeydown="if ( event.keyCode==13) {
-                var page = (this.value > {pageTotal}) ? {pageTotal} :this.value;
-            }
-            location =\'{url}&{key}=\'+page+\'\'}" style="width:25px;"/>
-            <input type="button" onclick="
-            var page = (this.previousSibling.value>{pageTotal} ) ? {pageTotal} : this.previousSibling.value;
-            location =\'{url}&{key}=\'+page+\'\'" value="GO"/>'
+		'template' => '<nav><ul class="pagination pagination-lg">{pre}{list}{next}</ul></nav>', //'<div><span>共有{total}条数据</span><span>每页显示{pagesize}条数据</span>,<span>本页{start}-{end}条数据</span><span>共有{pagenum}页</span><ul>{pre}{list}{next}{goto}</ul></div>'
+		'active' => '<li class="active"><span>{text}</span></li>',//'<li class="active"><a href="javascript:;">{text}</a></li>';
+		'common' => '<li><a href="{url}">{text}</a></li>',//'<li><a href="{url}">{text}</a></li>';
+		'pre' => '《',
+		'next' => '》'
 	);
 	/**
 	 * 总页数
 	 */
-	protected $pageTotal = -1;
-
-	public function getPageTotal() {
-	    return $this->pageTotal = ceil($this->get('total') / $this->get('pageSize'));
-    }
+	private $_pageNum;
 
 	/**
 	 * 返回分页
 	 * @return string
 	 */
-	public function getHtml() {
-	   if ($this->getPageTotal() < 2) {
-	       return null;
-       }
-       return str_ireplace(array(
+	protected function replace() {
+		return str_ireplace(array(
 				'{total}',
 				'{pageSize}',
 				'{start}',
 				'{end}',
-				'{pageTotal}',
-				'{previous}',
+				'{pageNum}',
+				'{pre}',
 				'{next}', 
 				'{list}',
 				'{goto}',
 		), array(
 				$this->get('total'),
-				$this->setPageSize(),
-				$this->getStart(),
-				$this->getEnd(),
-				$this->pageTotal,
-				$this->getPrevious(),
-				$this->getNext(),
-				$this->getPageList(),
-				$this->getGoToPage(),
+				$this->_setPageSize(),
+				$this->_star(),
+				$this->_end(),
+				$this->_pageNum,
+				$this->_prev(),
+				$this->_next(),
+				$this->_pageList(),
+				$this->_gopage(),
 		), $this->get('template'));
 	}
 
@@ -90,82 +71,77 @@ class PageLink extends Widget {
 	 * 本页开始条数
 	 * @return int
 	 */
-	protected function getStart() {
+	private function _star() {
 		if ($this->get('total') == 0) {
 			return 0;
 		}
-		return ($this->get('page') - 1) * $this->get('pageSize') + 1;
+		return ($this->get('index') - 1) * $this->get('pageSize') + 1;
 	}
 
 	/**
 	 * 本页结束条数
 	 * @return int
 	 */
-    protected function getEnd() {
-		return min($this->get('page') * $this->get('pageSize'), $this->get('total'));
+	private function _end() {
+		return min($this->get('index')* $this->get('pageSize'), $this->get('total'));
 	}
 
 	/**
 	 * 设置当前页大小
 	 * @return int
 	 */
-	protected function setPageSize() {
-		return $this->getEnd() - $this->getStart() + 1;
+	private function _setPageSize() {
+		return $this->_end() - $this->_star() + 1;
 	}
 
 	/**
 	 * 上一页
 	 * @return string
 	 */
-	protected function getPrevious() {
-		if ($this->get('page')> 1) {
-			return $this->replaceLine($this->get('page') - 1, $this->get('previous'));
+	private function _prev() {
+		if ($this->get('index')> 1) {
+			return $this->_replaceLine($this->get('index')- 1, $this->get('pre'));
 		}
 		return null;
 	}
-
-    /**
-     * 获取省略
-     * @return string
-     */
-	protected function getOmit() {
-	    return $this->replaceTemplate(null, $this->get('omit'));
-    }
 
 	/**
 	 * 分页数字列表
 	 * @return string
 	 */
-	protected function getPageList() {
+	private function _pageList() {
+		if ($this->_pageNum < 2) {
+			return null;
+		}
 		$linkPage = '';
-		$linkPage .= $this->replaceLine(1);
-		$lastList = floor($this->get('length') / 2);
+		$linkPage .= $this->_replaceLine(1);
+		$lastList= floor($this->get('length') / 2);
 		$i = 0;
 		$length = 0;
-		if ($this->pageTotal < $this->get('length') || $this->get('page') - $lastList < 2 || $this->pageTotal - $this->get('length') < 2) {
+		if ($this->_pageNum < $this->get('length') || $this->get('index')- $lastList< 2 || $this->_pageNum - $this->get('length') < 2) {
 			$i = 2;
-			if ($this->pageTotal <= $this->get('length')) {
-				$length = $this->pageTotal - 1;
+			if ($this->_pageNum <= $this->get('length')) {
+				$length = $this->_pageNum - 1;
 			} else {
 				$length = $this->get('length');
 			}
-		} elseif ($this->get('page') - $lastList>= 2 && $this->get('page') + $lastList <= $this->pageTotal) {
-			$i = $this->get('page')- $lastList;
-			$length = $this->get('page') + $lastList- 1;
-		} elseif ($this->get('page') + $lastList > $this->pageTotal) {
-			$i = $this->pageTotal - $this->get('length') + 1;
-			$length = $this->pageTotal - 1;
+		} elseif ($this->get('index')- $lastList>= 2 && $this->get('index')+ $lastList<= $this->_pageNum) {
+			$i = $this->get('index')- $lastList;
+			$length = $this->get('index')+ $lastList- 1;
+		} elseif ($this->get('index')+ $lastList> $this->_pageNum) {
+			$i = $this->_pageNum - $this->get('length') + 1;
+			$length = $this->_pageNum - 1;
 		}
-		if ($this->get('page') > $lastList + 1 && $i > 2) {
-			$linkPage .= $this->getOmit();
+		if ($this->get('index')> $lastList+ 1 && $i > 2) {
+			$linkPage .= $this->_replace(null, '...');
 		}
 		for (; $i <= $length; $i ++) {
-			$linkPage .= $this->replaceLine($i);
+			$linkPage .= $this->_replaceLine($i);
 		}
-		if ($this->get('page') < $this->pageTotal - $lastList && $length < $this->pageTotal - 1) {
-			$linkPage .= $this->getOmit();
+		if ($this->get('index')< $this->_pageNum - $lastList&& $length < $this->_pageNum - 1) {
+			$linkPage .= $this->_replace(null, '...');
 		}
-		$linkPage .= $this->replaceLine($this->pageTotal);
+		$linkPage .= $this->_replaceLine($this->_pageNum);
 		return $linkPage;
 	}
 
@@ -173,9 +149,9 @@ class PageLink extends Widget {
 	 * 下一页
 	 * @return string
 	 */
-	protected function getNext() {
-		if ($this->get('page')< $this->pageTotal) {
-			return $this->replaceLine($this->get('page')+ 1, $this->get('next'));
+	private function _next() {
+		if ($this->get('index')< $this->_pageNum) {
+			return $this->_replaceLine($this->get('index')+ 1, $this->get('next'));
 		}
 		return null;
 	}
@@ -184,32 +160,17 @@ class PageLink extends Widget {
 	 * 跳转按钮
 	 * @return string
 	 */
-	protected function getGoToPage() {
-	    $uri = Url::to()
-            ->removeData($this->get('key'));
-	    if (!$uri->hasData()) {
-	        $uri .= '?';
-        }
-		return str_ireplace([
-		    '{url}',
-            '{page}',
-            '{pageTotal}',
-            '{key}'
-        ], [
-            (string)$uri,
-            $this->get('page'),
-            $this->pageTotal,
-            $this->get('key')
-        ], $this->get('goto'));
+	private function _goPage() {
+		return '&nbsp;<input type="text" value="' . $this->get('index'). '" onkeydown="javascript:if(event.keyCode==13){var page=(this.value>' . $this->_pageNum . ')?' . $this->_pageNum . ':this.value;location=\'' . Url::to(null) . '&page=\'+page+\'\'}" style="width:25px;"/><input type="button" onclick="javascript:var page=(this.previousSibling.value>' . $this->_pageNum . ')?' . $this->_pageNum . ':this.previousSibling.value;location=\'' . Url::to() . '&page=\'+page+\'\'" value="GO"/>';
 	}
 	
-	protected function replaceLine($page, $text = null) {
-		return $this->replaceTemplate(
-            Url::to(null, array(
-                $this->get('key') => $page
-            )),
-            $text == null ? $page : $text,
-            $page == $this->get('page')
+	private function _replaceLine($page, $text = null) {
+		return $this->_replace(
+				Url::to(null, array(
+					$this->get('key') => $page
+				)),
+				$text == null ? $page : $text, 
+				$page == $this->get('index')
 		);
 	}
 
@@ -220,7 +181,7 @@ class PageLink extends Widget {
 	 * @param bool|string $result 条件
 	 * @return string
 	 */
-	protected function replaceTemplate($url, $text, $result = TRUE) {
+	private function _replace($url, $text, $result = TRUE) {
 		$template = ($result ? $this->get('active') : $this->get('common'));
 		$html = str_replace('{url}', $url, $template);
 		return str_replace('{text}', $text, $html);
@@ -231,6 +192,7 @@ class PageLink extends Widget {
 	 * @return string
 	 */
 	protected function run() {
-		return $this->getHtml();
+		$this->_pageNum = ceil($this->get('total') / $this->get('pageSize'));
+		return $this->replace();
 	}
 }

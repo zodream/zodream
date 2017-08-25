@@ -7,7 +7,6 @@ namespace Zodream\Domain\Html;
  * Time: 18:24
  */
 use Zodream\Infrastructure\Interfaces\ExpertObject;
-use Closure;
 
 class Excel implements ExpertObject {
 

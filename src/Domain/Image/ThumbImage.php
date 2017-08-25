@@ -14,7 +14,7 @@ class ThumbImage extends Image {
 	 * @param bool|int $auto 那种方式进行缩略处理
 	 * @return string
 	 */
-	public function thumb($output, $thumbWidth = 0, $thumbHeight = 0, $auto = true){
+	public function thumb($output, $thumbWidth = 0, $thumbHeight = 0, $auto = TRUE){
 		$width = $this->getWidth();
 		$height = $this->getHeight();
 		if ($thumbWidth <= 0) {

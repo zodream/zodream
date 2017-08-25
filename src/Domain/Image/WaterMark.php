@@ -6,7 +6,7 @@ namespace Zodream\Domain\Image;
  * @author zx648
  *
  */
-class WaterMark extends Image {
+class WaterMark extends Image{
 
 	const Top = 1;
 	const RightTop = 2;
@@ -104,16 +104,7 @@ class WaterMark extends Image {
 				);
 		}
 	}
-
-    /**
-     * 根据九宫格添加文字
-     * @param $text
-     * @param int $direction
-     * @param int $fontSize
-     * @param string $color
-     * @param int $fontFamily
-     * @return array|bool
-     */
+	
 	public function addTextByDirection($text, $direction = self::Top, $fontSize = 16, $color = '#000', $fontFamily = 5) {
 		list($x, $y) = $this->getPointByDirection($direction);
 		return $this->addText($text, $x, $y, $fontSize, $color, $fontFamily);
@@ -139,13 +130,7 @@ class WaterMark extends Image {
 		return imagestring($this->image, $fontFamily, $x, $y, $text, $color);
 	}
 
-    /**
-     * 根据九宫格添加图片
-     * @param $image
-     * @param int $direction
-     * @param int $opacity
-     * @return bool
-     */
+	
 	public function addImageByDirection($image, $direction = self::Top, $opacity = 50) {
 		list($x, $y) = $this->getPointByDirection($direction);
 		return $this->addImage($image, $x, $y, $opacity);

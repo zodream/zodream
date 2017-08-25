@@ -7,7 +7,7 @@ namespace Zodream\Infrastructure\I18n;
  * Time: 17:15
  */
 use Zodream\Service\Config;
-use Zodream\Disk\Directory;
+use Zodream\Infrastructure\Disk\Directory;
 use Zodream\Infrastructure\Base\MagicObject;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Service\Factory;
@@ -24,7 +24,7 @@ abstract class I18n extends MagicObject {
     protected $directory;
 
     public function __construct() {
-        $configs = Config::i18n();
+        $configs = Config::getValue('i18n');
         $this->setDirectory($configs['directory']);
         $this->setLanguage($configs['language']);
     }

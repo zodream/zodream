@@ -7,8 +7,6 @@ namespace Zodream\Infrastructure\Traits;
  * Time: 16:39
  */
 use Zodream\Service\Config;
-use Zodream\Service\Factory;
-
 trait ConfigTrait {
 
     /**
@@ -25,7 +23,7 @@ trait ConfigTrait {
         if (empty($this->configKey)) {
             return;
         }
-        $configs = Factory::config($this->configKey, $default);
+        $configs = Config::getValue($this->configKey, $default);
         if (is_array($configs)) {
             $this->setConfigs($configs);
         }

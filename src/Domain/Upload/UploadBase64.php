@@ -1,8 +1,5 @@
 <?php
 namespace Zodream\Domain\Upload;
-
-use Zodream\Infrastructure\Http\Request;
-
 /**
  * Created by PhpStorm.
  * User: zx648
@@ -16,12 +13,7 @@ class UploadBase64 extends BaseUpload {
     }
 
     public function load($key = null) {
-        $content = Request::request($key);
-        if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $content, $result)){
-            $this->setType($result[2]);
-            $content = substr($content, strlen($result[1]));
-        }
-        $this->name = base64_decode($content);
+        $this->name = base64_decode($_POST[$key]);
         $this->size = strlen($this->name);
     }
 

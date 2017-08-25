@@ -7,11 +7,11 @@ namespace Zodream\Domain\View;
  * Date: 2016/8/3
  * Time: 9:19
  */
-use Zodream\Disk\File;
+use Zodream\Infrastructure\Disk\File;
 use Zodream\Infrastructure\Error\FileException;
 use Zodream\Service\Factory;
-use Zodream\Http\Uri;
-use Zodream\Helpers\Time;
+use Zodream\Infrastructure\Http\Component\Uri;
+use Zodream\Infrastructure\ObjectExpand\TimeExpand;
 use Zodream\Infrastructure\Traits\ConditionTrait;
 use Zodream\Service\Routing\Url;
 
@@ -20,20 +20,20 @@ use Zodream\Service\Routing\Url;
  * @package Zodream\Domain\View
  * @property string $title
  * 
- * @method ViewFactory registerMetaTag($content, $options = array(), $key = null)
- * @method ViewFactory registerLinkTag($url, $options = array(), $key = null)
- * @method ViewFactory registerCss($css, $key = null)
- * @method ViewFactory registerCssFile($url, $options = array(), $key = null)
- * @method ViewFactory registerJs($js, $position = 'html body end', $key = null)
- * @method ViewFactory registerJsFile($url, $options = [], $key = null)
- * @method ViewFactory getAssetFile($file)
- * @method ViewFactory get($key, $default = null)
- * @method ViewFactory set($key, $value = null)
+ * @method registerMetaTag($content, $options = array(), $key = null) 
+ * @method registerLinkTag($url, $options = array(), $key = null)
+ * @method registerCss($css, $key = null)
+ * @method registerCssFile($url, $options = array(), $key = null)
+ * @method registerJs($js, $position = 'html body end', $key = null)
+ * @method registerJsFile($url, $options = [], $key = null)
+ * @method getAssetFile($file)
+ * @method get($key, $default = null)
+ * @method set($key, $value = null)
  * @method string header()
  * @method string footer()
- * @method ViewFactory start($name)
- * @method ViewFactory stop()
- * @method ViewFactory section($name, $default = null)
+ * @method start($name)
+ * @method stop()
+ * @method section($name, $default = null)
  */
 class View {
 
@@ -106,6 +106,7 @@ class View {
         } catch (\Throwable $e) {
             $this->handleViewException(new \Exception($e), $obLevel);
         }
+
         return ltrim(ob_get_clean());
     }
 
@@ -134,7 +135,7 @@ class View {
         if (is_null($time)) {
             return null;
         }
-        return Time::format($time);
+        return TimeExpand::format($time);
     }
 
     /**
@@ -143,7 +144,7 @@ class View {
      * @return string
      */
     public function ago($time) {
-        return Time::isTimeAgo($time);
+        return TimeExpand::isTimeAgo($time);
     }
 
     /**
@@ -167,14 +168,6 @@ class View {
         return Url::to($file, $extra, true);
     }
 
-    /**
-     * 获取资源文件路径
-     * @param $file
-     * @return string|Uri
-     */
-    public function asset($file) {
-        return $this->url($this->factory->getAssetFile($file));
-    }
     public function extend($name, $data = array()) {
         foreach ((array)$name as $item) {
             echo $this->factory->render($item, $data);
@@ -199,9 +192,5 @@ class View {
             return call_user_func_array([$this->factory, $name], $arguments);
         }
         throw new \BadMethodCallException($name.' METHOD NOT FIND!');
-    }
-
-    public function __toString() {
-        return $this->render();
     }
 }

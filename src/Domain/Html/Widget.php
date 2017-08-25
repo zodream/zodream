@@ -9,8 +9,8 @@ namespace Zodream\Domain\Html;
  */
 use Zodream\Infrastructure\Support\Html;
 use Zodream\Infrastructure\Base\MagicObject;
-use Zodream\Helpers\JsonExpand;
-use Zodream\Helpers\Time;
+use Zodream\Infrastructure\ObjectExpand\JsonExpand;
+use Zodream\Infrastructure\ObjectExpand\TimeExpand;
 use Zodream\Service\Factory;
 
 abstract class Widget extends MagicObject {
@@ -93,13 +93,13 @@ abstract class Widget extends MagicObject {
             return Factory::i18n()->translate('(not set)');
         }
         if ($tag === 'date') {
-            return Time::format($data, 'Y-m-d');
+            return TimeExpand::format($data, 'Y-m-d');
         }
         if ($tag === 'datetime') {
-            return Time::format($data);
+            return TimeExpand::format($data);
         }
         if ($tag === 'ago') {
-            return Time::isTimeAgo($data);
+            return TimeExpand::isTimeAgo($data);
         }
         return $data;
     }

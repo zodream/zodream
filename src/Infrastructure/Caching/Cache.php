@@ -6,7 +6,7 @@ namespace Zodream\Infrastructure\Caching;
 * @author Jason
 */
 use Zodream\Infrastructure\Base\ConfigObject;
-use Zodream\Helpers\Str;
+use Zodream\Infrastructure\ObjectExpand\StringExpand;
 
 abstract class Cache extends ConfigObject implements \ArrayAccess {
 
@@ -26,7 +26,7 @@ abstract class Cache extends ConfigObject implements \ArrayAccess {
 	
 	public function filterKey($key) {
 		if (is_string($key)) {
-			return ctype_alnum($key) && Str::byteLength($key) <= 32 ? $key : md5($key);
+			return ctype_alnum($key) && StringExpand::byteLength($key) <= 32 ? $key : md5($key);
 		}
 		return md5(json_encode($key));
 	}

@@ -8,7 +8,7 @@ namespace Zodream\Infrastructure\Session;
  * Time: 9:56
  */
 use Zodream\Infrastructure\Base\ConfigObject;
-use Zodream\Disk\Directory;
+use Zodream\Infrastructure\Disk\Directory;
 use Zodream\Service\Factory;
 
 class Session extends ConfigObject implements \ArrayAccess {
@@ -32,12 +32,8 @@ class Session extends ConfigObject implements \ArrayAccess {
         return false;
     }
 
-    /**
-     * 判断session 是否启动
-     * @return bool
-     */
     public function isActive() {
-        return isset($_SESSION) || session_status() === PHP_SESSION_ACTIVE;
+        return session_status() === PHP_SESSION_ACTIVE;
     }
 
     public function open() {
@@ -186,15 +182,9 @@ class Session extends ConfigObject implements \ArrayAccess {
         return isset($_SESSION[$key]) ? $_SESSION[$key] : $defaultValue;
     }
 
-    public function set($key, $value = null) {
+    public function set($key, $value) {
         $this->open();
-        if (!is_array($key)) {
-            $_SESSION[$key] = $value;
-            return;
-        }
-        foreach ($key as $k => $v) {
-            $_SESSION[$k] = $v;
-        }
+        $_SESSION[$key] = $value;
     }
 
     protected function updateFlashCounters() {

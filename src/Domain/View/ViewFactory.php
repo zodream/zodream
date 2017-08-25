@@ -12,13 +12,13 @@ use Zodream\Infrastructure\Traits\ConfigTrait;
 use Zodream\Service\Factory;
 use Zodream\Service\Routing\Url;
 use Zodream\Infrastructure\Caching\FileCache;
-use Zodream\Disk\Directory;
-use Zodream\Disk\File;
+use Zodream\Infrastructure\Disk\Directory;
+use Zodream\Infrastructure\Disk\File;
 use Zodream\Infrastructure\Interfaces\EngineObject;
-use Zodream\Disk\FileException;
+use Zodream\Infrastructure\Error\FileException;
 use Zodream\Infrastructure\Support\Html;
 use Zodream\Infrastructure\Base\MagicObject;
-use Zodream\Helpers\Arr;
+use Zodream\Infrastructure\ObjectExpand\ArrayExpand;
 
 class ViewFactory extends MagicObject {
 
@@ -89,9 +89,6 @@ class ViewFactory extends MagicObject {
      * @return string
      */
     public function getAssetFile($file) {
-        if (is_file($file)) {
-            return (new AssetFile($file))->getUrl();
-        }
         if (strpos($file, '/') === 0
             || strpos($file, '//') !== false) {
             return $file;
@@ -109,15 +106,6 @@ class ViewFactory extends MagicObject {
         }
         $this->directory = $directory;
         return $this;
-    }
-
-    /**
-     * 判断模板文件是否存在
-     * @param string $file
-     * @return bool
-     */
-    public function exist($file) {
-        return $this->directory->hasFile($file.$this->configs['suffix']);
     }
 
     /**
@@ -155,8 +143,7 @@ class ViewFactory extends MagicObject {
      * @throws \Exception
      */
     public function render($file, array $data = array(), callable $callback = null) {
-        return $this->set($data)
-            ->make($file)
+        return $this->set($data)->make($file)
             ->render($callback);
     }
 
@@ -202,7 +189,7 @@ class ViewFactory extends MagicObject {
 
     public function registerJsFile($url, $options = [], $key = null) {
         $key = $key ?: $url;
-        $position = Arr::remove($options, 'position', View::HTML_FOOT);
+        $position = ArrayExpand::remove($options, 'position', View::HTML_FOOT);
         $options['src'] = Url::to($this->getAssetFile($url));
         $this->jsFiles[$position][$key] = Html::script(null, $options);
         return $this;

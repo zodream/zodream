@@ -5,18 +5,15 @@ namespace Zodream\Infrastructure\Http;
 * 
 * @author Jason
 */
-use Zodream\Infrastructure\Http\Input\BaseInput;
-use Zodream\Infrastructure\Http\Input\Cookie;
-use Zodream\Infrastructure\Http\Input\Files;
-use Zodream\Infrastructure\Http\Input\Get;
-use Zodream\Infrastructure\Http\Input\Header;
-use Zodream\Infrastructure\Http\Input\Post;
-use Zodream\Infrastructure\Http\Input\Server;
-use Zodream\Infrastructure\Http\Input\Argv;
-use Zodream\Helpers\Str;
+use Zodream\Infrastructure\Http\Requests\BaseRequest;
+use Zodream\Infrastructure\Http\Requests\Cookie;
+use Zodream\Infrastructure\Http\Requests\Files;
+use Zodream\Infrastructure\Http\Requests\Get;
+use Zodream\Infrastructure\Http\Requests\Header;
+use Zodream\Infrastructure\Http\Requests\Post;
+use Zodream\Infrastructure\Http\Requests\Server;
 use Zodream\Service\Config;
-
-defined('APP_SAFE') || define('APP_SAFE', Config::app('safe', true));
+defined('APP_SAFE') || define('APP_SAFE', Config::getInstance()->get('app.safe', true));
 
 final class Request {
 
@@ -28,23 +25,22 @@ final class Request {
 		'header' => null,
 		'request' => null,
 		'server' => null,
-		'other' => null,
-        'argv' => null,
+		'other' => null
 	);
 
 	/**
 	 * @param $name
-	 * @return BaseInput
+	 * @return BaseRequest
 	 */
 	private static function _getInstance($name) {
 		$name = strtolower($name);
 		if (!array_key_exists($name, self::$_instances)) {
 			return null;
 		}
-		if (self::$_instances[$name] instanceof BaseInput) {
+		if (self::$_instances[$name] instanceof BaseRequest) {
 			return self::$_instances[$name];
 		}
-		$class = 'Zodream\\Infrastructure\\Http\\Input\\'.ucfirst($name);
+		$class = 'Zodream\\Infrastructure\\Http\\Requests\\'.ucfirst($name);
 		return self::$_instances[$name] = new $class;
 	}
 
@@ -52,7 +48,7 @@ final class Request {
 	 * @param $key
 	 * @param string $name
 	 * @param mixed $default
-	 * @return array|string|BaseInput
+	 * @return array|string|BaseRequest
 	 */
 	private static function getValue($key, $name = null, $default = null) {
 		$instance = self::_getInstance($key);
@@ -71,24 +67,6 @@ final class Request {
 	public static function get($name = null, $default = null) {
 		return self::getValue(__FUNCTION__, $name, $default);
 	}
-
-    /**
-     * CLI ARGV
-     * @param null $name
-     * @param null $default
-     * @return array|string|Argv
-     */
-	public static function argv($name = null, $default = null) {
-        return self::getValue(__FUNCTION__, $name, $default);
-    }
-
-    /**
-     * CLI 读取输入值
-     * @return string
-     */
-    public static function read() {
-        return trim(fgets(STDIN));
-    }
 
 	/**
 	 * $_POST
@@ -114,20 +92,11 @@ final class Request {
 	 * $_REQUEST
 	 * @param string $name
 	 * @param string $default
-	 * @return array|string|\Zodream\Infrastructure\Http\Input\Request
+	 * @return array|string|\Zodream\Infrastructure\Http\Requests\Request
 	 */
 	public static function request($name = null, $default = null) {
 		return self::getValue(__FUNCTION__, $name, $default);
 	}
-
-    /**
-     * 判断是否有值
-     * @param string $key
-     * @return bool
-     */
-	public static function has($key) {
-	    return static::request(true)->has($key);
-    }
 
 	/**
 	 * $_COOKIE
@@ -175,35 +144,6 @@ final class Request {
 	public static function other($name = null, $default = null) {
 		return self::getValue(__FUNCTION__, $name, $default);
 	}
-
-    /**
-     *
-     */
-	public static function path() {
-        $pattern = trim(static::server('PHP_SELF'), '/');
-        return $pattern == '' ? '/' : $pattern;
-    }
-
-    /**
-     * 解密路径
-     * @return string
-     */
-    public static function decodedPath() {
-        return rawurldecode(static::path());
-    }
-
-    /**
-     * 判断是否网址
-     * @return bool
-     */
-    public static function is() {
-        foreach (func_get_args() as $pattern) {
-            if (Str::is($pattern, static::decodedPath())) {
-                return true;
-            }
-        }
-        return false;
-    }
 
 	
 	public static function isCli() {
@@ -274,54 +214,9 @@ final class Request {
 	public static function isPjax() {
 		return self::isAjax() && !empty(self::server('HTTP_X_PJAX'));
 	}
-
-    /**
-     * 判断是否期望返回JSON
-     * @return bool
-     */
-    public static function expectsJson() {
-        return (static::isAjax() && !static::isPjax()) || static::wantsJson();
-    }
-
-    /**
-     * 请求头判断 接受类型为 JSON
-     * @return bool
-     */
-	public static function wantsJson() {
-	    $accept = static::header('ACCEPT');
-	    if (empty($accept)) {
-	        return false;
-        }
-        $args = explode(';', $accept);
-	    return Str::contains($args[0], ['/json', '+json']);
-    }
-
-    /**
-     * 是否是 flash
-     * @return bool
-     */
+	
 	public static function isFlash() {
 		$arg = self::server('HTTP_USER_AGENT', '');
 		return stripos($arg, 'Shockwave') !== false || stripos($arg, 'Flash') !== false;
 	}
-
-    /**
-     * 只能获取基础验证的账号密码
-     * @return array [username, password]
-     */
-	public static function auth() {
-        return self::other('auth');
-    }
-
-    /**
-     * 获取 token
-     * @return string|null
-     */
-    public static function bearerToken() {
-        $header = static::header('Authorization', '');
-        if (Str::startsWith($header, 'Bearer ')) {
-            return substr($header, 7);
-        }
-        return null;
-    }
 }
