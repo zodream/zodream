@@ -1,12 +1,10 @@
 <?php
 namespace Zodream\Infrastructure\Http\Input;
 
-use Zodream\Infrastructure\Http\Request;
-
 class Argv extends BaseInput {
     public function __construct() {
         // SET ARGV TO GET PARAM, IF NO '=' , VALUE IS '', YOU CAN USE IS_NULL JUDGE
-        $args = Request::server('argv');
+        $args = $_SERVER['argv'];
         if (empty($args)) {
             return;
         }

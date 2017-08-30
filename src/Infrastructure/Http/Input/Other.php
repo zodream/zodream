@@ -7,8 +7,6 @@ namespace Zodream\Infrastructure\Http\Input;
  * Date: 2016/4/3
  * Time: 9:29
  */
-use Zodream\Infrastructure\Http\Request;
-
 class Other extends BaseInput {
 
     public function get($name = null, $default = null) {
@@ -73,16 +71,16 @@ class Other extends BaseInput {
      * @return string
      */
     public function getHost() {
-        $host = Request::server('HTTP_X_FORWARDED_HOST'); // 防止通过局域网代理取得ip值
+        $host = $_SERVER['HTTP_X_FORWARDED_HOST']; // 防止通过局域网代理取得ip值
         if (!empty($host)) {
             return $host;
         }
-        $host = Request::server('HTTP_HOST');
+        $host = $_SERVER['HTTP_HOST'];
         if (!empty($host)) {
             return $host;
         }
-        $host = Request::server('SERVER_NAME');
-        $port = Request::server('SERVER_PORT');
+        $host = $_SERVER['SERVER_NAME'];
+        $port = $_SERVER['SERVER_PORT'];
         if (!empty($port) && $port != 80) {
             $host .= ':'.$port;
         }
@@ -198,7 +196,7 @@ class Other extends BaseInput {
             'unknown',    //系统
             'unknown',     //系统版本
         ];
-        $agent = Request::server('HTTP_USER_AGENT');
+        $agent = $_SERVER['HTTP_USER_AGENT'];
         //Chrome OS
         if (stripos($agent, 'CrOS') !== false) {
             $args[0] = 'Chrome OS';
@@ -383,7 +381,7 @@ class Other extends BaseInput {
             'unknown',    //系统
             'unknown',     //系统版本
         ];
-        $agent = Request::server('HTTP_USER_AGENT');
+        $agent = $_SERVER['HTTP_USER_AGENT'];
 
         if (stripos($agent, 'blackberry') !== false) {
             $aresult = explode('/', stristr($agent, 'BlackBerry'));

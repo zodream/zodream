@@ -114,7 +114,7 @@ final class Request {
 	 * $_REQUEST
 	 * @param string $name
 	 * @param string $default
-	 * @return array|string|\Zodream\Infrastructure\Http\Input\RequestInput
+	 * @return array|string|\Zodream\Infrastructure\Http\Input\Request
 	 */
 	public static function request($name = null, $default = null) {
 		return self::getValue(__FUNCTION__, $name, $default);
