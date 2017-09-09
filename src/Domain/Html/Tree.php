@@ -96,6 +96,9 @@ class Tree implements JsonAble {
      */
     private function _makeTreeCore($index, $data, $type = self::LINEAR) {
         $args = [];
+        if (!isset($data[$index])) {
+            return [];
+        }
         foreach($data[$index] as $id => $item) {
             if ($type == self::NORMAL) {
                 if (isset($data[$id])) {
@@ -105,7 +108,9 @@ class Tree implements JsonAble {
                     $item[$this->config['leaf_key']] = true;
                 }
                 $args[] = $item;
-            } elseif ($type == self::ID_AS_KEY) {
+                continue;
+            }
+            if ($type == self::ID_AS_KEY) {
                 if (isset($data[$id])) {
                     $item[$this->config['expanded_key']] = $this->config['expanded'];
                     $item[$this->config['children_key']] = $this->_makeTreeCore($id, $data, $type);
@@ -113,7 +118,9 @@ class Tree implements JsonAble {
                     $item[$this->config['leaf_key']] = true;
                 }
                 $args[$id] = $item;
-            } elseif ($type == self::LINEAR) {
+                continue;
+            }
+            if ($type == self::LINEAR) {
                 $parent_id = $item[$this->config['parent_key']];
                 $this->level[$id] = $index == 0 ? 0 : $this->level[$parent_id]+1;
                 $item['level'] = $this->level[$id];
@@ -122,6 +129,7 @@ class Tree implements JsonAble {
                     $this->_makeTreeCore($id, $data, $type);
                 }
                 $args = $this->result;
+                continue;
             }
         }
         return $args;
