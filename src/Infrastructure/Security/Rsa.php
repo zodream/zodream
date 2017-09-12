@@ -18,11 +18,11 @@ class Rsa extends BaseSecurity {
         return $this;
     }
 
-    public function setPrivateKey($key) {
+    public function setPrivateKey($key, $password = '') {
         if ($key instanceof File) {
             $key = $key->read();
         }
-        $this->privateKey = openssl_pkey_get_private($key);
+        $this->privateKey = openssl_pkey_get_private($key, $password);
         return $this;
     }
 
