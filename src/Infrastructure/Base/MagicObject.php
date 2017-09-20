@@ -9,40 +9,17 @@ namespace Zodream\Infrastructure\Base;
 use ArrayIterator;
 use ArrayAccess;
 use IteratorAggregate;
+use Zodream\Infrastructure\Interfaces\ArrayAble;
 use Zodream\Infrastructure\Interfaces\JsonAble;
-use Zodream\Helpers\Arr;
 use Zodream\Helpers\Json;
+use Zodream\Infrastructure\Traits\Attributes;
+use JsonSerializable;
 
-class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggregate {
+class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggregate, JsonSerializable {
 	
-	protected $_data = array();
+	use Attributes;
 
-	/**
-	 * 获取值
-	 * @param string $key 关键字
-	 * @param string $default 默认返回值
-	 * @return array|string
-	 */
-	public function get($key = null, $default = null) {
-		if (empty($key)) {
-			return $this->_data;
-		}
-		if (!is_array($this->_data)) {
-			$this->_data = (array)$this->_data;
-		}
-		if ($this->has($key)) {
-			return $this->_data[$key];
-		}
-		if (strpos($key, ',') !== false) {
-			$result = Arr::getValues($key, $this->_data, $default);
-		} else {
-			$result = Arr::getChild($key, $this->_data, is_object($default) ? null : $default);
-		}
-		if (is_object($default)) {
-			return $default($result);
-		}
-		return $result;
-	}
+	protected $__attributes = [];
 
     /**
      * 合并数组并返回新数组
@@ -50,7 +27,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
      * @return array
      */
 	public function merge(array $data) {
-	    return array_merge($this->_data, $data);
+	    return array_merge($this->__attributes, $data);
     }
 
 	/**
@@ -65,85 +42,27 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
 			if (strpos($arg, '@') !== false) {
 				return substr($arg, 1);
 			}
-			if ($this->has($arg)) {
-				return $this->get($arg);
+			if ($this->hasAttribute($arg)) {
+				return $this->getAttribute($arg);
 			}
 		}
 		return null;
 	}
 
-	/**
-	 * 设置值
-	 * @param string|array $key
-	 * @param string $value
-	 * @return $this
-	 */
-	public function set($key, $value = null) {
-		if (is_object($key)) {
-			$key = (array)$key;
-		}
-		if (is_array($key)) {
-			$this->_data = array_merge($this->_data, $key);
-			return $this;
-		}
-		if (empty($key)) {
-			return $this;
-		}
-		$this->_data[$key] = $value;
-		return $this;
-	}
-	
-	/**
-	 * 删除键 目前只支持一维
-	 * @param string $tag
-	 */
-	public function del($tag) {
-		foreach (func_get_args() as $value) {
-			unset($this->_data[$value]);
-		}
-	}
-
-	public function clear() {
-		$this->_data = array();
-	}
-
-	/**
-	 * 判断是否有
-	 * @param string|null $key 如果为null 则判断是否有数据
-	 * @return bool
-	 */
-	public function has($key = null) {
-		if (is_null($key)) {
-			return !empty($this->_data);
-		}
-		if (empty($this->_data)) {
-			return false;
-		}
-		return array_key_exists($key, $this->_data);
-	}
-	
-	public function __get($key) {
-		return $this->get($key);
-	}
-	
-	public function __set($key, $value) {
-		$this->set($key, $value);
-	}
-
 	public function offsetExists($offset) {
-		return $this->has($offset);
+		return $this->hasAttribute($offset);
 	}
 
 	public function offsetGet($offset) {
-		return $this->get($offset);
+		return $this->getAttribute($offset);
 	}
 
 	public function offsetSet($offset, $value) {
-		$this->set($offset, $value);
+		$this->setAttribute($offset, $value);
 	}
 
 	public function offsetUnset($offset) {
-		$this->del($offset);
+		$this->deleteAttribute($offset);
 	}
 
     /**
@@ -158,7 +77,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
      * @access public
      */
     public function count() {
-        return (int) count($this->_data);
+        return (int) count($this->__attributes);
     }
 
     /**
@@ -173,7 +92,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
      * @access public
      */
     public function current() {
-        return current($this->_data);
+        return current($this->__attributes);
     }
 
     /**
@@ -188,7 +107,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
      * @access public
      */
     public function next() {
-        next($this->_data);
+        next($this->__attributes);
     }
 
     /**
@@ -203,7 +122,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
      * @access public
      */
     public function key() {
-        return key($this->_data);
+        return key($this->__attributes);
     }
 
     /**
@@ -216,7 +135,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
      * @access public
      */
     public function valid() {
-        return (bool) !(key($this->_data) === null);
+        return (bool) !(key($this->__attributes) === null);
     }
 
     /**
@@ -231,22 +150,36 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
      * @access public
      */
     public function rewind() {
-        reset($this->_data);
+        reset($this->__attributes);
     }
 
 	/**
 	 * 允许使用 foreach 直接执行
 	 */
 	public function getIterator() {
-		return new ArrayIterator($this->get());
+		return new ArrayIterator($this->toArray());
 	}
 
 	public function parse($args) {
-        return $this->set($args);
+        return $this->setAttribute($args);
     }
 
     public function toArray() {
-        return $this->get();
+        return $this->getAttribute();
+    }
+
+    public function jsonSerialize() {
+        return array_map(function ($value) {
+            if ($value instanceof JsonSerializable) {
+                return $value->jsonSerialize();
+            } elseif ($value instanceof JsonAble) {
+                return json_decode($value->toJson(), true);
+            } elseif ($value instanceof ArrayAble) {
+                return $value->toArray();
+            } else {
+                return $value;
+            }
+        }, $this->__attributes);
     }
 
     /**
@@ -256,6 +189,6 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
      * @return string
      */
     public function toJson($options = JSON_UNESCAPED_UNICODE) {
-        return Json::encode($this->toArray(), $options);
+        return Json::encode($this->jsonSerialize(), $options);
     }
 }

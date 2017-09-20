@@ -71,9 +71,9 @@ class Other extends BaseInput {
      * @return string
      */
     public function getHost() {
-        $host = $_SERVER['HTTP_X_FORWARDED_HOST']; // 防止通过局域网代理取得ip值
-        if (!empty($host)) {
-            return $host;
+        if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
+            // 防止通过局域网代理取得ip值
+            return $_SERVER['HTTP_X_FORWARDED_HOST'];
         }
         $host = $_SERVER['HTTP_HOST'];
         if (!empty($host)) {

@@ -14,7 +14,7 @@ trait Attributes {
      * @api     public
      * @return  boolean
      */
-    public function has($attribute) {
+    public function has($attribute = null) {
         return $this->hasAttribute($attribute);
     }
 
@@ -39,7 +39,7 @@ trait Attributes {
      *
      * @return  mixed
      */
-    public function get($name, $default = null) {
+    public function get($name = null, $default = null) {
         return $this->getAttribute($name, $default);
     }
 
@@ -96,7 +96,7 @@ trait Attributes {
      * @param string|null $key 如果为null 则判断是否有数据
      * @return bool
      */
-    public function hasAttribute($key) {
+    public function hasAttribute($key = null) {
         if (is_null($key)) {
             return !empty($this->__attributes);
         }
