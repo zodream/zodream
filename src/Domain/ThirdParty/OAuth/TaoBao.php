@@ -18,7 +18,7 @@ class TaoBao extends BaseOAuth {
                 '#redirect_uri',
                 'response_type' => 'code',
                 'scope',
-                '#view',
+                'view' => 'web', //web、tmall或wap
                 'state'
             )
         ),
@@ -29,9 +29,11 @@ class TaoBao extends BaseOAuth {
                 '#client_secret',
                 '#code',
                 '#redirect_uri',
-                '#view',
-                'grant_type' => 'authorization_code'
-            )
+                'view' => 'web',   //web、tmall或wap
+                'grant_type' => 'authorization_code',
+                'state'
+            ),
+            'POST'
         )
     );
 
@@ -92,6 +94,8 @@ class TaoBao extends BaseOAuth {
      * @return array
      */
     public function getInfo() {
+        $this->identity = $this->get('taobao_user_id');
+        $this->username = $this->get('taobao_user_nick');
         return $this->get();
     }
 }

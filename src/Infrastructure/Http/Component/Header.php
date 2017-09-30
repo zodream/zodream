@@ -11,6 +11,7 @@ use Traversable;
 use IteratorAggregate;
 use ArrayIterator;
 use Zodream\Infrastructure\Base\ZObject;
+use Zodream\Infrastructure\Http\Request;
 
 class Header extends ZObject implements IteratorAggregate {
 
