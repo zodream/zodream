@@ -313,7 +313,7 @@ class Response {
                 $this->header->setContentType('application/force-download');
                 break;
         }
-        $this->header->setContentDisposition($file->getName());
+        $this->header->setContentDisposition($file->getName().'.'.$file->getExtension());
         $this->header->setAcceptRanges();
         $range = $this->getRange($length);
         //如果有$_SERVER['HTTP_RANGE']参数
