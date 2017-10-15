@@ -219,7 +219,8 @@ class Url {
      */
 	public static function getVirtualUri() {
 	    $path = Request::server('PATH_INFO');
-	    if (!is_null($path)) {
+	    if (!empty($path)) {
+	        // 在nginx 下虚拟路径无法获取
 	        return $path;
         }
         $script = static::getScript();

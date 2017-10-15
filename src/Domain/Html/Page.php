@@ -7,6 +7,8 @@ use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Interfaces\ArrayAble;
 use Zodream\Infrastructure\Interfaces\JsonAble;
 use Zodream\Helpers\JsonExpand;
+use  JsonSerializable;
+use ArrayIterator;
 
 class Page extends MagicObject implements JsonAble, ArrayAble {
 	private $_total = 0;
@@ -51,7 +53,7 @@ class Page extends MagicObject implements JsonAble, ArrayAble {
 	 * @return array
 	 */
 	public function getPage() {
-		return $this->_data;
+		return $this->getAttribute();
 	}
 
 	/**
@@ -63,7 +65,7 @@ class Page extends MagicObject implements JsonAble, ArrayAble {
 		if ($data instanceof Query) {
 			$data = $data->limit($this->getLimit())->all();
 		}
-		$this->_data = $data;
+		$this->setAttribute($data);
 		return $this;
 	}
 
@@ -72,7 +74,7 @@ class Page extends MagicObject implements JsonAble, ArrayAble {
 	 * @return int
 	 */
 	public function getPageCount() {
-		return count($this->_data);
+		return $this->count();
 	}
 
 	/**
@@ -82,6 +84,14 @@ class Page extends MagicObject implements JsonAble, ArrayAble {
 	public function getLimit() {
 		return max(($this->_index- 1) * $this->_pageSize, 0) . ','.$this->_pageSize;
 	}
+
+    /**
+     * 是否还有更多
+     * @return bool
+     */
+	public function hasMore() {
+	    return $this->_index * $this->_pageSize >= $this->_total;
+    }
 
 	/**
 	 * 获取分页链接
@@ -101,14 +111,22 @@ class Page extends MagicObject implements JsonAble, ArrayAble {
 		return $this->getLink();
 	}
 
-    /**
-     * Convert the object to its JSON representation.
-     *
-     * @param  int $options
-     * @return string
-     */
-    public function toJson($options = 0) {
-        return JsonExpand::encode($this->toArray());
+    public function jsonSerialize() {
+        return array_map(function ($value) {
+            if ($value instanceof JsonSerializable) {
+                return $value->jsonSerialize();
+            } elseif ($value instanceof JsonAble) {
+                return json_decode($value->toJson(), true);
+            } elseif ($value instanceof ArrayAble) {
+                return $value->toArray();
+            } else {
+                return $value;
+            }
+        }, $this->toArray());
+    }
+
+    public function getIterator() {
+        return new ArrayIterator($this->getAttribute());
     }
 
     /**
@@ -122,7 +140,7 @@ class Page extends MagicObject implements JsonAble, ArrayAble {
             'page' => $this->_index,
             'pageSize' => $this->_pageSize,
             'key' => $this->_key,
-            'pagelist' => $this->_data
+            'pagelist' => $this->getAttribute()
         ];
     }
 }
