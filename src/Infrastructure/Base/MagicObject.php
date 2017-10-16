@@ -19,7 +19,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
 	
 	use Attributes;
 
-	protected $__attributes = [];
+
 
     /**
      * 合并数组并返回新数组
