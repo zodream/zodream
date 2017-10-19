@@ -92,6 +92,10 @@ class Message extends MagicObject {
         return $this;
     }
 
+   /**
+     * 分离扫码关注事件
+     * @return string
+     */
     public function getEvent() {
         if (!$this->isEvent()) {
             return EventEnum::Message;
@@ -99,16 +103,24 @@ class Message extends MagicObject {
         // ADD SCAN SUBSCRIBE EVENT
         if ($this->event == EventEnum::Subscribe
             && strpos($this->eventKey, 'qrscene_') === 0) {
-            $this->eventKey = StringExpand::firstReplace($this->eventKey, 'qrscene_');
+            $this->eventKey = Str::firstReplace($this->eventKey, 'qrscene_');
             return EventEnum::ScanSubscribe;
         }
         return $this->event;
     }
 
+    /**
+     * 判断是否是事件推送
+     * @return bool
+     */
     public function isEvent() {
         return $this->msgType == 'event';
     }
 
+    /**
+     * 判断是否是消息推送
+     * @return bool
+     */
     public function isMessage() {
         return !$this->isEvent();
     }
@@ -117,17 +129,25 @@ class Message extends MagicObject {
         return $this->xml;
     }
 
+    /**
+     * 来源者
+     * @return string
+     */
     public function getFrom() {
         return $this->get('FromUserName');
     }
 
+    /**
+     * 接收方
+     * @return string
+     */
     public function getTo() {
         return $this->get('ToUserName');
     }
 
     protected function getData() {
         Factory::log()->info('WECHAT MESSAGE: '.$this->xml);
-        $data = (array)XmlExpand::decode($this->xml, false);
+        $data = (array)Xml::decode($this->xml, false);
         if ($this->encryptType != 'aes') {
             return $data;
         }
@@ -135,9 +155,23 @@ class Message extends MagicObject {
         $aes = new Aes($this->aesKey, $this->appId);
         $this->xml = $aes->decrypt($encryptStr);
         $this->appId = $aes->getAppId();
-        return (array)XmlExpand::decode($this->xml, false);
+        return (array)Xml::decode($this->xml, false);
     }
 
+    /**
+     * 当前操作是否是验证
+     * @return bool
+     */
+    public function isValid() {
+        return Request::get()->has('signature')
+            || Request::get()->has('msg_signature');
+    }
+
+    /**
+     * 验证
+     * @param string $str
+     * @return bool
+     */
     protected function checkSignature($str = '') {
         $signature = Request::get('signature');
         $signature = Request::get('msg_signature', $signature); //如果存在加密验证则用加密验证段
@@ -152,6 +186,9 @@ class Message extends MagicObject {
         return $tmpStr == $signature;
     }
 
+    /**
+     * 验证
+     */
     public function valid() {
         $echoStr = Request::get('echostr');
         if (!is_null($echoStr)) {
@@ -162,7 +199,7 @@ class Message extends MagicObject {
         }
         $encryptStr = '';
         if (Request::isPost()) {
-            $data = (array)XmlExpand::decode($this->xml, false);
+            $data = (array)Xml::decode($this->xml, false);
             if ($this->encryptType != 'aes') {
                 return $data;
             }
