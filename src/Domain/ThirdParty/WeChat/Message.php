@@ -163,8 +163,8 @@ class Message extends MagicObject {
      * @return bool
      */
     public function isValid() {
-        return Request::get()->has('signature')
-            || Request::get()->has('msg_signature');
+        return Request::get(true)->has('signature')
+            || Request::get(true)->has('msg_signature');
     }
 
     /**
