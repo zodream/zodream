@@ -56,7 +56,7 @@ final class Request {
 	 */
 	private static function getValue($key, $name = null, $default = null) {
 		$instance = self::_getInstance($key);
-		if (true === $name) {
+		if (is_null($name) || $name === true) {
 			return $instance;
 		}
 		return $instance->get($name, $default);
