@@ -391,6 +391,7 @@ class Response {
      * @return $this
      */
     public function redirect($url, $time = 0) {
+        $this->setStatusCode(302);
         $this->header->setRedirect($url, $time);
         return $this;
     }
