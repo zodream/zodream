@@ -179,7 +179,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
             } else {
                 return $value;
             }
-        }, $this->__attributes);
+        }, $this->toArray());
     }
 
     /**

@@ -16,15 +16,15 @@ class Error {
      * 启动 如果有 xdebug 就用 xdebug
      */
     public function bootstrap() {
-        if (Config::isDebug() && function_exists('xdebug_get_function_stack')) {
-            error_reporting(E_ALL);
-            return;
-        }
+       if (Config::isDebug() && function_exists('xdebug_get_function_stack')) {
+           error_reporting(E_ALL);
+           return;
+       }
         error_reporting(-1);
         set_error_handler([$this, 'handleError']);
         set_exception_handler([$this, 'handleException']);
         register_shutdown_function([$this, 'handleShutdown']);
-        if (! Config::isDebug()) {
+        if (!Config::isDebug()) {
             ini_set('display_errors', 'Off');
         }
     }
@@ -93,7 +93,11 @@ class Error {
      * @return void
      */
     public function handleShutdown() {
-        if (! is_null($error = error_get_last()) && $this->isFatal($error['type'])) {
+        $error = error_get_last();
+        if (is_null($error)) {
+            return;
+        }
+        if ($this->isFatal($error['type'])) {
             $this->handleException($this->fatalExceptionFromError($error, 0));
         }
     }
