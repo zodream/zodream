@@ -40,7 +40,7 @@ $configs = array(
         'timezone' => 'Etc/GMT-8'
     ],
 	'db'     => array(							//MYSQL数据库的信息
-		'driver'   => Zodream\Infrastructure\Database\Pdo::class,
+		'driver'   => Zodream\Database\Engine\Pdo::class,
 		'tyep'     => 'mysql',
 		'host'     => '127.0.0.1',                //服务器
 		'port'     => '3306',						//端口
@@ -83,7 +83,7 @@ $configs = array(
 		'csrf' => false,						//是否使用csrf防止表单注入攻击
         //http://www.ruanyifeng.com/blog/2016/09/csp.html
         'csp' => [                              // 网页安全政策 Content-Security-Policy
-            'default-src' => '\'self\'',             //script-src和object-src是必设的，除非设置了default-src。
+            //'default-src \'self\'',             //script-src和object-src是必设的，除非设置了default-src。
             /*'script-src' => '',        //unsafe-inline unsafe-eval nonce hash 必须放在单引号里面。
             'style-src' => '',
             'img-src' => '',
