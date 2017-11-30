@@ -9,7 +9,10 @@ use Zodream\Disk\File;
 use Zodream\Infrastructure\Base\Config as BaseConfig;
 use Zodream\Infrastructure\Traits\SingletonPattern;
 
-
+/**
+ * Class Config
+ * @package Zodream\Service
+ */
 class Config extends BaseConfig {
 	
 	use SingletonPattern;
