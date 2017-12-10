@@ -44,7 +44,7 @@ class Application {
             ->bindError();
         //Cookie::restore();
         EventManger::runEventAction('appRun');
-        return Factory::router()->getRoute($this->path)
+        return Factory::router()->dispatch(Request::method(), $this->path)
             ->run()
             ->send();
     }

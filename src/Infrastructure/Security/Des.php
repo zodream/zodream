@@ -65,7 +65,7 @@ class Des extends BaseSecurity {
         return $arg;
     }
 
-    protected function createIv() {
+    public function createIv() {
         $iv_size = mcrypt_get_iv_size($this->size, MCRYPT_MODE_ECB);
         return mcrypt_create_iv($iv_size, MCRYPT_RAND);
     }

@@ -18,7 +18,6 @@ use Zodream\Domain\View\ViewFactory;
 use Zodream\Infrastructure\Caching\Cache;
 use Zodream\Infrastructure\Caching\FileCache;
 use Zodream\Disk\Directory;
-use Zodream\Infrastructure\Error\Exception;
 use Zodream\Infrastructure\Exceptions\Handler;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Http\Input\Header;
@@ -27,7 +26,7 @@ use Zodream\Infrastructure\I18n\I18n;
 use Zodream\Infrastructure\I18n\PhpSource;
 use Zodream\Infrastructure\Interfaces\ExceptionHandler;
 use Zodream\Infrastructure\Session\Session;
-use Zodream\Service\Routing\Router;
+use Zodream\Route\Router;
 
 class Factory {
     
@@ -66,7 +65,7 @@ class Factory {
             return static::$_instance[$key] = call_user_func($class.'::getInstance');
         }
         if (!class_exists($class)) {
-            throw new \InvalidArgumentException($class.'CLASS IS NOT EXCITE!');
+            throw new \InvalidArgumentException($class.' CLASS IS NOT EXCITE!');
         }
         return static::$_instance[$key] = new $class;
     }
