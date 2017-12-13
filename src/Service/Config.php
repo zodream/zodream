@@ -35,7 +35,7 @@ class Config extends BaseConfig {
      * @return $this
      */
 	public function reset($args = array()) {
-	    $this->_data = $args;
+	    $this->__attributes = $args;
 	    $files = [__DIR__. '/config/config.php', 'config'];
 		if (defined('APP_MODULE')) {
 			$files[] = APP_MODULE;
@@ -60,7 +60,7 @@ class Config extends BaseConfig {
 		if (!$this->has($method) || !isset($this->_data[$method][$value[0]])) {
 			return null;
 		}
-		return $this->_data[$method][$value[0]];
+		return $this->__attributes[$method][$value[0]];
 	}
 
 	public function __call($method, $value) {

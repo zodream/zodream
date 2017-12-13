@@ -28,6 +28,8 @@ use Zodream\Infrastructure\Interfaces\ExceptionHandler;
 use Zodream\Infrastructure\Session\Session;
 use Zodream\Route\Router;
 
+defined('APP_DIR') || define('APP_DIR', Request::server('DOCUMENT_ROOT'));
+
 class Factory {
     
     private static $_instance = [];

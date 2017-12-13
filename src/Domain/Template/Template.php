@@ -57,29 +57,102 @@ class Template extends BaseTemplate {
 
 	protected $endTag = '}';
 
+    protected $salePattern = '/\<\?(.|\r\n|\s)*\?\>/U';
+
+    protected $blockTag = false; // 代码块开始符
+
 	public function setTag($begin, $end) {
 		$this->beginTag = $begin;
 		$this->endTag = $end;
 	}
 
-	public function make($content) {
-
+	public function render($content) {
+        if (empty($content)) {
+            return $content;
+        }
+        $content = preg_replace($this->salePattern, '', $content);
+        return $this->renderContent($this->parse($content));
 	}
 
-	protected function replace($content) {
-		return preg_replace_callback(
-			'/'.$this->beginTag.'\s*([\s\S]+?)\s*'.$this->endTag.'/',
-			array($this, 'replaceCallback'), $content);
-	}
+    public function parse($content) {
+        $pattern = sprintf('/%s\s*(.+?)\s*%s(\r?\n)?/s', $this->beginTag, $this->endTag);
+        return preg_replace_callback($pattern, [$this, 'replaceCallback'], $content);
+    }
 
 	protected function replaceCallback($match) {
 		$content = $match[1];
+        if ($content == '/>' && $this->blockTag !== false) {
+            return $this->parseEndBlock();
+        }
+		if (empty($content) || $this->blockTag !== false) {
+		    return $match[0];
+        }
+		if ($this->isBlock($content)) {
+		    return $this->parseBlock($content);
+        }
 	}
 
-	public function makeFile($file) {
+	protected function parseEndBlock() {
+	    list($tag, $this->blockTag) = [$this->blockTag, false];
+	    if ($tag == 'php' || $tag === '') {
+	        return '?>';
+        }
+        if ($tag == 'js') {
+            return '</script>';
+        }
+        if ($tag == 'css') {
+            return '</style>';
+        }
+    }
+
+	protected function parseBlock($content) {
+        if ($content == '/>') {
+            return $this->parseEndBlock();
+        }
+        if ($this->blockTag == '') {
+            return '<?php'.PHP_EOL;
+        }
+        if ($this->blockTag == 'js') {
+            return '<script>';
+        }
+        if ($this->blockTag == 'css') {
+            return '<style>';
+        }
+    }
+
+	protected function isBlock($content) {
+	    if ($content == '/>') {
+	        return true;
+        }
+	    $first = substr($content, 0, 1);
+	    if ($first != '>') {
+	        return false;
+        }
+        if (substr($content, 1, 1) === ' ') {
+	        return false;
+        }
+        $this->blockTag = substr($content, 1);
+	    return true;
+    }
+
+	public function renderFile($file) {
 		if (!is_file($file)) {
 			return false;
 		}
-		return $this->make(file_get_contents($file));
+		return $this->render(file_get_contents($file));
 	}
+
+    protected function renderContent($content) {
+        $obLevel = ob_get_level();
+        ob_start();
+        extract($this->get(), EXTR_SKIP);
+        try {
+            eval('?>'.$content);
+        } catch (\Exception $e) {
+            $this->handleViewException($e, $obLevel);
+        } catch (\Throwable $e) {
+            $this->handleViewException(new \Exception($e), $obLevel);
+        }
+        return ltrim(ob_get_clean());
+    }
 }

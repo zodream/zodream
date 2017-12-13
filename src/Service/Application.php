@@ -12,11 +12,6 @@ use Zodream\Infrastructure\Http\Request;
 use Zodream\Service\Routing\Url;
 
 defined('VERSION') || define('VERSION', 'v3');
-defined('APP_DIR') || define('APP_DIR', Request::server('DOCUMENT_ROOT'));
-defined('APP_CONTROLLER') || define('APP_CONTROLLER', Config::app('controller'));
-defined('APP_ACTION') || define('APP_ACTION', Config::app('action'));
-defined('APP_MODEL') || define('APP_MODEL', Config::app('model'));
-defined('APP_MODULE') || define('APP_MODULE', 'Default');
 defined('DEBUG') || define('DEBUG', false);
 
 class Application {
