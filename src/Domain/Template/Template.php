@@ -61,6 +61,8 @@ class Template extends BaseTemplate {
 
     protected $blockTag = false; // 代码块开始符
 
+    protected $blockTags = [];
+
 	public function setTag($begin, $end) {
 		$this->beginTag = $begin;
 		$this->endTag = $end;
@@ -87,10 +89,144 @@ class Template extends BaseTemplate {
 		if (empty($content) || $this->blockTag !== false) {
 		    return $match[0];
         }
-		if ($this->isBlock($content)) {
-		    return $this->parseBlock($content);
+        if (false !== ($line = $this->parseTag($content))) {
+            return $line;
         }
+		if (false !== ($line = $this->parseFirstTag($content))) {
+            return $line;
+        }
+        if (strpos($content, ':') > 0 && false !== ($line = $this->parseBlockTag($content))) {
+            return $line;
+        }
+
+        return $match[0];
 	}
+
+	protected function parseBlockTag($content) {
+	    list($tag, $content) = explode(':', $content, 2);
+	    if ($tag == 'for') {
+	        return $this->parseFor($content);
+        }
+        if ($tag == 'switch') {
+	        return $this->parseSwitch($content);
+        }
+        if ($tag == 'case') {
+            sprintf('<?php case %s:?>', $content);
+        }
+        if ($tag == 'extend') {
+	        return '';
+        }
+        if ($tag == 'if') {
+            return $this->parseIf($content);
+        }
+        if ($tag == 'elseif' || $tag == 'else if') {
+	        return sprintf('<?php elseif(%s):?>', $content);
+        }
+        return false;
+    }
+
+    protected function parseIf($content) {
+        $args = explode(',', $content);
+        $length = count($args);
+        if ($length == 1) {
+            return '<?php if('.$content.'):?>';
+        }
+        if ($length == 2) {
+            return sprintf('<?php if (%s){ echo %s; }?>', $args[0], $args[1]);
+        }
+        return sprintf('<?php if (%s){ echo %s; } else { echo %s;}?>',
+            $args[0], $args[1], $args[2]);
+    }
+
+    protected function parseSwitch($content) {
+        $args = explode(',', $content);
+        if (count($args) == 1) {
+            return sprintf('<?php switch(%s):?>', $content);
+        }
+        return sprintf('<?php switch(%s): case %s:?>', $args[0], $args[1]);
+    }
+
+    protected function parseFor($content) {
+	    $args = explode(',', $content);
+	    $length = count($args);
+	    if ($length == 1) {
+	        return '<?php while('.$content.'):?>';
+        }
+        if ($length == 2) {
+	        return sprintf('<?php foreach(%s as %s):?>', $args[0], $args[1]);
+        }
+        $tag = substr(trim($args[2]), 0, 1);
+
+        if (!in_array($tag, ['<', '>', '='])) {
+            return sprintf('<?php $i = 0; foreach(%s as %s): $i ++; if ($i > %s): break; endif;?>',
+                $args[0],
+                $args[1],
+                $args[2]);
+        }
+        list($key, $item) = $this->getForItem($args[1]);
+        return sprintf('<?php foreach(%s as %s=>%s): if (!(%s %s)): break; endif;?>',
+            $args[0], $key, $item, $key,  $args[2]);
+    }
+
+    protected function getForItem($content) {
+	    $key = '$key';
+	    $item = $content;
+	    if (strpos($content, '=>') !== false) {
+	        list($key, $item) = explode('=>', $content);
+        } elseif (strpos($content, ' ') !== false) {
+	        list($key, $item) = explode(' ', $content);
+        }
+        if (empty($key)) {
+	        $key = '$key';
+        }
+        if (empty($item)) {
+	        $item = '$item';
+        }
+        return [$key, $item];
+    }
+
+	protected function parseTag($content) {
+	    if ($content == 'else' || $content == '+') {
+	        return '<?php else: ?>';
+        }
+        if ($content == '-') {
+	        return '<?php endif; ?>';
+        }
+        return false;
+    }
+
+	protected function parseFirstTag($content) {
+	    $first = substr($content, 0, 1);
+	    if ($first == '>') {
+	        return $this->parseBlock(substr($content, 1));
+        }
+        if ($first == '/') {
+	        return $this->parseEndTag(substr($content, 1));
+        }
+        if ($first == '|') {
+	        return '<?php if ('.substr($content, 1).'):?>';
+        }
+        if ($first == '+') {
+	        return '<?php elseif ('.substr($content, 1).'):?>';
+        }
+        if ($first == '~') {
+	        return '<?php for('.substr($content, 1).'):?>';
+        }
+        return false;
+    }
+
+	protected function parseEndTag($content) {
+	    if ($content == '|' || $content == 'if') {
+	        return '<?php endif;?>';
+        }
+        if ($content == '~' || $content == 'for') {
+	        return '<?php endfor;?>';
+        }
+        if ($content == '*' || $content == 'switch') {
+	        return '<?php endswitch ?>';
+        }
+        return false;
+    }
 
 	protected function parseEndBlock() {
 	    list($tag, $this->blockTag) = [$this->blockTag, false];
@@ -106,33 +242,19 @@ class Template extends BaseTemplate {
     }
 
 	protected function parseBlock($content) {
-        if ($content == '/>') {
-            return $this->parseEndBlock();
+        if ($content == '' || $content == 'php') {
+            $this->blockTag = 'php';
+            return '<?php ';
         }
-        if ($this->blockTag == '') {
-            return '<?php'.PHP_EOL;
-        }
-        if ($this->blockTag == 'js') {
+        if ($content == 'js') {
+            $this->blockTag = 'js';
             return '<script>';
         }
-        if ($this->blockTag == 'css') {
+        if ($content == 'css') {
+            $this->blockTag = 'css';
             return '<style>';
         }
-    }
-
-	protected function isBlock($content) {
-	    if ($content == '/>') {
-	        return true;
-        }
-	    $first = substr($content, 0, 1);
-	    if ($first != '>') {
-	        return false;
-        }
-        if (substr($content, 1, 1) === ' ') {
-	        return false;
-        }
-        $this->blockTag = substr($content, 1);
-	    return true;
+        return sprintf('<?php %s; ?>', $content);
     }
 
 	public function renderFile($file) {
