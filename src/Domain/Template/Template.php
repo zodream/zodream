@@ -1,5 +1,7 @@
 <?php
 namespace Zodream\Domain\Template;
+use function GuzzleHttp\Psr7\str;
+use Zodream\Helpers\Str;
 
 /**
 {>}         <?php
@@ -61,7 +63,9 @@ class Template extends BaseTemplate {
 
     protected $blockTag = false; // 代码块开始符
 
-    protected $blockTags = [];
+    protected $forTags = [];
+
+    protected $allowFilters = true;
 
 	public function setTag($begin, $end) {
 		$this->beginTag = $begin;
@@ -89,6 +93,9 @@ class Template extends BaseTemplate {
 		if (empty($content) || $this->blockTag !== false) {
 		    return $match[0];
         }
+        if (false !== ($line = $this->parseNote($content))) {
+            return $line;
+        }
         if (false !== ($line = $this->parseTag($content))) {
             return $line;
         }
@@ -98,9 +105,124 @@ class Template extends BaseTemplate {
         if (strpos($content, ':') > 0 && false !== ($line = $this->parseBlockTag($content))) {
             return $line;
         }
-
+        if (false !== ($line = $this->parseLambda($content))) {
+            return $line;
+        }
+        if (false !== ($line = $this->parseAssign($content))) {
+            return $line;
+        }
+        if ($this->hasOrderTag($content, ['$', '='])) {
+            return '<?php '.$content.';?>';
+        }
+        if ($this->hasOrderTag($content, ['$', ',', '$']) > 0) {
+            $args = explode(',', $content, 2);
+            return sprintf('<?php echo isset(%s) ? %s : %s; ?>', $args[0], $args[1]);
+        }
+        if (preg_match('/^\$[_\w\.\[\]\|\$]+$/i', $content)) {
+            return sprintf('<?php echo %s;?>', $this->parseVal($content));
+        }
         return $match[0];
 	}
+
+
+	protected function parseVal($val) {
+        if (strrpos($val, '|') !== false) {
+            $filters = explode('|', $val);
+            $val = array_shift($filters);
+        }
+        if (empty($val)) {
+            return '';
+        }
+        if (strpos($val, '.$') !== false) {
+            $all = explode('.$', $val);
+            foreach ($all AS $key => $val) {
+                $all[$key] = $key == 0 ? $this->makeVar($val)
+                    : '[$'. $this->makeVar($val) . ']';
+            }
+            $p = implode('', $all);
+        } else {
+            $p = $this->makeVar($val);
+        }
+        if (empty($filters)) {
+            return $p;
+        }
+        foreach ($filters as $filter) {
+            list($tag, $vals) = Str::explode($filter, ':', 2);
+            if ($this->allowFilters !== true &&
+                !in_array($tag, (array)$this->allowFilters)) {
+                continue;
+            }
+            $p = sprintf('%s(%s%s)', $tag, $p, empty($vals) ? '' : (','.$vals));
+        }
+        return $p;
+    }
+
+    protected function makeVar($val) {
+	    if (strrpos($val, '.') === false) {
+	        return $val;
+        }
+        $t = explode('.', $val);
+        $p = array_shift($t);
+        foreach ($t AS $val) {
+            $p .= '[\'' . $val . '\']';
+        }
+        return $p;
+    }
+
+    /**
+     * 是否包含指定顺序的字符
+     * @param $content
+     * @param $search
+     * @return bool
+     */
+	protected function hasOrderTag($content, $search) {
+	    $last = -1;
+	    foreach ((array)$search as $tag) {
+	        $index = strpos($content, $tag,
+                $last < 0 ? 0 : $last);
+	        if ($index === false) {
+	            return false;
+            }
+            if ($index <= $last) {
+	            return false;
+            }
+            $last = $index;
+        }
+        return true;
+    }
+
+    /**
+     * 注释
+     * @param $content
+     * @return bool|string
+     */
+	protected function parseNote($content) {
+	    if (($content{0} == '*'
+            && substr($content, -1) == '*') ||
+            (substr($content, 0, 2) == '//'
+                && substr($content, -2, 2) == '//')) {
+	        return '';
+        }
+        return false;
+    }
+
+	protected function parseAssign($content) {
+        $eqI = strpos($content, '=');
+        $dI = strpos($content, ',');
+	    if ($eqI === false || $dI === false || $dI >= $eqI) {
+	        return false;
+        }
+        $args = explode('=', $content, 2);
+        return sprintf('<?php list(%s) = %s; ?>', $args[0], $args[1]);
+    }
+
+	protected function parseLambda($content) {
+	    if (preg_match('/(.+)=(.+)\?((.*):)?(.+)/', $content, $match)) {
+	        return sprintf('<?php %s = %s ? %s : %s; ?>',
+                $match[1], $match[2], $match[4] ?: $match[2] , $match[5]);
+        }
+        return false;
+    }
 
 	protected function parseBlockTag($content) {
 	    list($tag, $content) = explode(':', $content, 2);
@@ -147,25 +269,73 @@ class Template extends BaseTemplate {
     }
 
     protected function parseFor($content) {
-	    $args = explode(',', $content);
+	    $args = strpos($content, ';') !== false ?
+            explode(';', $content) :
+            explode(',', $content);
 	    $length = count($args);
 	    if ($length == 1) {
+	        $this->forTags[] = 'while';
 	        return '<?php while('.$content.'):?>';
         }
         if ($length == 2) {
-	        return sprintf('<?php foreach(%s as %s):?>', $args[0], $args[1]);
+            $this->forTags[] = 'foreach';
+	        return sprintf('<?php if (!empty(%s) && is_array(%s)): foreach(%s as %s):?>',
+                $args[0],
+                $args[0],
+                $args[0], $args[1] ?: '$item');
         }
         $tag = substr(trim($args[2]), 0, 1);
-
-        if (!in_array($tag, ['<', '>', '='])) {
-            return sprintf('<?php $i = 0; foreach(%s as %s): $i ++; if ($i > %s): break; endif;?>',
+        if (in_array($tag, ['<', '>', '='])) {
+            list($key, $item) = $this->getForItem($args[1]);
+            $this->forTags[] = 'foreach';
+            return sprintf('<?php if (!empty(%s) && is_array(%s)): foreach(%s as %s=>%s): if (!(%s %s)): break; endif;?>',
+                $args[0],
+                $args[0],
+                $args[0], $key, $item, $key,  $args[2]);
+        }
+        if ($this->isForTag($args)) {
+            $this->forTags[] = 'for';
+            return sprintf('<?php for(%s; %s; %s): ?>',
                 $args[0],
                 $args[1],
                 $args[2]);
         }
-        list($key, $item) = $this->getForItem($args[1]);
-        return sprintf('<?php foreach(%s as %s=>%s): if (!(%s %s)): break; endif;?>',
-            $args[0], $key, $item, $key,  $args[2]);
+
+        $this->forTags[] = 'foreach';
+        return sprintf('<?php if (!empty(%s) && is_array(%s)):  $i = 0; foreach(%s as %s): $i ++; if ($i > %s): break; endif;?>',
+            $args[0],
+            $args[0],
+            $args[0],
+            $args[1]  ?: '$item',
+            $args[2]);
+    }
+
+    protected function isForTag($args) {
+	    return $this->isJudge($args[1]) && $this->hasTag($args[2], ['+', '-', '*', '/', '%']);
+    }
+
+    /**
+     * 是否是判断语句
+     * @param $str
+     * @return bool
+     */
+    protected function isJudge($str) {
+	    return $this->hasTag($str, ['<', '>', '==']);
+    }
+
+    /**
+     * 是否包含字符
+     * @param $str
+     * @param $search
+     * @return bool
+     */
+    protected function hasTag($str, $search) {
+	    foreach ((array)$search as $tag) {
+	        if (strpos($str, $tag) !== false) {
+	            return true;
+            }
+        }
+        return false;
     }
 
     protected function getForItem($content) {
@@ -188,6 +358,10 @@ class Template extends BaseTemplate {
 	protected function parseTag($content) {
 	    if ($content == 'else' || $content == '+') {
 	        return '<?php else: ?>';
+        }
+        if ($content == 'forelse' && end($this->forTags) == 'foreach') {
+	        $this->forTags[count($this->forTags) - 1] = 'if';
+	        return '<?php endforeach; else: ?>';
         }
         if ($content == '-') {
 	        return '<?php endif; ?>';
@@ -220,12 +394,20 @@ class Template extends BaseTemplate {
 	        return '<?php endif;?>';
         }
         if ($content == '~' || $content == 'for') {
-	        return '<?php endfor;?>';
+	        return $this->parseEndForTag();
         }
         if ($content == '*' || $content == 'switch') {
 	        return '<?php endswitch ?>';
         }
         return false;
+    }
+
+    protected function parseEndForTag() {
+	    if (count($this->forTags) == 0) {
+	        return false;
+        }
+        $tag = array_pop($this->forTags);
+        return '<?php end'.$tag.';?>';
     }
 
 	protected function parseEndBlock() {
