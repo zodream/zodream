@@ -1,10 +1,11 @@
 <?php
 namespace Zodream\Domain\Spider;
 
-use Zodream\Infrastructure\Database\Query\Record;
+use Zodream\Helpers\Html as HtmlExpand;
+use Zodream\Database\Query\Record;
 use Zodream\Disk\File;
 use Zodream\Helpers\JsonExpand;
-use Zodream\Infrastructure\Support\Curl;
+use Zodream\Http\Http;
 
 class Spider {
 
@@ -18,7 +19,7 @@ class Spider {
     }
 
     public static function loadUrl($url) {
-        return new static((new Curl($url))->get());
+        return new static((new Http($url))->get());
     }
 
     public function __construct($data = null) {
@@ -58,6 +59,24 @@ class Spider {
         return $this;
     }
 
+    public function match($pattern, $callback = null) {
+        if (!empty($callback) && is_callable($callback)) {
+            $this->data = preg_replace_callback($pattern, $this->data, $callback);
+            return $this;
+        }
+        if (preg_match($pattern, $this->data, $match)) {
+            return $match;
+        }
+        return [];
+    }
+
+    public function matches($pattern) {
+        if (preg_match_all($pattern, $this->data, $matches, PREG_SET_ORDER)) {
+            return $matches;
+        }
+        return [];
+    }
+
     public function toJson() {
         if (is_string($this->data)) {
             $this->data = JsonExpand::decode($this->data);
@@ -66,7 +85,13 @@ class Spider {
     }
 
     public function toXml() {
-        return XmlExpand::decode($this->data);
+        $this->data = XmlExpand::decode($this->data);
+        return $this->data;
+    }
+
+    public function toText() {
+        $this->data = HtmlExpand::toText($this->data);
+        return $this;
     }
 
     public function saveFile($file) {

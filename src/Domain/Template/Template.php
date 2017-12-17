@@ -1,7 +1,10 @@
 <?php
 namespace Zodream\Domain\Template;
 use function GuzzleHttp\Psr7\str;
+use Zodream\Disk\File;
 use Zodream\Helpers\Str;
+use Zodream\Infrastructure\Support\Html;
+use Zodream\Service\Factory;
 
 /**
 {>}         <?php
@@ -80,6 +83,10 @@ class Template extends BaseTemplate {
         return $this->renderContent($this->parse($content));
 	}
 
+	public function parseFile(File $file) {
+	    return $this->parse($file->read());
+    }
+
     public function parse($content) {
         $pattern = sprintf('/%s\s*(.+?)\s*%s(\r?\n)?/s', $this->beginTag, $this->endTag);
         return preg_replace_callback($pattern, [$this, 'replaceCallback'], $content);
@@ -92,6 +99,9 @@ class Template extends BaseTemplate {
         }
 		if (empty($content) || $this->blockTag !== false) {
 		    return $match[0];
+        }
+        if (false !== ($line = $this->parseInclude($content))) {
+            return $line;
         }
         if (false !== ($line = $this->parseNote($content))) {
             return $line;
@@ -123,6 +133,37 @@ class Template extends BaseTemplate {
         }
         return $match[0];
 	}
+
+	protected function parseInclude($content) {
+	    if (!preg_match('/^(link|script|js|css|php|tpl)\s+(src|href|file)=[\'"]?([^"\']+)[\'"]?/i', $content, $match)) {
+	        return false;
+        }
+        $match[1] = strtolower($match[1]);
+        $files = explode(',', $match[3]);
+        $content = '';
+        foreach ($files as $file) {
+            if ($match[1] == 'link' || $match[1] == 'css') {
+                $content .= Html::link($file);
+                continue;
+            }
+            if ($match[1] == 'js' || $match[1] == 'script') {
+                $content .= Html::script([
+                    'src' => $file
+                ]);
+                continue;
+            }
+            if ($match[1] == 'php') {
+                $content .= sprintf('<?php include \'%s\';?>', $file);
+                continue;
+            }
+            if ($match[1] == 'tpl') {
+                $content .= sprintf('<?php include \'%s\';?>', $file);
+                continue;
+            }
+            return false;
+        }
+        return $content;
+    }
 
 
 	protected function parseVal($val) {
@@ -439,11 +480,11 @@ class Template extends BaseTemplate {
         return sprintf('<?php %s; ?>', $content);
     }
 
-	public function renderFile($file) {
-		if (!is_file($file)) {
+	public function renderFile(File $file) {
+		if (!$file->exist()) {
 			return false;
 		}
-		return $this->render(file_get_contents($file));
+		return $this->render($file->read());
 	}
 
     protected function renderContent($content) {
