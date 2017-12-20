@@ -14,7 +14,7 @@ use Psr\Log\LoggerInterface;
 use Zodream\Domain\Access\Auth;
 use Zodream\Domain\Debug\Timer;
 use Zodream\Database\Model\UserModel;
-use Zodream\Domain\View\ViewFactory;
+use Zodream\Template\ViewFactory;
 use Zodream\Infrastructure\Caching\Cache;
 use Zodream\Infrastructure\Caching\FileCache;
 use Zodream\Disk\Directory;
