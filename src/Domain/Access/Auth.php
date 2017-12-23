@@ -147,7 +147,6 @@ class Auth implements AuthObject {
 
     /**
      * 登出
-     * @throws AuthenticationException
      */
     public static function logout() {
         if (empty(static::user())) {

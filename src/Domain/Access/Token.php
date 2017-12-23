@@ -6,11 +6,10 @@ namespace Zodream\Domain\Access;
  * @author Jason
  */
 use Zodream\Infrastructure\Http\Request;
-use Zodream\Infrastructure\Interfaces\AuthObject;
 use Zodream\Infrastructure\Interfaces\UserObject;
 use Zodream\Service\Config;
 
-class Token extends Auth implements AuthObject {
+class Token extends Auth {
 
     /**
      * 获取用户

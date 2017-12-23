@@ -15,6 +15,7 @@ use Zodream\Infrastructure\Http\Input\Server;
 use Zodream\Infrastructure\Http\Input\Argv;
 use Zodream\Helpers\Str;
 use Zodream\Service\Config;
+use Zodream\Service\Routing\Url;
 
 defined('APP_SAFE') || define('APP_SAFE', Config::app('safe', true));
 
@@ -190,6 +191,22 @@ final class Request {
      */
     public static function decodedPath() {
         return rawurldecode(static::path());
+    }
+
+    /**
+     * 去除查询参数的路径
+     * @return string
+     */
+    public static function url() {
+        return rtrim(preg_replace('/\?.*/', '', static::fullUrl()), '/');
+    }
+
+    /**
+     * 完整的路径
+     * @return string
+     */
+    public static function fullUrl() {
+        return Url::getCurrentUri();
     }
 
     /**
