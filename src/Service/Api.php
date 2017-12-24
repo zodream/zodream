@@ -9,6 +9,7 @@ namespace Zodream\Service;
 use Zodream\Service\Routing\Url;
 
 defined('API_VERSION') || define('API_VERSION', 'v1');
+
 class Api extends Web {
     public function setPath($path) {
         if (is_null($path)) {

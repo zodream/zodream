@@ -4,6 +4,7 @@ namespace Zodream\Service\Routing;
 /**
  * url生成
  */
+use Zodream\Helpers\Str;
 use Zodream\Http\Uri;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Service\Config;
@@ -224,6 +225,9 @@ class Url {
 	        return $path;
         }
         $script = static::getScript();
+	    if (strpos($script, '.php') > 0) {
+	        $script = preg_replace('#/[^/]+\.php$#i', '', $script);
+        }
         $path = static::getUriWithoutParam();
         if (strpos($path, $script) === 0) {
             return substr($path, strlen($script));

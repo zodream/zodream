@@ -248,6 +248,10 @@ final class Request {
 		return self::Other(__FUNCTION__);
 	}
 
+	public static function isJson() {
+        return static::header('CONTENT_TYPE') == 'application/json';
+    }
+
 	public static function isWeChat() {
         return strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false;
     }
