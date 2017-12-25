@@ -30,7 +30,7 @@ trait JsonResponseTrait {
      */
     public function jsonSuccess($data = null, $message = null) {
         if (!is_array($message)) {
-            $message = ['message' => $message];
+            $message = ['messages' => $message];
         }
         if ($data instanceof ArrayAble) {
             $data = $data->toArray();
@@ -49,17 +49,10 @@ trait JsonResponseTrait {
      * @return Response
      */
     public function jsonFailure($message = '', $code = 400) {
-        if (is_array($message)) {
-            return $this->json(array(
-                'code' => $code,
-                'status' => 'failure',
-                'errors' => $message
-            ));
-        }
         return $this->json(array(
             'code' => $code,
             'status' => 'failure',
-            'message' => $message
-        ));
+            'errors' => $message
+        ), $code);
     }
 }
