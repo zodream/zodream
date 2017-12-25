@@ -18,7 +18,11 @@ nbf(not before)：token在此时间之前不能被接收处理
 jti：JWT ID为web token提供唯一标识
  * @package Zodream\Domain\Access
  */
-class JWTAuth extends Auth {
+class JWTAuth extends Token {
+
+    protected static $payload = [];
+
+    protected static $token;
 
     protected static function getConfigs() {
         return Factory::config('auth', [
@@ -30,30 +34,75 @@ class JWTAuth extends Auth {
     }
 
     /**
+     * @param mixed $token
+     */
+    public static function setToken($token) {
+        static::$token = $token;
+    }
+
+    /**
+     * @return mixed
+     */
+    public static function getToken() {
+        if (empty(static::$token)) {
+            static::$token = static::getTokenForRequest();
+        }
+        return static::$token;
+    }
+
+
+    /**
+     * @param mixed $payload
+     */
+    public static function setPayload(array $payload) {
+        static::$payload = $payload;
+    }
+
+    /**
+     * @param null $key
+     * @param null $default
+     * @return mixed
+     */
+    public static function getPayload($key = null, $default = null) {
+        if (empty(static::$payload)) {
+            $configs = static::getConfigs();
+            static::setPayload(JWT::decode(static::getToken(),
+                isset($configs['publicKey']) ? $configs['publicKey']
+                : $configs['key'], [$configs['alg']]));
+        }
+        if (empty($key)) {
+            return static::$payload;
+        }
+        if (array_key_exists($key, (array)static::$payload)) {
+            return static::$payload[$key];
+        }
+        return $default;
+    }
+
+
+
+    /**
      * 获取用户
-     * @return UserObject
+     * @return UserObject|null
      */
     protected static function getUser() {
         $userClass = Config::auth('model');
         if (empty($userClass)) {
             return null;
         }
-        $token = static::getTokenForRequest();
+        $token = static::getToken();
         if (empty($token)) {
             return null;
         }
-        $configs = static::getConfigs();
-        $payload = JWT::decode($token, isset($configs['publicKey']) ? $configs['publicKey']
-            : $configs['key'], [$configs['alg']]);
-        if (!Factory::cache()->has($payload['jti'])) {
+        if (!Factory::cache()->has(static::getPayload('jti'))) {
             return null;
         }
         $time = time();
-        if ($time < $payload['nbf'] ||
-            (isset($payload['exp']) && $time > $payload['exp'])) {
+        if ($time < static::$payload['nbf'] ||
+            (isset(static::$payload['exp']) && $time > static::$payload['exp'])) {
             return null;
         }
-        return call_user_func($userClass.'::findByIdentity', $payload['sub']);
+        return call_user_func($userClass.'::findByIdentity', static::$payload['sub']);
     }
 
     /**
@@ -61,7 +110,7 @@ class JWTAuth extends Auth {
      * @param UserModel $user
      * @return string
      */
-    public static function getToken(UserModel $user) {
+    public static function createToken(UserModel $user) {
         $configs = static::getConfigs();
         $time = time();
         $payload = [
@@ -77,6 +126,11 @@ class JWTAuth extends Auth {
         Factory::cache()->set($payload['jti'], $payload, $configs['refreshTTL']);
         return JWT::encode($payload, isset($configs['privateKey']) ? $configs['privateKey']
             : $configs['key'], $configs['alg']);
+    }
+
+    public static function logout() {
+        Factory::cache()->delete(static::getPayload('jti'));
+        return parent::logout();
     }
 
 }
