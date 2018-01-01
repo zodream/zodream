@@ -229,7 +229,7 @@ class Url {
 	        $script = preg_replace('#/[^/]+\.php$#i', '', $script);
         }
         $path = static::getUriWithoutParam();
-        if (strpos($path, $script) === 0) {
+        if (!empty($script) && strpos($path, $script) === 0) {
             return substr($path, strlen($script));
         }
         return $path;

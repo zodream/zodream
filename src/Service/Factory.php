@@ -20,7 +20,7 @@ use Zodream\Infrastructure\Caching\FileCache;
 use Zodream\Disk\Directory;
 use Zodream\Infrastructure\Exceptions\Handler;
 use Zodream\Infrastructure\Http\Request;
-use Zodream\Infrastructure\Http\Input\Header;
+use Zodream\Http\Header;
 use Zodream\Infrastructure\Http\Response;
 use Zodream\Infrastructure\I18n\I18n;
 use Zodream\Infrastructure\I18n\PhpSource;
@@ -77,6 +77,7 @@ class Factory {
      * @param null $key
      * @param null $default
      * @return Session|mixed
+     * @throws \Exception
      */
     public static function session($key = null, $default = null) {
         /** @var Session $session */
@@ -94,6 +95,7 @@ class Factory {
     /**
      * DO YO WANT TO CACHE MODEL? HERE!
      * @return Cache|mixed
+     * @throws \Exception
      */
     public static function cache() {
         /** @var Cache $cache */
@@ -135,6 +137,7 @@ class Factory {
      * @param array $param
      * @param null $name
      * @return I18n|string
+     * @throws \Exception
      */
     public static function i18n($message = null, $param = [], $name = null) {
         /** @var I18n $i18n */
@@ -146,16 +149,17 @@ class Factory {
     }
 
     /**
-     * O! IF YOU NEED ROUTE, HERE. 
+     * O! IF YOU NEED ROUTE, HERE.
      *          IT GO TO DO SOME THING LIKE GO TO CONTROLLER
      * @return Router
+     * @throws \Exception
      */
     public static function router() {
         return self::getInstance('router', Router::class);
     }
 
     /**
-     * I WANT TO SEND HEADERS WHEN REQUEST FINISH! 
+     * I WANT TO SEND HEADERS WHEN REQUEST FINISH!
      *      BUT NOW IT'S NOT FINISH!
      *          WOW! PLEASE WAIT A LITTLE TIME.
      * @return Header
@@ -166,6 +170,7 @@ class Factory {
 
     /**
      * @return Response
+     * @throws \Exception
      */
     public static function response() {
         return self::getInstance('response', Response::class);
@@ -182,6 +187,7 @@ class Factory {
     /**
      * IT IS MAKE VIEW OR HTML FROM ANT FILES,
      * @return ViewFactory
+     * @throws \Exception
      */
     public static function view() {
         return self::getInstance('viewFactory', ViewFactory::class);
@@ -190,6 +196,7 @@ class Factory {
     /**
      * TIMER , LOG ALL TIME
      * @return Timer
+     * @throws \Exception
      */
     public static function timer() {
         return self::getInstance('timer', Timer::class);
@@ -197,6 +204,7 @@ class Factory {
 
     /**
      * @return ExceptionHandler
+     * @throws \Exception
      */
     public static function handler() {
         return self::getInstance('exception', Handler::class);
