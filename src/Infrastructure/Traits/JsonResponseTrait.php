@@ -1,6 +1,7 @@
 <?php
 namespace Zodream\Infrastructure\Traits;
 
+use Zodream\Infrastructure\Http\Response;
 use Zodream\Infrastructure\Interfaces\ArrayAble;
 use Zodream\Service\Factory;
 
@@ -11,6 +12,7 @@ trait JsonResponseTrait {
      * @param $data
      * @param string $type
      * @return Response
+     * @throws \Exception
      */
     public function json($data, $type = 'json') {
         switch (strtolower($type)) {
