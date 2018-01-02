@@ -163,6 +163,7 @@ class Factory {
      *      BUT NOW IT'S NOT FINISH!
      *          WOW! PLEASE WAIT A LITTLE TIME.
      * @return Header
+     * @throws \Exception
      */
     public static function header() {
         return static::response()->header;
@@ -214,10 +215,24 @@ class Factory {
      * @return Directory
      */
     public static function root() {
-        if (!array_key_exists('root', static::$_instance)) {
-            static::$_instance['root'] = new Directory(defined('APP_DIR') ? APP_DIR : Request::server('DOCUMENT_ROOT'));
+        if (!array_key_exists(__FUNCTION__, static::$_instance)) {
+            static::$_instance[__FUNCTION__] = new Directory(defined('APP_DIR') ? APP_DIR : Request::server('DOCUMENT_ROOT'));
         }
-        return static::$_instance['root'];
+        return static::$_instance[__FUNCTION__];
+    }
+
+    /**
+     * 公共资源目录
+     * @return Directory
+     */
+    public static function public_path() {
+        if (!array_key_exists(__FUNCTION__, static::$_instance)) {
+            $path = self::config('app.public');
+            static::$_instance[__FUNCTION__] = empty($path) ?
+                new Directory(Request::server('DOCUMENT_ROOT'))
+                : self::root()->directory($path);
+        }
+        return static::$_instance[__FUNCTION__];
     }
 
     /**
