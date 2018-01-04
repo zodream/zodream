@@ -22,6 +22,7 @@
         "zodream/http": "*",
         "zodream/disk": "*",
         "zodream/database": "*",
+        "zodream/image" : "*",
         "firebase/php-jwt": "^5.0"
     },
     "require-dev": {
