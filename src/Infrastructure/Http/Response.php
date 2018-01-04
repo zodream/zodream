@@ -6,7 +6,7 @@ namespace Zodream\Infrastructure\Http;
  * Date: 2016/7/16
  * Time: 12:55
  */
-use Zodream\Domain\Image\Image;
+use Zodream\Image\Image;
 use Zodream\Disk\File;
 use Zodream\Helpers\Json;
 use Zodream\Helpers\Xml;

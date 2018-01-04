@@ -9,7 +9,7 @@
 
 
 ## 命名空间
-    Zodream\Domain\Image
+    Zodream\Image
 
 <a name="base"></a>
 ## 图片处理
