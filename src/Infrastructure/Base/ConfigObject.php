@@ -12,17 +12,6 @@ use Zodream\Infrastructure\Traits\ConfigTrait;
 
 abstract class ConfigObject {
 
-    /**
-     * CONFIGS
-     * @var array
-     */
-    protected $configs = [];
-    /**
-     * KEY IN CONFIG
-     * @var string
-     */
-    protected $configKey;
-
     use ConfigTrait;
 
 

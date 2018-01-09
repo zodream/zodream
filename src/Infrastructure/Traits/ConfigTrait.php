@@ -6,10 +6,21 @@ namespace Zodream\Infrastructure\Traits;
  * Date: 2016/9/1
  * Time: 16:39
  */
-use Zodream\Service\Config;
 use Zodream\Service\Factory;
 
 trait ConfigTrait {
+
+
+    /**
+     * CONFIGS
+     * @var array
+     */
+    protected $configs = [];
+//    /**
+//     * KEY IN CONFIG
+//     * @var string
+//     */
+//    protected $configKey = 'app';
 
     /**
      * SET CONFIGS

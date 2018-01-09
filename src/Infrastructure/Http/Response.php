@@ -189,7 +189,7 @@ class Response {
             fclose($fp);
             return $this;
         }
-        echo $this->parameter;
+        echo (string)$this->parameter;
         return $this;
     }
 
