@@ -9,13 +9,11 @@ namespace Zodream\Infrastructure\Traits;
 use Zodream\Service\Factory;
 
 trait ConfigTrait {
-
-
-    /**
-     * CONFIGS
-     * @var array
-     */
-    protected $configs = [];
+//    /**
+//     * CONFIGS
+//     * @var array
+//     */
+//    protected $configs = [];
 //    /**
 //     * KEY IN CONFIG
 //     * @var string

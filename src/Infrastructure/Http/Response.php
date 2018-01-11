@@ -270,6 +270,8 @@ class Response {
      * @param $file
      * @param array $data
      * @return Response
+     * @throws FileException
+     * @throws \Exception
      */
     public function view($file, array $data = []) {
         return $this->html(Factory::view()->render($file, $data));
