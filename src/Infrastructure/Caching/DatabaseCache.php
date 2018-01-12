@@ -6,8 +6,8 @@ namespace Zodream\Infrastructure\Caching;
 * 
 * @author Jason
 */
-use Zodream\Infrastructure\Database\Command;
-use Zodream\Infrastructure\Database\Query;
+use Zodream\Database\Command;
+use Zodream\Database\Query\Query;
 
 class DatabaseCache extends Cache {
 	
