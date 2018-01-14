@@ -15,6 +15,25 @@ class Url {
 
     private static $_host;
 
+    /***
+     * @var string 模块的路径
+     */
+    private static $_module_path = '';
+
+    /**
+     * @param string $module_path
+     */
+    public static function setModulePath($module_path) {
+        self::$_module_path = $module_path;
+    }
+
+    /**
+     * @return string
+     */
+    public static function getModulePath() {
+        return self::$_module_path;
+    }
+
     public static function setHost($host) {
         self::$_host = $host;
     }
@@ -106,7 +125,22 @@ class Url {
         if (strpos($path, '//') !== false) {
             $path = preg_replace('#/+#', '/', $path);
         }
+        if (strpos($path, './') === 0) {
+	        return static::addModulePath(substr($path, 2));
+        }
         return $path;
+    }
+
+    /**
+     * 添加当前模块路径
+     * @param $path
+     * @return string
+     */
+    protected static function addModulePath($path) {
+	    if (empty(self::$_module_path)) {
+	        return $path;
+        }
+        return self::$_module_path .'/'.$path;
     }
 
     protected static function addScript($path) {

@@ -175,6 +175,10 @@ class Response {
             $this->parameter->send();
             return $this;
         }
+        if (is_array($this->parameter) && $this->parameter['file'] instanceof Uri) {
+            readfile((string)$this->parameter['file']);
+            return $this;
+        }
         if (is_array($this->parameter) && $this->parameter['file'] instanceof File) {
             $fp = fopen($this->parameter['file']->getFullName(), 'rb');
             fseek($fp, $this->parameter['offset']);
@@ -361,6 +365,19 @@ class Response {
             'start' => $range[0],
             'end' => $range[1]
         );
+    }
+
+    /**
+     * 输出其他站点的下载文件
+     * @param $uri
+     * @param $name
+     * @return Response
+     */
+    public function fileUrl($uri, $name) {
+        $this->header->setContentType('application/save-as')->setContentDisposition($name);
+        return $this->setParameter([
+            'file' => $uri instanceof Uri ? $uri : new Uri($uri)
+        ]);
     }
 
     /**
