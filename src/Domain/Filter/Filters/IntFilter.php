@@ -25,8 +25,16 @@ class IntFilter extends FilterObject {
         return $arg;
     }
 
-    public function setOption($option)
-    {
+    public function validate($arg) {
+        if (is_null($arg) || $arg == '') {
+            return true;
+        }
+        $filtered = $this->filter($arg);
+        // 保证bool类型能通过
+        return is_bool($arg) || $filtered == $arg;
+    }
+
+    public function setOption($option) {
     	if (empty($option)) {
     		$option = array(PHP_INT_MIN);
     	}

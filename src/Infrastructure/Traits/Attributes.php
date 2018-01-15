@@ -104,7 +104,7 @@ trait Attributes {
         if (empty($this->__attributes)) {
             return false;
         }
-        return array_key_exists($key, $this->__attributes);
+        return isset($this->__attributes[$key]) || array_key_exists($key, $this->__attributes);
     }
 
     public function deleteAttribute($key) {
@@ -132,7 +132,7 @@ trait Attributes {
     /**
      * `set` attributes value
      *
-     * @param   string  $attribute  attribute name
+     * @param   string|array  $attribute  attribute name
      * @param   mixed   $value      attribute value
      *
      * @return  $this
