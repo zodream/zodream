@@ -8,6 +8,7 @@ namespace Zodream\Infrastructure\Session;
  * Time: 9:56
  */
 use Zodream\Service\Factory;
+
 class CacheSession extends Session {
 
     public function useCustomStorage() {
@@ -25,11 +26,15 @@ class CacheSession extends Session {
     }
 
     public function destroySession($id) {
-        return  Factory::cache()->delete($this->calculateKey($id));
+        return Factory::cache()->delete($this->calculateKey($id));
     }
 
+    /**
+     * 0 表示永久
+     * @return int
+     */
     public function getTimeout() {
-        return time();
+        return 0;
     }
 
     protected function calculateKey($id) {
