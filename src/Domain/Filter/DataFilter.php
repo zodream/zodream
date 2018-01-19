@@ -139,12 +139,7 @@ class DataFilter {
     public static function validateOne($args, $keys, array $filters) {
         $result = true;
         foreach ((array)$keys as $key) {
-            foreach ($filters as $val) {
-                if (!$val->validate(isset($args[$key]) ? $args[$key] : null, $args)) {
-                    static::setError($key, $val->getError());
-                    $result = false;
-                }
-            }
+            $result = !$result ? $result : self::validateOneKey($args, $filters, $key);
         }
         return $result;
     }
@@ -207,5 +202,22 @@ class DataFilter {
             return [static::getFilter($arg)];
         }
         return self::getFiltersFromOne($arg);
+    }
+
+    /**
+     * @param $args
+     * @param array $filters
+     * @param $key
+     * @return bool
+     */
+    public static function validateOneKey($args, array $filters, $key) {
+        $result = true;
+        foreach ($filters as $val) {
+            if (!$val->validate(isset($args[$key]) ? $args[$key] : null, $args)) {
+                static::setError($key, $val->getError());
+                $result = false;
+            }
+        }
+        return $result;
     }
 }
