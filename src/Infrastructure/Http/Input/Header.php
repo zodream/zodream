@@ -11,10 +11,12 @@ use Zodream\Helpers\Str;
 
 class Header extends BaseInput {
     public function __construct() {
+        $data = [];
         foreach ($_SERVER as $key => $value) {
-            if (Str::startsWith($key, 'http_')) {
-                $this->set(Str::firstReplace($key, 'http_'), $value);
+            if (Str::startsWith($key, 'HTTP_')) {
+                $data[Str::firstReplace($key, 'HTTP_')] = $value;
             }
         }
+        $this->setValues($data);
     }
 }
