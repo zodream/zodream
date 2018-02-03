@@ -249,6 +249,14 @@ class Url {
 	}
 
     /**
+     * 获取启动文件名
+     * @return string
+     */
+	public static function getScriptName() {
+	    return basename(self::getScript(), '.php');
+    }
+
+    /**
      * 获取网址中的虚拟路径
      * @return string
      */
@@ -259,10 +267,11 @@ class Url {
 	        return $path;
         }
         $script = static::getScript();
-	    if (strpos($script, '.php') > 0) {
-	        $script = preg_replace('#/[^/]+\.php$#i', '', $script);
-        }
+	    $scriptFile = basename($script);
         $path = static::getUriWithoutParam();
+        if (strpos($path, $scriptFile) === false) {
+            $path .= $scriptFile;
+        }
         if (!empty($script) && strpos($path, $script) === 0) {
             return substr($path, strlen($script));
         }
