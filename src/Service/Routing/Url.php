@@ -269,8 +269,10 @@ class Url {
         $script = static::getScript();
 	    $scriptFile = basename($script);
         $path = static::getUriWithoutParam();
-        if (strpos($path, $scriptFile) === false) {
-            $path .= $scriptFile;
+        if (strpos($scriptFile, $path) === 0) {
+            $path = rtrim($path, '/'). '/'. $scriptFile;
+        } elseif (strpos($script, '.php') > 0) {
+            $script = preg_replace('#/[^/]+\.php$#i', '', $script);
         }
         if (!empty($script) && strpos($path, $script) === 0) {
             return substr($path, strlen($script));
