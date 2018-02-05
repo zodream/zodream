@@ -13,6 +13,7 @@ use Zodream\Service\Routing\Url;
 
 defined('VERSION') || define('VERSION', 'v3');
 defined('DEBUG') || define('DEBUG', false);
+defined('APP_GZIP') || define('APP_GZIP', !DEBUG); // 开启gzip压缩
 
 class Application {
 
@@ -38,7 +39,7 @@ class Application {
         Autoload::getInstance()
             ->bindError();
         //Cookie::restore();
-        EventManger::runEventAction('appRun');
+        EventManger::runEventAction('app_run');
         return Factory::router()->dispatch(Request::method(), $this->path)
             ->run()
             ->send();
