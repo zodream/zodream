@@ -3,9 +3,9 @@ namespace Zodream\Infrastructure\Support;
 
 use Countable;
 use JsonSerializable;
-use Zodream\Infrastructure\Base\ArrayAble;
-use Zodream\Infrastructure\Base\JsonAble;
 use Zodream\Helpers\Str;
+use Zodream\Infrastructure\Interfaces\ArrayAble;
+use Zodream\Infrastructure\Interfaces\JsonAble;
 
 class MessageBag implements ArrayAble, JsonAble, Countable, JsonSerializable {
     /**
