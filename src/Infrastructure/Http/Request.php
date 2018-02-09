@@ -16,6 +16,8 @@ use Zodream\Infrastructure\Http\Input\Argv;
 use Zodream\Helpers\Str;
 use Zodream\Service\Config;
 use Zodream\Service\Routing\Url;
+use Zodream\Validate\ValidationException;
+use Zodream\Validate\Validator;
 
 defined('APP_SAFE') || define('APP_SAFE', Config::app('safe', true));
 
@@ -183,6 +185,30 @@ final class Request {
 	public static function path() {
         $pattern = trim(static::server('PHP_SELF'), '/');
         return $pattern == '' ? '/' : $pattern;
+    }
+
+    /**
+     *
+     * @param array $rules
+     * @return array
+     * @throws ValidationException
+     * @throws \Exception
+     */
+    public static function validate(array $rules) {
+        $data = [];
+        $validator = new Validator();
+        foreach ($rules as $key => $rule) {
+            $rule = $validator->converterRule($rule);
+            $value = static::request($key);
+            if ($validator->validateRule($key, $value, $rule['rules'], $rule['message'])) {
+                $data[] = $value;
+                continue;
+            }
+        }
+        if ($validator->messages()->isEmpty()) {
+            return $data;
+        }
+        throw new ValidationException($validator);
     }
 
     /**
