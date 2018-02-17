@@ -1,5 +1,14 @@
 <?php
+
 use Zodream\Infrastructure\Http\Request;
+use Zodream\Infrastructure\I18n\PhpSource;
+use Zodream\Infrastructure\Session\Session;
+use Zodream\Infrastructure\Caching\FileCache;
+use Zodream\Domain\Access\Auth;
+use Zodream\Database\Engine\Pdo;
+use Zodream\Infrastructure\Mailer\Mailer;
+use Zodream\Infrastructure\Cookie;
+
 /**
  * 配置文件模板
  *
@@ -17,18 +26,18 @@ $configs = array(
 		'action'     => 'Action',
 	),
 	'session' => array(
-		'driver' => Zodream\Infrastructure\Session\Session::class,
+		'driver' => Session::class,
         'directory' => null
 	),
 	'cache' => array(
-		'driver' => Zodream\Infrastructure\Caching\FileCache::class,
+		'driver' => FileCache::class,
 		'auto' => false,
         'directory' => 'data/cache',
         'extension' => '.cache',
         'gc' => 10
 	),
 	'auth'   => array(
-		'driver' => Zodream\Domain\Access\Auth::class,        //用户判断
+		'driver' => Auth::class,        //用户判断
 		'home'  => 'account'                             //用户登录主页
 	),
 	'route'  => array(
@@ -40,7 +49,7 @@ $configs = array(
         'timezone' => 'Etc/GMT-8'
     ],
 	'db'     => array(							//MYSQL数据库的信息
-		'driver'   => Zodream\Database\Engine\Pdo::class,
+		'driver'   => Pdo::class,
 		'type'     => 'mysql',
 		'host'     => '127.0.0.1',                //服务器
 		'port'     => '3306',						//端口
@@ -54,7 +63,7 @@ $configs = array(
 		'persistent' => false                   //使用持久化连接
 	),
 	'mail'   => array(
-		'driver'   => Zodream\Infrastructure\Mailer\Mailer::class,
+		'driver'   => Mailer::class,
 		'host'     => 'smtp.zodream.cn',
 		'port'     => 25,
 		'user'     => 'admin@zodream.cn',
@@ -99,9 +108,9 @@ $configs = array(
         ]
 	),
 	'alias'  => array(
-		'Config' => Zodream\Infrastructure\Config::class,
-		'Requests' => Zodream\Infrastructure\Http\Request::class,
-		'Cookie' => Zodream\Infrastructure\Cookie::class
+		'Cookie' => Cookie::class,
+        'Request' => Request::class,
+        'Auth' => Auth::class
 	),
 	// 注册事件
 	'event' => array(
@@ -115,7 +124,7 @@ $configs = array(
 		'executeSql' => array(),
 	),
     'i18n' => array(
-        'driver' => Zodream\Infrastructure\I18n\PhpSource::class,
+        'driver' => PhpSource::class,
         'directory' => 'data/languages',
         'language' => ''//'zh-cn',
     ),

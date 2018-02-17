@@ -6,26 +6,27 @@ namespace Zodream\Domain;
  * @author Jason
  */
 use Zodream\Infrastructure\Error\Error;
-use Zodream\Service\Config;
 use Zodream\Infrastructure\Traits\SingletonPattern;
-use Zodream\Infrastructure\Base\MagicObject;
+use Zodream\Service\Factory;
 
-class Autoload extends MagicObject {
+class Autoload {
 	
 	use SingletonPattern;
 	
-	protected $_registerAlias = false;
+	protected $registerAlias = false;
+
+	protected $aliases = [];
 	
-	private function __construct() {
-		$this->set(Config::alias([]));
+	public function __construct() {
+		$this->aliases = (array)Factory::config('alias');
 	}
 	/**
 	 * 注册别名
 	 */
 	public function registerAlias() {
-		if (!$this->_registerAlias) {
-			spl_autoload_register(array($this, '_load'), true, true);
-			$this->_registerAlias = TRUE;
+		if (!$this->registerAlias) {
+			spl_autoload_register(array($this, 'load'), true, true);
+			$this->registerAlias = true;
 		}
 		return $this;
 	}
@@ -35,12 +36,9 @@ class Autoload extends MagicObject {
 	 * @param string $alias
 	 * @return bool
 	 */
-	protected function _load($alias) {
-		if (!class_exists($alias)) {
-			$alias = end(explode('\\', $alias));
-			if ($this->has($alias)) {
-				return class_alias($this->get($alias), $alias);
-			}
+	protected function load($alias) {
+		if (!class_exists($alias) && isset($this->aliases[$alias])) {
+            return class_alias($this->aliases[$alias], $alias);
 		}
 		return false;
 	}

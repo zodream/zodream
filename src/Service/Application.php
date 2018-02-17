@@ -37,6 +37,7 @@ class Application {
         Url::setHost(Config::app('host'));
         Factory::timer()->begin();
         Autoload::getInstance()
+            ->registerAlias()
             ->bindError();
         //Cookie::restore();
         EventManger::runEventAction('app_run');
