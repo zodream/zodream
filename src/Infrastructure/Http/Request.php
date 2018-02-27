@@ -279,7 +279,7 @@ final class Request {
     }
 
 	public static function isWeChat() {
-        return strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false;
+        return strpos(self::server('HTTP_USER_AGENT'), 'MicroMessenger') !== false;
     }
 	
 	public static function method() {
