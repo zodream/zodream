@@ -41,7 +41,7 @@ trait ErrorTrait {
         if (empty($key)) {
             $key = key($this->errors);
         }
-        if (!array_key_exists($key, $this->errors)) {
+        if (!isset($this->errors[$key])) {
             return null;
         }
         return current($this->errors[$key]);

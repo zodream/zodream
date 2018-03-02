@@ -129,7 +129,7 @@ class MessageBag implements ArrayAble, JsonAble, Countable, JsonSerializable {
         // If the message exists in the container, we will transform it and return
         // the message. Otherwise, we'll check if the key is implicit & collect
         // all the messages that match a given key and output it as an array.
-        if (array_key_exists($key, $this->messages)) {
+        if (isset($this->messages[$key])) {
             return $this->transform(
                 $this->messages[$key], $this->checkFormat($format), $key
             );
