@@ -19,7 +19,7 @@ use Zodream\Service\Routing\Url;
 use Zodream\Validate\ValidationException;
 use Zodream\Validate\Validator;
 
-defined('APP_SAFE') || define('APP_SAFE', Config::app('safe', true));
+defined('APP_SAFE') || define('APP_SAFE', Config::app('safe', false));
 
 final class Request {
 
