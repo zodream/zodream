@@ -7,33 +7,23 @@ namespace Zodream\Infrastructure\Event;
  * Time: 9:13
  */
 use Zodream\Service\Config;
-use Zodream\Service\Factory;
-use Zodream\Infrastructure\Traits\SingletonPattern;
 
 class EventManger {
-    use SingletonPattern;
 
     protected $canAble = true;
-    protected $events = array(
-        'appRun' => null,       //程序启动
-        'showView' => null,     //显示视图
-    );
+    protected $events = array();
 
-    protected function __construct() {
-        $configs = Config::event(array());
-        if (!isset($configs['canAble']) || !$configs['canAble']) {
-            $this->canAble = false;
-            return;
-        }
-        unset($configs['canAble']);
-        foreach ($configs as $key => $item) {
-            if (empty($item)) {
-                continue;
-            }
-            foreach ((array)$item as $value) {
-                $this->add($key, $value);
-            }
-        }
+    /**
+     * @var array [$name => $event]
+     */
+    protected $actionNames = array();
+
+    /**
+     * @param bool $canAble
+     */
+    public function setCanAble($canAble) {
+        $this->canAble = $canAble;
+        return $this;
     }
 
     /**
@@ -70,10 +60,7 @@ class EventManger {
         $this->events[$event]->run($args);
     }
 
-    /**
-     * @var array [$name => $event]
-     */
-    protected $actionNames = array();
+
     /**
      * 删除某个
      * @param string $name 根据名称删除
@@ -90,7 +77,23 @@ class EventManger {
      * @param string $event
      * @param array $args
      */
-    public static function runEventAction($event, $args = array()) {
-        static::getInstance()->run($event, $args);
+    public function dispatch($event = null, $payload = []) {
+        list($event, $payload) = $this->parseEventAndPayload(
+            $event, $payload
+        );
+        $this->run($event, $payload);
+    }
+
+    protected function parseEventAndPayload($event, $payload) {
+        if (is_object($event)) {
+            list($payload, $event) = [[$event], get_class($event)];
+        }
+        return [$event, ! is_array($payload) ? [$payload] : $payload];
+    }
+
+    public function listen($events, $listener) {
+        foreach ((array) $events as $event) {
+            $this->add($event, $listener);
+        }
     }
 }

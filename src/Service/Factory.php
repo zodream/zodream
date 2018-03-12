@@ -14,6 +14,7 @@ use Psr\Log\LoggerInterface;
 use Zodream\Domain\Access\Auth;
 use Zodream\Domain\Debug\Timer;
 use Zodream\Database\Model\UserModel;
+use Zodream\Infrastructure\Event\EventManger;
 use Zodream\Template\ViewFactory;
 use Zodream\Infrastructure\Caching\Cache;
 use Zodream\Infrastructure\Caching\FileCache;
@@ -204,11 +205,28 @@ class Factory {
     }
 
     /**
+     * 错误处理
      * @return ExceptionHandler
      * @throws \Exception
      */
     public static function handler() {
         return self::getInstance('exception', Handler::class);
+    }
+
+    /**
+     * @param null|string|object  $event
+     * @param array $payload
+     * @param bool $halt
+     * @return void|EventManger
+     * @throws \Exception
+     */
+    public static function event($event = null, $payload = [], $halt = false) {
+        /** @var EventManger $instance */
+        $instance = self::getInstance('eventManger', EventManger::class);
+        if (is_null($event)) {
+            return $instance;
+        }
+        return $instance->dispatch($event, $payload, $halt);
     }
 
     /**

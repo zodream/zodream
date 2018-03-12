@@ -4,7 +4,10 @@ namespace Zodream\Infrastructure\Exceptions;
 use Exception;
 use HttpException;
 use Zodream\Database\Model\ModelNotFoundException;
-use Zodream\Domain\Validation\ValidationException;
+use Zodream\Infrastructure\Interfaces\Responsable;
+use Zodream\Route\Router;
+use Zodream\Service\Config;
+use Zodream\Validate\ValidationException;
 use Zodream\Domain\Access\AuthenticationException;
 use Zodream\Infrastructure\Error\NotFoundHttpException;
 use Zodream\Infrastructure\Http\HttpResponseException;
@@ -71,6 +74,11 @@ class Handler implements ExceptionHandler {
      * @return Response
      */
     public function render(Exception $e) {
+        if (method_exists($e, 'render') && $response = $e->render()) {
+            return Router::toResponse($response);
+        } elseif ($e instanceof Responsable) {
+            return $e->toResponse();
+        }
         $e = $this->prepareException($e);
         if ($e instanceof HttpResponseException) {
             return $e->getResponse();
@@ -126,6 +134,9 @@ class Handler implements ExceptionHandler {
      * @return Response
      */
     protected function prepareResponse(Exception $e){
+        if (Config::isDebug() && function_exists('xdebug_get_function_stack')) {
+            throw $e;
+        }
         $status = $e->getCode();
         Factory::response()->setStatusCode(404);
         if (Factory::view()->exist("errors/{$status}")) {
