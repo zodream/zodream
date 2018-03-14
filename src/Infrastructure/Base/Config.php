@@ -100,8 +100,10 @@ class Config extends MagicObject {
      * @param $file
      * @return array
      */
-    protected function getConfigByFile($file) {
-        $file = $this->getRealFile($file);
+    public function getConfigByFile($file) {
+        if (!$file instanceof File) {
+            $file = $this->getRealFile($file);
+        }
         if (!$file->exist()) {
             return [];
         }
