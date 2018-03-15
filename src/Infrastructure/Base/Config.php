@@ -3,6 +3,7 @@ namespace Zodream\Infrastructure\Base;
 
 use Zodream\Disk\Directory;
 use Zodream\Disk\File;
+use Zodream\Helpers\Arr;
 use Zodream\Service\Factory;
 
 class Config extends MagicObject {
@@ -121,12 +122,28 @@ class Config extends MagicObject {
         return $this->getDirectory()->file($name.'.php');
     }
 
-    public function save($name = null) {
-//        if (empty($name)) {
-//            $name = APP_MODULE;
-//        }
-        //$generate = new Generate();
-        //return $generate->setReplace(true)->makeConfig(static::getValue(), $name);
+    /**
+     * 追加
+     * @param $name
+     * @param array $configs
+     */
+    public function append($name, array $configs) {
+        $data = $this->getConfigByFile($name);
+        $this->save($name, Arr::merge2D($data, $configs));
+    }
+
+    /**
+     * 保存
+     * @param $name
+     * @param array $configs
+     */
+    public function save($name, array $configs) {
+        $content = [
+            '<?php',
+            sprintf('return %s;', var_export($configs, true))
+        ];
+        $this->getDirectory()->file($name.'.php')
+            ->write(implode(PHP_EOL, $content));
     }
 
     /**
