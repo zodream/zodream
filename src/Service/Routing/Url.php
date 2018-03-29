@@ -269,13 +269,19 @@ class Url {
         $script = static::getScript();
 	    $scriptFile = basename($script);
         $path = static::getUriWithoutParam();
+
         if (strpos($scriptFile, $path) === 0) {
             $path = rtrim($path, '/'). '/'. $scriptFile;
         } elseif (strpos($script, '.php') > 0) {
             $script = preg_replace('#/[^/]+\.php$#i', '', $script);
         }
+        // 判断是否是二级文件默认入口
         if (!empty($script) && strpos($path, $script) === 0) {
             return substr($path, strlen($script));
+        }
+        // 判断是否是根目录其他文件入口
+        if (strpos($path, $scriptFile) === 1) {
+            return '/'.substr($path, strlen($scriptFile) + 1);
         }
         return $path;
     }
