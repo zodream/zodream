@@ -19,7 +19,7 @@ interface UserObject {
      * @param $password
      * @return UserObject
      */
-    public static function signInAccount($username, $password);
+    public static function findByAccount($username, $password);
 
     /**
      * 根据 主键获取用户
