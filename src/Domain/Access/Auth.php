@@ -48,6 +48,7 @@ class Auth implements AuthObject {
 
     /**
      * @return UserObject
+     * @throws \Exception
      */
 	protected static function getUser() {
 	    $userClass = Config::auth('model');
