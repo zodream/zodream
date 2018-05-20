@@ -41,6 +41,7 @@ abstract class BaseUpload extends ConfigObject {
         }
         if (!is_numeric($error)) {
             $this->error = $error;
+            return $this;
         }
         $this->error = $this->errorMap[$error] || $error;
         return $this;
@@ -163,11 +164,11 @@ abstract class BaseUpload extends ConfigObject {
      */
     public function checkDirectory() {
         $directory = $this->file->getDirectory();
-        if (!$directory->exist() && !$directory->create()) {
+        if (!$directory->create()) {
             $this->setError('ERROR_CREATE_DIR');
             return false;
         }
-        if (!$this->file->canWrite()) {
+        if ($this->file->exist() && !$this->file->canWrite()) {
             $this->setError('ERROR_DIR_NOT_WRITEABLE');
             return false;
         }

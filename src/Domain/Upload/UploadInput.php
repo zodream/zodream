@@ -31,7 +31,6 @@ class UploadInput extends BaseUpload {
             $this->setError('WRITE_ERROR');
             return false;
         }
-
         while ($buff = fread($fileOpen, 4096)) {
             fwrite($fileOutput, $buff);
         }
