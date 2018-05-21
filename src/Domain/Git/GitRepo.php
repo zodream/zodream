@@ -14,6 +14,7 @@ namespace Zodream\Domain\Git;
  * @repo       http://github.com/kbjr/Git.php
  */
 use Exception;
+use Zodream\Infrastructure\Support\Process;
 
 class GitRepo {
 
@@ -161,20 +162,7 @@ class GitRepo {
      * @return  bool
      */
     public function testGit() {
-        $descriptorSpec = array(
-            1 => array('pipe', 'w'),
-            2 => array('pipe', 'w'),
-        );
-        $pipes = array();
-        $resource = proc_open(Git::getBin(), $descriptorSpec, $pipes);
-
-        stream_get_contents($pipes[1]);
-        stream_get_contents($pipes[2]);
-        foreach ($pipes as $pipe) {
-            fclose($pipe);
-        }
-
-        $status = trim(proc_close($resource));
+        $status = Process::factory(Git::getBin())->start()->join()->stop();
         return ($status != 127);
     }
 
@@ -189,11 +177,7 @@ class GitRepo {
      * @throws Exception
      */
     protected function runCommand($command) {
-        $descriptorSpec = array(
-            1 => array('pipe', 'w'),
-            2 => array('pipe', 'w'),
-        );
-        $pipes = array();
+
         /* Depending on the value of variables_order, $_ENV may be empty.
          * In that case, we have to explicitly set the new variables with
          * putenv, and call proc_open with env=null to inherit the reset
@@ -212,17 +196,16 @@ class GitRepo {
         } else {
             $env = array_merge($_ENV, $this->envOpts);
         }
-        $cwd = $this->repoPath;
-        $resource = proc_open($command, $descriptorSpec, $pipes, $cwd, $env);
+        $process = Process::factory($command, [
+            'env' => $env,
+            'cwd' => $this->repoPath
+        ]);
 
-        $stdout = stream_get_contents($pipes[1]);
-        $stderr = stream_get_contents($pipes[2]);
-        foreach ($pipes as $pipe) {
-            fclose($pipe);
+        $status = $process->start()->join()->stop();
+        extract($process->getOutput());
+        if ($status) {
+            throw new Exception($stderr);
         }
-
-        $status = trim(proc_close($resource));
-        if ($status) throw new Exception($stderr);
 
         return $stdout;
     }
