@@ -314,6 +314,9 @@ class Response {
             case 'mp3':
             case 'mpg':
             case 'avi':
+            case 'ts':
+            case 'm3u8':
+            case 'mp4':
                 $this->header->setContentType($fileExtension);
                 break;
             default:
@@ -361,11 +364,20 @@ class Response {
             return null;
         }
         $range = preg_replace('/[\s|,].*/', '', $range);
-        $range = Str::explode(substr($range, 6), '-', 2, array(0, $fileSize));
-        return array(
+        $range = explode('-', substr($range, 6), 2);
+        $range[0] = intval($range[0]);
+        $range[1] = isset($range[1]) ? intval($range[1]) : $fileSize;
+        if ($range[1] == 0) {
+            $range[1] = $fileSize;
+        }
+        // 直接传整个文件
+        if ($range[0] == 0 && $range[1] == $fileSize) {
+            return null;
+        }
+        return [
             'start' => $range[0],
             'end' => $range[1]
-        );
+        ];
     }
 
     /**
