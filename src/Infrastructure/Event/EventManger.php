@@ -6,7 +6,6 @@ namespace Zodream\Infrastructure\Event;
  * Date: 2016/3/10
  * Time: 9:13
  */
-use Zodream\Service\Config;
 
 class EventManger {
 
