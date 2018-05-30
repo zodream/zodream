@@ -7,6 +7,7 @@ namespace Zodream\Infrastructure\Caching;
 */
 use Zodream\Infrastructure\Base\ConfigObject;
 use Zodream\Helpers\Str;
+use Exception;
 
 abstract class Cache extends ConfigObject implements \ArrayAccess {
 
@@ -15,7 +16,9 @@ abstract class Cache extends ConfigObject implements \ArrayAccess {
 	 * @var int
 	 */
     protected $configs = [
-        'gc' => 10
+        'gc' => 10,
+        'serializer' => null,
+        'keyPrefix' => ''
     ];
 
     protected $configKey = 'cache';
@@ -26,13 +29,52 @@ abstract class Cache extends ConfigObject implements \ArrayAccess {
 	
 	public function filterKey($key) {
 		if (is_string($key)) {
-			return ctype_alnum($key) && Str::byteLength($key) <= 32 ? $key : md5($key);
+			return $this->configs['keyPrefix'].
+                (ctype_alnum($key) && Str::byteLength($key) <= 32 ? $key : md5($key));
 		}
-		return md5(json_encode($key));
+		return $this->configs['keyPrefix'].md5(json_encode($key));
 	}
-	
+
+    /**
+     * 设置值
+     * @param $key
+     * @param $callable
+     * @param null $duration
+     * @param Dependency $dependency 设置判断更新的条件
+     * @return bool|mixed
+     * @throws Exception
+     */
+    public function getOrSet($key, $callable, $duration = null, $dependency = null) {
+        if (($value = $this->get($key)) !== false) {
+            return $value;
+        }
+
+        $value = call_user_func($callable, $this);
+        if (!$this->set($key, $value, $duration, $dependency)) {
+            throw new Exception('Failed to set cache value for key ' . json_encode($key));
+        }
+        return $value;
+    }
+
+    /**
+     * 获取值
+     * @param $key
+     * @return bool|mixed
+     */
 	public function get($key) {
-		return $this->getValue($this->filterKey($key));
+        $key = $this->filterKey($key);
+        $value = $this->getValue($key);
+        if ($value === false || $this->configs['serializer'] === false) {
+            return $value;
+        } elseif ($this->configs['serializer'] === null) {
+            $value = unserialize($value);
+        } else {
+            $value = call_user_func($this->configs['serializer'][1], $value);
+        }
+        if (is_array($value) && !($value[1] instanceof Dependency && $value[1]->isChanged($this))) {
+            return $value[0];
+        }
+        return false;
 	}
 
     /**
@@ -40,15 +82,28 @@ abstract class Cache extends ConfigObject implements \ArrayAccess {
      * @param string $key
      * @param string $value
      * @param int $duration
+     * @param Dependency $dependency
+     * @return static|mixed
      */
-	public function set($key, $value = null, $duration = null) {
+	public function set($key, $value = null, $duration = null, $dependency = null) {
 		if (is_array($key) && null === $value && null === $duration) {
 			foreach ($key as $k => $v) {
-				$this->setValue($this->filterKey($k), $v[0], $v[1]);
+				$this->set($k, $v[0],
+                    isset($v[1]) ? $v[1] : $duration,
+                    isset($v[2]) ? $v[2] : $dependency);
 			}
-		} else {
-			$this->setValue($key, $value, $duration);
+			return $this;
 		}
+        if ($dependency !== null && $this->configs['serializer'] !== false) {
+            $dependency->evaluateDependency($this);
+        }
+        if ($this->configs['serializer'] === null) {
+            $value = serialize([$value, $dependency]);
+        } elseif ($this->configs['serializer'] !== false) {
+            $value = call_user_func($this->configs['serializer'][0], [$value, $dependency]);
+        }
+        $key = $this->filterKey($key);
+        return $this->setValue($key, $value, $duration);
 	}
 	
 	public function add($key, $value, $duration) {
