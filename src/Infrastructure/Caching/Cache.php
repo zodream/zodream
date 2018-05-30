@@ -109,6 +109,29 @@ abstract class Cache extends ConfigObject implements \ArrayAccess {
 	public function add($key, $value, $duration) {
 		return $this->addValue($this->filterKey($key), $value, $duration);
 	}
+
+    /**
+     * Increment the value of an item in the cache.
+     *
+     * @param  string  $key
+     * @param  mixed   $value
+     * @return int|bool
+     */
+    public function increment($key, $value = 1) {
+
+        return false;
+    }
+
+    /**
+     * Decrement the value of an item in the cache.
+     *
+     * @param  string  $key
+     * @param  mixed   $value
+     * @return int|bool
+     */
+    public function decrement($key, $value = 1) {
+        return false;
+    }
 	
 	public function has($key) {
 		return $this->hasValue($this->filterKey($key));

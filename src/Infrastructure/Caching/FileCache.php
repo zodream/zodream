@@ -19,7 +19,9 @@ class FileCache extends Cache {
     protected $configs = [
         'directory' => 'data/cache/',
         'extension' => '.cache',
-        'gc' => 10
+        'gc' => 10,
+        'serializer' => null,
+        'keyPrefix' => ''
     ];
 
 
@@ -38,15 +40,20 @@ class FileCache extends Cache {
 
     protected function getValue($key) {
 		$cacheFile = $this->getCacheFile($key);
-        if ($cacheFile->exist() && $cacheFile->modifyTime() > time()) {
-            $fp = @fopen($cacheFile, 'r');
-            if ($fp !== false) {
-                @flock($fp, LOCK_SH);
-                $cacheValue = @stream_get_contents($fp);
-                @flock($fp, LOCK_UN);
-                @fclose($fp);
-                return $cacheValue;
-            }
+		if (!$cacheFile->exist()) {
+		    return false;
+        }
+        if ($cacheFile->modifyTime() < time()) {
+		    $cacheFile->delete();
+		    return false;
+        }
+        $fp = @fopen($cacheFile, 'r');
+        if ($fp !== false) {
+            @flock($fp, LOCK_SH);
+            $cacheValue = @stream_get_contents($fp);
+            @flock($fp, LOCK_UN);
+            @fclose($fp);
+            return $cacheValue;
         }
         return false;
 	}

@@ -13,7 +13,9 @@ class DatabaseCache extends Cache {
 	
 	protected $configs = [
 	    'table' => 'cache',
-        'gc' => 10
+        'gc' => 10,
+        'serializer' => null,
+        'keyPrefix' => ''
     ];
 
     /**
