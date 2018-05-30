@@ -75,9 +75,11 @@ class Other extends BaseInput {
             // 防止通过局域网代理取得ip值
             return $_SERVER['HTTP_X_FORWARDED_HOST'];
         }
-        $host = $_SERVER['HTTP_HOST'];
-        if (!empty($host)) {
-            return $host;
+        if (isset($_SERVER['HTTP_HOST']) && !empty($_SERVER['HTTP_HOST'])) {
+            return $_SERVER['HTTP_HOST'];
+        }
+        if (!isset($_SERVER['SERVER_NAME'])) {
+            return '127.0.0.1';
         }
         $host = $_SERVER['SERVER_NAME'];
         $port = $_SERVER['SERVER_PORT'];

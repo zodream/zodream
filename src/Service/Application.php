@@ -84,7 +84,7 @@ class Application {
      */
     public function bootstrap() {
         date_default_timezone_set(Config::formatter('timezone'));     //这里设置了时区
-        Url::setHost(Config::app('host'));
+        Url::setHost();
         Factory::timer()->begin();
         Autoload::getInstance()
             ->registerAlias()

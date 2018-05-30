@@ -34,8 +34,16 @@ class Url {
         return self::$_module_path;
     }
 
-    public static function setHost($host) {
-        self::$_host = $host;
+    public static function setHost($host = null) {
+        if (!empty($host)) {
+            self::$_host = $host;
+            return;
+        }
+        if (Config::isDebug()) {
+            self::$_host = Request::host();
+            return;
+        }
+        self::$_host = Config::app('host') ?: Request::host();
     }
 
     /**
@@ -44,8 +52,9 @@ class Url {
      */
     public static function getHost() {
         if (empty(self::$_host)) {
+
             // 出现配置循环 bug
-            static::setHost(Config::app('host') ?: Request::host());
+            static::setHost();
         }
         return self::$_host;
     }
