@@ -46,7 +46,11 @@ class GitRepo {
     ) {
         if (is_dir($repoPath) &&
             is_dir($repoPath.'/.git')) {
-            throw new Exception('"'.$repoPath.'" is already a git repository');
+            throw new Exception(
+                __('"{path}" is already a git repository', [
+                    'path' => $repoPath
+                ])
+            );
         }
         $repo = new static($repoPath, true, false);
         if (!is_string($source)) {
@@ -58,7 +62,11 @@ class GitRepo {
             return $repo;
         }
         if (!is_dir($reference) || !is_dir($reference.'/.git')) {
-            throw new Exception('"'.$reference.'" is not a git repository. Cannot use as reference.');
+            throw new Exception(
+                __('"{reference}" is not a git repository. Cannot use as reference.', [
+                    'reference' => $reference
+                ])
+            );
         }
         if (strlen($reference)) {
             $reference = realpath($reference);
@@ -105,7 +113,11 @@ class GitRepo {
         if ($newPath = realpath($repoPath)) {
             $repoPath = $newPath;
             if (!is_dir($repoPath)) {
-                throw new Exception('"'.$repoPath.'" is not a directory');
+                throw new Exception(
+                    __('"{path}" is not a directory', [
+                        'path' => $repoPath
+                    ])
+                );
             }
             // Is this a work tree?
             if (is_dir($repoPath.'/.git')) {
@@ -123,7 +135,11 @@ class GitRepo {
                 return;
             }
             if (!$createNew) {
-                throw new Exception('"'.$repoPath.'" is not a git repository');
+                throw new Exception(
+                    __('"{path}" is not a git repository', [
+                        'path' => $repoPath
+                    ])
+                );
             }
             $this->repoPath = $repoPath;
             if ($init) {
@@ -132,11 +148,17 @@ class GitRepo {
             return;
         }
         if (!$createNew) {
-            throw new Exception('"'.$repoPath.'" does not exist');
+            throw new Exception(
+                __('"{path}" does not exist', [
+                    'path' => $repoPath
+                ])
+            );
         }
         $parent = realpath(dirname($repoPath));
         if ($parent === false) {
-            throw new Exception('cannot create repository in non-existent directory');
+            throw new Exception(
+                __('cannot create repository in non-existent directory')
+            );
         }
         mkdir($repoPath);
         $this->repoPath = $repoPath;

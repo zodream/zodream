@@ -39,7 +39,7 @@ trait JsonResponseTrait {
         }
         return $this->json(array_merge(array(
             'code' => 200,
-            'status' => 'success',
+            'status' => __('success'),
             'data' => $data
         ), $message));
     }
@@ -53,7 +53,7 @@ trait JsonResponseTrait {
     public function jsonFailure($message = '', $code = 400) {
         return $this->json(array(
             'code' => $code,
-            'status' => 'failure',
+            'status' => __('failure'),
             'errors' => $message
         ), $code);
     }

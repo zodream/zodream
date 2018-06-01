@@ -29,11 +29,15 @@ class UploadInput extends BaseUpload {
             return false;
         }
         if (!$fileOpen = @fopen('php://input', 'rb')) {
-            $this->setError('INPUT_ERROR');
+            $this->setError(
+                __('INPUT_ERROR')
+            );
             return false;
         }
         if (!$fileOutput = @fopen($this->file->getFullName(), 'wb')) {
-            $this->setError('WRITE_ERROR');
+            $this->setError(
+                __('WRITE_ERROR')
+            );
             return false;
         }
         while ($buff = fread($fileOpen, 4096)) {

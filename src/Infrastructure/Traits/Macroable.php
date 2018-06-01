@@ -44,7 +44,11 @@ trait Macroable {
      */
     public static function __callStatic($method, $parameters) {
         if (! static::hasMacro($method)) {
-            throw new BadMethodCallException("Method {$method} does not exist.");
+            throw new BadMethodCallException(
+                __('Method {name} does not exist.', [
+                    'name' => $method
+                ])
+            );
         }
 
         if (static::$macros[$method] instanceof Closure) {
@@ -65,7 +69,11 @@ trait Macroable {
      */
     public function __call($method, $parameters) {
         if (! static::hasMacro($method)) {
-            throw new BadMethodCallException("Method {$method} does not exist.");
+            throw new BadMethodCallException(
+                __('Method {name} does not exist.', [
+                    'name' => $method
+                ])
+            );
         }
 
         if (static::$macros[$method] instanceof Closure) {

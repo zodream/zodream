@@ -165,11 +165,15 @@ abstract class BaseUpload extends ConfigObject {
     public function checkDirectory() {
         $directory = $this->file->getDirectory();
         if (!$directory->create()) {
-            $this->setError('ERROR_CREATE_DIR');
+            $this->setError(
+                __('ERROR_CREATE_DIR')
+            );
             return false;
         }
         if ($this->file->exist() && !$this->file->canWrite()) {
-            $this->setError('ERROR_DIR_NOT_WRITEABLE');
+            $this->setError(
+                __( 'ERROR_DIR_NOT_WRITEABLE' )
+            );
             return false;
         }
         return true;

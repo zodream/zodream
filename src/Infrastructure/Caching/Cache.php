@@ -51,7 +51,9 @@ abstract class Cache extends ConfigObject implements \ArrayAccess {
 
         $value = call_user_func($callable, $this);
         if (!$this->set($key, $value, $duration, $dependency)) {
-            throw new Exception('Failed to set cache value for key ' . json_encode($key));
+            throw new Exception(
+                __('Failed to set cache value for key ')
+                . json_encode($key));
         }
         return $value;
     }

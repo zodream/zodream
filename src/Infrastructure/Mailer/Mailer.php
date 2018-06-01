@@ -7,7 +7,8 @@ namespace Zodream\Infrastructure\Mailer;
 * @author Jason
 * @time 2015-11-29
 */
-use Zodream\Infrastructure\Template;
+use Zodream\Infrastructure\Support\Template;
+use Zodream\Service\Config;
 
 class Mailer extends BaseMailer {
 
@@ -26,7 +27,7 @@ class Mailer extends BaseMailer {
 		$this->mail->isSMTP();
 		$this->mail->SMTPAuth = true;
 		$this->mail->SMTPSecure = $this->configs['secure'];
-		if (defined('DEBUG') && DEBUG) {
+		if (Config::isDebug()) {
 			$this->mail->SMTPDebug = 1;
 		}
 		$email = empty($this->configs['email']) ? $this->configs['user'] : $this->configs['email'];

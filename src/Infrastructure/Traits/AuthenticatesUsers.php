@@ -19,7 +19,9 @@ trait AuthenticatesUsers {
 
 
     protected function sendFailedLoginResponse() {
-        throw new Exception(Factory::i18n('auth.failed'));
+        throw new Exception(
+            __('auth failed')
+        );
     }
 
     public function logout() {

@@ -77,7 +77,7 @@ abstract class BaseMailer extends ConfigObject {
 	 * @return $this
 	 */
 	public function addAttachment($file, $name = '') {
-		$this->_mail->addAttachment($file, $name);
+		$this->mail->addAttachment($file, $name);
 		return $this;
 	}
 

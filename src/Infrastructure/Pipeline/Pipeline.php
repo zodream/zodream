@@ -31,7 +31,9 @@ class Pipeline implements PipelineInterface {
     public function __construct(array $stages = [], ProcessorInterface $processor = null) {
         foreach ($stages as $stage) {
             if (false === is_callable($stage)) {
-                throw new InvalidArgumentException('All stages should be callable.');
+                throw new InvalidArgumentException(
+                    __('All stages should be callable.')
+                );
             }
         }
 

@@ -68,7 +68,11 @@ class Factory {
             return static::$_instance[$key] = call_user_func($class.'::getInstance');
         }
         if (!class_exists($class)) {
-            throw new \InvalidArgumentException($class.' CLASS IS NOT EXCITE!');
+            throw new \InvalidArgumentException(
+                __('{class} class is not register!', [
+                    'class' => $class
+                ])
+            );
         }
         return static::$_instance[$key] = new $class;
     }

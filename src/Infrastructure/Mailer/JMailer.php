@@ -1,12 +1,8 @@
 <?php
 namespace Zodream\Infrastructure\Mailer;
-/**
- * Created by PhpStorm.
- * User: zx648
- * Date: 2016/5/27
- * Time: 13:19
- */
-use Zodream\Infrastructure\Error\Error;
+
+use Exception;
+use COM;
 
 class JMailer extends BaseMailer {
 
@@ -16,9 +12,11 @@ class JMailer extends BaseMailer {
     protected $mail;
 
     public function __construct() {
-        $this->mail = new \COM('JMail.Message');
+        $this->mail = new COM('JMail.Message');
         if (!$this->mail) {
-            throw new \Exception('CANNOT USE JMail DLL!');
+            throw new Exception(
+                __('Cannot use JMail DLL!')
+            );
         }
         if (defined('DEBUG') && DEBUG) {
             $this->mail->SiLent = true; //设置成True的话Jmail不会提示错误只会返回True和False

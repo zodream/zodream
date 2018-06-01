@@ -61,19 +61,27 @@ abstract class BaseSecurity {
     public function pkcs7UnPad($padded, $blockSize) {
         $l = strlen($padded);
         if ($l % $blockSize != 0) {
-            throw new \Exception("Padded plaintext cannot be divided by the block size");
+            throw new \Exception(
+                __('Padded plaintext cannot be divided by the block size')
+            );
         }
         $padSize = ord($padded[$l - 1]);
         if ($padSize === 0) {
-            throw new \Exception("Zero padding found instead of PKCS#7 padding");
+            throw new \Exception(
+                __('Zero padding found instead of PKCS#7 padding')
+            );
         }
         if ($padSize > $blockSize) {
-            throw new \Exception("Incorrect amount of PKCS#7 padding for blocksize");
+            throw new \Exception(
+                __('Incorrect amount of PKCS#7 padding for blocksize')
+            );
         }
         // check the correctness of the padding bytes by counting the occurance
         $padding = substr($padded, -1 * $padSize);
         if (substr_count($padding, chr($padSize)) != $padSize) {
-            throw new \Exception("Invalid PKCS#7 padding encountered");
+            throw new \Exception(
+                __('Invalid PKCS#7 padding encountered')
+            );
         }
         return substr($padded, 0, $l - $padSize);
     }

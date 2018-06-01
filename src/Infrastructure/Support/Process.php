@@ -113,7 +113,9 @@ class Process {
 
     public function start() {
         if ($this->state !== self::NOT_STARTED) {
-            throw new Exception("Process was already started.");
+            throw new Exception(
+                __('Process was already started.')
+            );
         }
 
         $this->updateDescriptors();
@@ -121,7 +123,11 @@ class Process {
         $this->process = @proc_open($this->command, $this->descriptors, $this->pipes, $this->cwd, $this->env);
 
         if (!($this->process) || !is_resource($this->process)) {
-            throw new Exception("Unable to execute command: $this->command\n");
+            throw new Exception(
+                __('Unable to execute command: {command}', [
+                    'command' => $this->command
+                ])
+            );
         }
 
         // Set the pipes as non-blocking
@@ -251,7 +257,9 @@ class Process {
 
             return $this;
         }
-        throw new Exception('STDIN is not available');
+        throw new Exception(
+            __('STDIN is not available')
+        );
     }
 
     public function endSend() {

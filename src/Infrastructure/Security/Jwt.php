@@ -55,22 +55,32 @@ class Jwt extends BaseSecurity {
     public function decrypt($jwt) {
         $tks = explode('.', $jwt);
         if (count($tks) != 3) {
-            throw new Exception('Wrong number of segments');
+            throw new Exception(
+                __('Wrong number of segments')
+            );
         }
         list($headb64, $payloadb64, $cryptob64) = $tks;
         if (null === ($header = json_decode($this->urlsafeB64Decode($headb64)))) {
-            throw new Exception('Invalid segment encoding');
+            throw new Exception(
+                __('Invalid segment encoding')
+            );
         }
         if (null === $payload = json_decode($this->urlsafeB64Decode($payloadb64))) {
-            throw new Exception('Invalid segment encoding');
+            throw new Exception(
+                __('Invalid segment encoding')
+            );
         }
         $sig = $this->urlsafeB64Decode($cryptob64);
         if (isset($this->key)) {
             if (empty($header->alg)) {
-                throw new DomainException('Empty algorithm');
+                throw new DomainException(
+                    __('Empty algorithm')
+                );
             }
             if (!$this->verifySignature($sig, "$headb64.$payloadb64", $this->key, $this->algo)) {
-                throw new UnexpectedValueException('Signature verification failed');
+                throw new UnexpectedValueException(
+                    __('Signature verification failed')
+                );
             }
         }
         return $payload;
@@ -89,7 +99,9 @@ class Jwt extends BaseSecurity {
             case 'RS512':
                 return (boolean) openssl_verify($input, $signature, $key, OPENSSL_ALGO_SHA512);
             default:
-                throw new Exception("Unsupported or invalid signing algorithm.");
+                throw new Exception(
+                    __('Unsupported or invalid signing algorithm.')
+                );
         }
     }
 
@@ -108,13 +120,17 @@ class Jwt extends BaseSecurity {
             case 'RS512':
                 return $this->generateRSASignature($input, $key, OPENSSL_ALGO_SHA512);
             default:
-                throw new Exception("Unsupported or invalid signing algorithm.");
+                throw new Exception(
+                    __('Unsupported or invalid signing algorithm.')
+                );
         }
     }
 
     private function generateRSASignature($input, $key, $algo) { 
         if (!openssl_sign($input, $signature, $key, $algo)) { 
-            throw new Exception("Unable to sign data."); 
+            throw new Exception(
+                __('Unable to sign data.')
+            );
         } 
         return $signature; 
     } 

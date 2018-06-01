@@ -57,7 +57,9 @@ class UploadFile extends BaseUpload {
         }
         if (!move_uploaded_file($this->tempName, $this->file->getFullName()) ||
             !$this->file->exist()) {
-            $this->setError('ERROR_FILE_MOVE');
+            $this->setError(
+                __('ERROR_FILE_MOVE')
+            );
             return false;
         }
         return true;

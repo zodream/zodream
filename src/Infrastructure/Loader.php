@@ -28,7 +28,11 @@ class Loader extends MagicObject {
 		if ($file->exist()) {
 			include_once($file);
 		}
-		throw new \InvalidArgumentException('Error: Could not load plugin ' . $plugin . '!');
+		throw new \InvalidArgumentException(
+		    __('Could not load plugin {name}!', [
+		        'name' => $plugin
+            ])
+        );
 	}
 
 	/**
@@ -61,7 +65,11 @@ class Loader extends MagicObject {
 				}
 				$this->set(is_numeric($key) ? (str_replace('\\', '_', $value).$after) : $key, $instance);
 			}
-			throw new \InvalidArgumentException('Error: Could not load ' . $class . '!');
+			throw new \InvalidArgumentException(
+			    __('Could not load {class}!', [
+			        'class' => $class
+                ])
+            );
 		}
 	}
 }

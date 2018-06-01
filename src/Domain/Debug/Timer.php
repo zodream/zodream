@@ -1,6 +1,7 @@
 <?php
 namespace Zodream\Domain\Debug;
 
+use Zodream\Disk\Stream;
 use Zodream\Service\Factory;
 use Zodream\Helpers\Time;
 class Timer {
@@ -41,13 +42,14 @@ class Timer {
     }
 
     public function log() {
-        $handle = fopen(Factory::root()->childFile('log/timer.log'), 'w');
-        fwrite($handle, Time::format()."\r\n");
-        fwrite($handle, $this->startTime."\r\n");
+        $stream = new Stream(Factory::root()->file('log/timer.log'));
+        $stream->open('w')
+            ->writeLine(Time::format())
+            ->writeLine($this->startTime);
         foreach ($this->times as $key => $item) {
-            fwrite($handle, $key.':'.$item."\r\n");
+            $stream->writeLine($key.':'.$item);
         }
-        fwrite($handle, $this->lastTime."\r\n");
-        fclose($handle);
+        $stream->writeLine($this->lastTime)
+            ->close();
     }
 }

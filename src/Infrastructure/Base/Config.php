@@ -152,7 +152,9 @@ class Config extends MagicObject {
      */
     public function createObject($key) {
         if (!$this->has($key)) {
-            throw new \InvalidArgumentException('CONFIG ERROR!');
+            throw new \InvalidArgumentException(
+                __('Config error')
+            );
         }
         $data = $this->get($key);
         $driver = $data['driver'];

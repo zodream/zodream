@@ -126,7 +126,7 @@ $configs = array(
     'i18n' => array(
         'driver' => PhpSource::class,
         'directory' => 'data/languages',
-        'language' => ''//'zh-cn',
+        'language' => 'en'//'zh-cn',
     ),
 );
 
