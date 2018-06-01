@@ -31,6 +31,9 @@
         "shark/simple_html_dom": "dev-master"
     },
     "autoload": {
+        "files": [
+            "src/Service/helpers.php"
+        ],
         "psr-4": {
             "Zodream\\": "src/"
         }

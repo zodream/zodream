@@ -7,6 +7,7 @@ namespace Zodream\Infrastructure\Session;
  * Date: 2016/3/6
  * Time: 9:56
  */
+use Zodream\Helpers\Str;
 use Zodream\Infrastructure\Base\ConfigObject;
 use Zodream\Disk\Directory;
 use Zodream\Service\Factory;
@@ -53,6 +54,9 @@ class Session extends ConfigObject implements \ArrayAccess {
             $this->savePath($this->configs['directory']);
         }
         @session_start();
+//        if (! $this->has('_token')) {
+//            $this->regenerateToken();
+//        }
     }
 
     protected function registerSessionHandler() {
@@ -331,6 +335,43 @@ class Session extends ConfigObject implements \ArrayAccess {
 
     public function name($value = null) {
         return session_name($value);
+    }
+
+    /**
+     * Get the CSRF token value.
+     *
+     * @return string
+     */
+    public function token() {
+        return $this->get('_token');
+    }
+
+    /**
+     * Regenerate the CSRF token value.
+     *
+     * @return void
+     */
+    public function regenerateToken() {
+        $this->set('_token', Str::random(40));
+    }
+
+    /**
+     * Get the previous URL from the session.
+     *
+     * @return string|null
+     */
+    public function previousUrl() {
+        return $this->get('_previous.url');
+    }
+
+    /**
+     * Set the "previous" URL in the session.
+     *
+     * @param  string  $url
+     * @return void
+     */
+    public function setPreviousUrl($url) {
+        $this->set('_previous.url', $url);
     }
 
     public function offsetExists($offset) {
