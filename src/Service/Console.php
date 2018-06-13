@@ -27,6 +27,9 @@ class Console extends Web {
      */
     protected function getPathAndModule() {
         $arg = Request::argv('commands.0') ?: Request::argv('arguments.0');
+        if (empty($arg)) {
+            return ['Home', 'index'];
+        }
         $args = explode(':', $arg, 2);
         if (count($args) == 1) {
             return ['Home', $arg];
