@@ -47,9 +47,10 @@ if (! function_exists('cache')) {
      *
      * If an array is passed, we'll assume you want to put to the cache.
      * @throws Exception
+     * @return \Zodream\Infrastructure\Caching\Cache|mixed
      */
     function cache() {
-        Factory::cache(...func_get_args());
+        return Factory::cache(...func_get_args());
     }
 }
 
