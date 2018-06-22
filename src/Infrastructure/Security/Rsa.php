@@ -14,6 +14,11 @@ class Rsa extends BaseSecurity {
         if ($key instanceof File) {
             $key = $key->read();
         }
+        if (strpos($key, 'PUBLIC KEY') === false) {
+            $key = "-----BEGIN PUBLIC KEY-----\n" .
+                wordwrap($key, 64, "\n", true) .
+                "\n-----END PUBLIC KEY-----";
+        }
         $this->publicKey = openssl_pkey_get_public($key);
         return $this;
     }
@@ -21,6 +26,11 @@ class Rsa extends BaseSecurity {
     public function setPrivateKey($key, $password = '') {
         if ($key instanceof File) {
             $key = $key->read();
+        }
+        if (strpos($key, 'PRIVATE KEY') === false) {
+            $key = "-----BEGIN RSA PRIVATE KEY-----\n" .
+                wordwrap($key, 64, "\n", true) .
+                "\n-----END RSA PRIVATE KEY-----";
         }
         $this->privateKey = openssl_pkey_get_private($key, $password);
         return $this;
