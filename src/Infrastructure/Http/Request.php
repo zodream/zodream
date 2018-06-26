@@ -253,6 +253,10 @@ final class Request {
 		return !is_null(self::server('argv'));
 	}
 
+	public static function isLinux() {
+        return DIRECTORY_SEPARATOR == '/';
+    }
+
 
 	public static function ip() {
 		return self::Other(__FUNCTION__);
