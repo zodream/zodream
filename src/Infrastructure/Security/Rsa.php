@@ -10,6 +10,17 @@ class Rsa extends BaseSecurity {
 
     protected $publicKey;
 
+    protected $padding = OPENSSL_PKCS1_PADDING;
+
+    /**
+     * @param mixed $padding
+     * @return Rsa
+     */
+    public function setPadding($padding) {
+        $this->padding = $padding;
+        return $this;
+    }
+
     public function setPublicKey($key) {
         if ($key instanceof File) {
             $key = $key->read();
@@ -54,7 +65,7 @@ class Rsa extends BaseSecurity {
             return false;
         }
         $encrypted = '';
-        if (!openssl_private_encrypt($data, $encrypted, $this->privateKey)) {
+        if (!openssl_private_encrypt($data, $encrypted, $this->privateKey, $this->padding)) {
             return false;
         }
         return base64_encode($encrypted);
@@ -70,7 +81,7 @@ class Rsa extends BaseSecurity {
             return false;
         }
         $encrypted = '';
-        if (!openssl_public_encrypt($data, $encrypted, $this->publicKey)) {
+        if (!openssl_public_encrypt($data, $encrypted, $this->publicKey, $this->padding)) {
             return false;
         }
         return base64_encode($encrypted);
@@ -86,7 +97,7 @@ class Rsa extends BaseSecurity {
             return false;
         }
         $encrypted = '';
-        if (!openssl_public_decrypt(base64_decode($data), $encrypted, $this->publicKey)) {
+        if (!openssl_public_decrypt(base64_decode($data), $encrypted, $this->publicKey, $this->padding)) {
             return false;
         }
         return $encrypted;
@@ -101,7 +112,7 @@ class Rsa extends BaseSecurity {
             return false;
         }
         $encrypted = '';
-        if (!openssl_private_decrypt(base64_decode($data), $encrypted, $this->privateKey)) {
+        if (!openssl_private_decrypt(base64_decode($data), $encrypted, $this->privateKey, $this->padding)) {
             return false;
         }
         return $encrypted;
@@ -123,5 +134,14 @@ class Rsa extends BaseSecurity {
      */
     public function decrypt($data) {
         return $this->decryptPublicEncrypt($data);
+    }
+
+    public function __destruct() {
+        if (is_resource($this->publicKey)) {
+            openssl_free_key($this->publicKey);
+        }
+        if (is_resource($this->privateKey)) {
+            openssl_free_key($this->privateKey);
+        }
     }
 }
