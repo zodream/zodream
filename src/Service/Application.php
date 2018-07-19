@@ -1,137 +1,80 @@
 <?php
+declare(strict_types = 1);
+
 namespace Zodream\Service;
-/**
-* 启动
-* 
-* @author Jason
-* @time 2015-12-19
-*/
-use Zodream\Domain\Autoload;
+
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Http\Response;
-use Zodream\Service\Events\RequestHandled;
-use Zodream\Service\Routing\Url;
-use Exception;
-use Throwable;
-use Zodream\Infrastructure\Error\FatalThrowableError;
-
-defined('VERSION') || define('VERSION', 'v3');
-defined('DEBUG') || define('DEBUG', false);
-defined('APP_GZIP') || define('APP_GZIP', !DEBUG); // 开启gzip压缩
 
 class Application {
 
-    protected $path;
+    const VERSION = '4.0';
 
-    public function __construct($path = null) {
-        $this->setPath($path);
-    }
+    protected $basePath;
 
-    public function setPath($path) {
-        $this->path = $path;
-        return $this;
-    }
-
-    public static function main($path = null) {
-        return new static($path);
-    }
+    protected $config;
 
     /**
-     * @return bool
-     * @throws Exception
+     * @var Route
      */
-    public function send() {
-        return $this->handle()->send();
-    }
+    protected $route;
 
     /**
-     * 运行程序并捕捉错误信息
-     * @return Response
-     * @throws Exception
+     * @var Request
      */
-    public function handle() {
-        try {
-            $response = $this->sendRequestThroughRouter();
-        } catch (Exception $e) {
-            $this->reportException($e);
-
-            $response = $this->renderException($e);
-        } catch (Throwable $e) {
-            $this->reportException($e = new FatalThrowableError($e));
-
-            $response = $this->renderException($e);
-        }
-
-        Factory::event(new RequestHandled($response));
-        return $response;
-    }
+    protected $request;
 
     /**
-     * 执行路由并获取响应
-     * @return Response
-     * @throws \Exception
+     * @var Response
      */
-    protected function sendRequestThroughRouter() {
-        $this->bootstrap();
-        return Factory::router()
-            ->dispatch(Request::method(), $this->path)
-            ->run();
-    }
+    protected $response;
 
     /**
-     * 配置程序全局信息
-     * @throws Exception
+     * 访问句柄
+     * @var array
      */
-    public function bootstrap() {
-        date_default_timezone_set(Config::formatter('timezone'));     //这里设置了时区
-        Url::setHost();
-        Factory::timer()->begin();
-        Autoload::getInstance()
-            ->registerAlias()
-            ->bindError();
-        //Cookie::restore();
-        $configs = Config::event([]);
-        $this->registerEvents($configs);
+    protected $instances = [];
+
+    /**
+     * 对应的方法
+     * @var array
+     */
+    protected $aliases = [];
+
+    /**
+     * 注册的类池，未初始化的类名
+     * @var array
+     */
+    protected $bindings = [];
+
+    /**
+     * @return string
+     */
+    public function version(): string {
+        return static::VERSION;
+    }
+
+    public function register(string $key, mixed $abstract = null) {
+        $this->bindings[$key] = empty($abstract) ? $key : $abstract;
+    }
+
+
+    public function instance(string $key, mixed $instance): void {
+        $this->alias($key, $key);
+        $this->instances[$key] = $instance;
+    }
+
+    public function alias(string $abstract, string $alias) {
+        $this->aliases[$alias] = $abstract;
     }
 
 
     /**
-     * Report the exception to the exception handler.
-     *
-     * @param  Exception $e
-     * @return void
-     * @throws Exception
+     * @param mixed $basePath
      */
-    protected function reportException(Exception $e) {
-        Factory::handler()->report($e);
+    public function setBasePath(string $basePath) {
+        $this->basePath = $basePath;
     }
 
-    /**
-     * Render the exception to a response.
-     * @param Exception $e
-     * @return Response
-     * @throws Exception
-     */
-    protected function renderException(Exception $e) {
-        return Factory::handler()->render($e);
-    }
 
-    /**
-     * @param $configs
-     * @throws Exception
-     */
-    public function registerEvents($configs) {
-        if (!isset($configs['canAble']) || !$configs['canAble']) {
-            Factory::event()->setCanAble(false);
-            return;
-        }
-        foreach ($configs as $key => $item) {
-            if ($key == 'canAble' || empty($item)) {
-                continue;
-            }
-            foreach ((array)$item as $value) {
-                Factory::event()->add($key, $value);
-            }
-        }
-    }
 }
