@@ -7,6 +7,23 @@ use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Error\NotFoundHttpException;
 use Zodream\Infrastructure\Http\HttpException;
 use Zodream\Html\VerifyCsrfToken;
+use Zodream\Service\Application;
+use Zodream\Infrastructure\Http\Response;
+use Zodream\Infrastructure\Http\Request;
+
+
+if (! function_exists('app')) {
+    /**
+     * @param string|null $abstract
+     * @return Application|Response|Request
+     */
+    function app(string $abstract = null): mixed {
+        if (empty($abstract)) {
+            return Application::getInstance();
+        }
+        return Application::getInstance()->make($abstract);
+    }
+}
 
 if (! function_exists('abort')) {
     /**

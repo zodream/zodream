@@ -5,8 +5,18 @@ namespace Zodream\Service;
 
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Http\Response;
+use ArrayAccess;
+use Closure;
+use ReflectionClass;
+use Exception;
+use ReflectionParameter;
+use Zodream\Infrastructure\Route\Router;
 
-class Application {
+class Application implements ArrayAccess {
+    /**
+     * @var Application
+     */
+    protected static $instance;
 
     const VERSION = '4.0';
 
@@ -54,8 +64,18 @@ class Application {
         return static::VERSION;
     }
 
+    public function singleton(string $abstract, mixed $concrete = null) {
+        $this->register($abstract, $concrete);
+    }
+
     public function register(string $key, mixed $abstract = null) {
         $this->bindings[$key] = empty($abstract) ? $key : $abstract;
+    }
+
+    public function registerIf(string $abstract, mixed $concrete = null) {
+        if (! $this->has($abstract)) {
+            $this->register($abstract, $concrete);
+        }
     }
 
 
@@ -68,6 +88,87 @@ class Application {
         $this->aliases[$alias] = $abstract;
     }
 
+    public function getAlias(string $abstract): string {
+        return isset($this->aliases[$abstract]) ? $this->aliases[$abstract] : $abstract;
+    }
+
+    public function has(string $key): bool {
+        return isset($this->bindings[$key]) ||
+            isset($this->instances[$key]) ||
+            isset($this->aliases[$key]);
+    }
+
+    public function make(string $abstract) {
+        $abstract = $this->getAlias($abstract);
+        if (isset($this->instances[$abstract])) {
+            return $this->instances[$abstract];
+        }
+
+    }
+
+    public function build(mixed $concrete): mixed {
+        if ($concrete instanceof Closure) {
+            return $concrete($this);
+        }
+
+        $reflector = new ReflectionClass($concrete);
+
+        if (! $reflector->isInstantiable()) {
+            throw new Exception(
+                __('Target {concrete} is not instantiable.', compact('concrete'))
+            );
+        }
+
+        $constructor = $reflector->getConstructor();
+        if (is_null($constructor)) {
+            return new $concrete;
+        }
+
+        $dependencies = $constructor->getParameters();
+        $instances = $this->resolveDependencies(
+            $dependencies
+        );
+        return $reflector->newInstanceArgs($instances);
+    }
+
+    protected function resolveDependencies(array $dependencies) {
+        $results = [];
+        foreach ($dependencies as $dependency) {
+            $results[] = is_null($class = $dependency->getClass())
+                ? $this->resolvePrimitive($dependency)
+                : $this->resolveClass($dependency);
+        }
+
+        return $results;
+    }
+
+    protected function resolvePrimitive(ReflectionParameter $parameter) {
+        if (! is_null($concrete = $this->make($parameter->name))) {
+            return $concrete instanceof Closure ? $concrete($this) : $concrete;
+        }
+
+        if ($parameter->isDefaultValueAvailable()) {
+            return $parameter->getDefaultValue();
+        }
+        throw new Exception(
+            __(
+                'Unresolvable dependency resolving [{parameter}]', compact('parameter')
+            )
+        );
+    }
+
+    protected function resolveClass(ReflectionParameter $parameter) {
+        try {
+            return $this->make($parameter->getClass()->name);
+        }
+        catch (Exception $e) {
+            if ($parameter->isOptional()) {
+                return $parameter->getDefaultValue();
+            }
+            throw $e;
+        }
+    }
+
 
     /**
      * @param mixed $basePath
@@ -76,5 +177,101 @@ class Application {
         $this->basePath = $basePath;
     }
 
+    public function basePath(): string {
+        return $this->basePath;
+    }
+
+    protected function formatUri(string $uri): string {
+        return $uri;
+    }
+
+    public function handle(string $uri): Response {
+        $this->route = $this[Router::class]->handle(
+            $this->request->getMethod(),
+            $this->formatUri($uri));
+        $this->route->handle($this->request, $this->response);
+        return $this->response;
+    }
+
+    public function flush() {
+        $this->aliases = [];
+        $this->bindings = [];
+        $this->instances = [];
+    }
+
+    /**
+     * Set the globally available instance of the container.
+     *
+     * @return static
+     */
+    public static function getInstance() {
+        if (is_null(static::$instance)) {
+            static::$instance = new static;
+        }
+        return static::$instance;
+    }
+
+    public static function setInstance(Application $container = null) {
+        return static::$instance = $container;
+    }
+
+
+    public function offsetExists($key) {
+        return $this->has($key);
+    }
+
+    /**
+     * Get the value at a given offset.
+     *
+     * @param  string  $key
+     * @return mixed
+     */
+    public function offsetGet($key) {
+        return $this->make($key);
+    }
+
+    /**
+     * Set the value at a given offset.
+     *
+     * @param  string  $key
+     * @param  mixed   $value
+     * @return void
+     */
+    public function offsetSet($key, $value) {
+        $this->instance($key, $value instanceof Closure ? $value : function () use ($value) {
+            return $value;
+        });
+    }
+
+    /**
+     * Unset the value at a given offset.
+     *
+     * @param  string  $key
+     * @return void
+     */
+    public function offsetUnset($key) {
+        unset($this->bindings[$key], $this->instances[$key]);
+    }
+
+    /**
+     * Dynamically access container services.
+     *
+     * @param  string  $key
+     * @return mixed
+     */
+    public function __get($key) {
+        return $this[$key];
+    }
+
+    /**
+     * Dynamically set container services.
+     *
+     * @param  string  $key
+     * @param  mixed   $value
+     * @return void
+     */
+    public function __set($key, $value) {
+        $this[$key] = $value;
+    }
 
 }

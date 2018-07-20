@@ -3,11 +3,13 @@ declare(strict_types = 1);
 
 namespace Zodream\Service;
 
+use Zodream\Infrastructure\Http\URL;
+
 class Api extends Web {
-    public function setPath($path) {
+    protected function formatUri(string $path): string {
         if (is_null($path)) {
-            $path = Url::getVirtualUri();
+            $path = URL::getVirtualUri();
         }
-        return parent::setPath(preg_replace('#^/?'.$this->version().'#i', '', $path));
+        return preg_replace('#^/?'.$this->version().'#i', '', $path);
     }
 }

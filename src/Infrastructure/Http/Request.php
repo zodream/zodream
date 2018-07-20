@@ -13,6 +13,11 @@ class Request {
 
     }
 
+    public function append(array $data): Request {
+
+        return $this;
+    }
+
     public function all(): array {
 
     }
@@ -30,6 +35,14 @@ class Request {
     }
 
     public function header(string $key): string {
+
+    }
+
+    public function argv(string $key): string {
+
+    }
+
+    public function getMethod(): string {
 
     }
 }
