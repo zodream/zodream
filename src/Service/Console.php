@@ -14,11 +14,13 @@ class Console extends Web {
 
     protected function formatUri(string $path): string {
         list($module, $arg) = $this->getPathAndModule();
-        if (is_null($path)) {
+        if ($path === '') {
             $path = $arg;
         }
-        defined('APP_MODULE') || define('APP_MODULE', Str::studly($module));
-        $this->request->append($this->request->argv('options'));
+        if (!empty($module)) {
+            $this->instance('app.module', Str::studly($module));
+        }
+        $this['request']->append($this['request']->argv('options'));
         return $path;
     }
 
@@ -27,8 +29,8 @@ class Console extends Web {
      * @return array
      */
     protected function getPathAndModule(): array {
-        $arg = $this->request->argv('commands.0') ?:
-            $this->request->argv('arguments.0');
+        $arg = $this['request']->argv('commands.0') ?:
+            $this['request']->argv('arguments.0');
         if (empty($arg)) {
             return ['Home', 'index'];
         }

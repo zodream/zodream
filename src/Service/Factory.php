@@ -29,7 +29,7 @@ use Zodream\Infrastructure\Interfaces\ExceptionHandler;
 use Zodream\Infrastructure\Session\Session;
 use Zodream\Route\Router;
 
-defined('APP_DIR') || define('APP_DIR', Request::server('DOCUMENT_ROOT'));
+defined('APP_DIR') || define('APP_DIR', app('request')->server('DOCUMENT_ROOT'));
 
 class Factory {
     
@@ -179,7 +179,7 @@ class Factory {
      * @throws \Exception
      */
     public static function response() {
-        return self::getInstance('response', Response::class);
+        return app('response');
     }
 
     /**
@@ -196,7 +196,7 @@ class Factory {
      * @throws \Exception
      */
     public static function view() {
-        return self::getInstance('viewFactory', ViewFactory::class);
+        return app('view');
     }
 
     /**
@@ -238,7 +238,7 @@ class Factory {
      */
     public static function root() {
         if (!array_key_exists(__FUNCTION__, static::$_instance)) {
-            static::$_instance[__FUNCTION__] = new Directory(defined('APP_DIR') ? APP_DIR : Request::server('DOCUMENT_ROOT'));
+            static::$_instance[__FUNCTION__] = new Directory(app()->basePath());
         }
         return static::$_instance[__FUNCTION__];
     }
@@ -251,7 +251,7 @@ class Factory {
         if (!array_key_exists(__FUNCTION__, static::$_instance)) {
             $path = self::config('app.public');
             static::$_instance[__FUNCTION__] = empty($path) ?
-                new Directory(Request::server('DOCUMENT_ROOT'))
+                new Directory(app('request')->server('DOCUMENT_ROOT'))
                 : self::root()->directory($path);
         }
         return static::$_instance[__FUNCTION__];

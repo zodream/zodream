@@ -216,11 +216,11 @@ class Response {
         if ((!defined('DEBUG') || !DEBUG) &&
             (!defined('APP_GZIP') || APP_GZIP) &&
             extension_loaded('zlib')
-            && strpos(Request::server('HTTP_ACCEPT_ENCODING', ''), 'gzip') !== FALSE) {
+            && strpos(app('request')->server('HTTP_ACCEPT_ENCODING', ''), 'gzip') !== FALSE) {
             $callback = 'ob_gzhandler';
         }
         ob_start($callback);
-        ob_implicit_flush(FALSE);
+        ob_implicit_flush(0);
         $this->sendHeaders()->sendContent();
         ob_end_flush();
         return true;
@@ -243,8 +243,8 @@ class Response {
      */
     public function jsonp(array $data) {
        return $this->json(
-           Request::get('callback', 'jsonpReturn').
-           '('.JsonExpand::encode($data).');'
+           app('request')->get('callback', 'jsonpReturn').
+           '('.Json::encode($data).');'
        );
     }
 
@@ -361,7 +361,7 @@ class Response {
      * @return array|null
      */
     protected function getRange($fileSize){
-        $range = Request::server('HTTP_RANGE');
+        $range = app('request')->server('HTTP_RANGE');
         if (empty($range)) {
             return null;
         }

@@ -3,13 +3,12 @@ declare(strict_types = 1);
 
 namespace Zodream\Service;
 
-use Zodream\Infrastructure\Http\Request;
-use Zodream\Service\Routing\Url;
+use Zodream\Infrastructure\Http\URL;
 
 class Web extends Application {
 
     protected function formatUri(string $path): string {
-        if (is_null($path)) {
+        if ($path === '') {
             $path = URL::getVirtualUri();
         }
         return $this->getRealPath($path);
@@ -17,7 +16,7 @@ class Web extends Application {
 
     protected function getRealPath(string $path): string {
         list($routes, $args) = $this->spiltArrayByNumber(explode('/', trim($path, '/')));
-        $this->request->append($args);
+        $this['request']->append($args);
         return implode('/', $routes);
     }
 

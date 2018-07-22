@@ -110,7 +110,7 @@ $configs = array(
 	'alias'  => array(
 		'Cookie' => Cookie::class,
         'Request' => Request::class,
-        'Auth' => Auth::class
+        'Auth' => Auth::class,
 	),
 	// 注册事件
 	'event' => array(
@@ -128,15 +128,13 @@ $configs = array(
         'directory' => 'data/languages',
         'language' => 'en'//'zh-cn',
     ),
+    'view' => array(                           //视图文件信息
+        'directory' => 'UserInterface/'.app('app.module'),
+        'suffix' => '.php',
+    )
 );
 
-if (defined('APP_MODULE')) {
-	$configs['view'] = array(                           //视图文件信息
-		'directory' => 'UserInterface/'.APP_MODULE,
-		'suffix' => '.php',
-	);
-}
-if (in_array(Request::ip(), ['unknown', '::1', '127.0.0.1'])){
+if (in_array(app('request')->ip(), ['unknown', '::1', '127.0.0.1'])){
     $configs['modules'] = array(   //模块
         'gzo' => 'Zodream\Module\Gzo'
     );

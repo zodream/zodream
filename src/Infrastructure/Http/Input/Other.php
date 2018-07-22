@@ -1,32 +1,58 @@
 <?php
 namespace Zodream\Infrastructure\Http\Input;
 
+use Zodream\Http\Uri;
+
 /**
  * Created by PhpStorm.
  * User: zx648
  * Date: 2016/4/3
  * Time: 9:29
  */
-class Other extends BaseInput {
+trait Other {
 
-    public function get($name = null, $default = null) {
-        if ($this->has($name)) {
-            parent::get($name);
+
+    protected function createUri(): Uri {
+        $uri = new Uri();
+        return $uri->setScheme($this->isSSL() ? 'https' : 'http')
+            ->setHost($this->createHost())
+            ->decode($this-> createUriPath());
+    }
+
+    /**
+     * 获取网址
+     *
+     * @return string 真实显示的网址
+     */
+    protected function createUriPath() {
+        if (isset($_SERVER['REQUEST_URI'])) {
+            return $_SERVER['REQUEST_URI'];
         }
-        $method = 'get'.ucfirst($name);
-        if (!method_exists($this, $method)) {
-            return $default;
+        $self = $_SERVER['PHP_SELF'];
+        if (isset($_SERVER['argv'])) {
+            unset($_SERVER['argv'][0]);
+            return $self .'?'.implode('&', $_SERVER['argv']);
         }
-        $arg = $this->$method();
-        $this->set($name, $arg);
-        return $arg;
+        return $self .'?'. $_SERVER['QUERY_STRING'];
+    }
+
+    /**
+     * 判断是否SSL协议
+     * @return boolean
+     */
+    protected function createIsSSL() {
+        $https = $this->server('HTTPS');
+        if ('1' == $https || 'on' == strtolower($https)) {
+            return true;
+        }
+        return $this->server('SERVER_PORT') == 443;
     }
 
     /**
      * 只支持basic
      * @return array
      */
-    public function getAuth() {
+   protected function createAuth() {
         if (isset($_SERVER['PHP_AUTH_USER'])) {
             return [$_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']];
         }
@@ -59,7 +85,7 @@ class Other extends BaseInput {
      * 获取提交的方法
      * @return string
      */
-    public function getMethod() {
+   protected function createMethod() {
         if (isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
             return strtoupper($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']);
         }
@@ -70,7 +96,7 @@ class Other extends BaseInput {
      * 获取host 和port
      * @return string
      */
-    public function getHost() {
+   protected function createHost() {
         if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
             // 防止通过局域网代理取得ip值
             return $_SERVER['HTTP_X_FORWARDED_HOST'];
@@ -93,7 +119,7 @@ class Other extends BaseInput {
      * 获取真实IP
      * @return string IP,
      */
-    public function getIp() {
+   protected function createIp() {
         $realIP  = '';
         $unknown = 'unknown';
         if (isset($_SERVER)) {
@@ -128,7 +154,7 @@ class Other extends BaseInput {
         return empty($realIP) ? $unknown : $realIP;
     }
 
-    public function getIsMobile() {
+   protected function createIsMobile() {
         // 如果有HTTP_X_WAP_PROFILE则一定是移动设备
         if (isset($_SERVER['HTTP_X_WAP_PROFILE'])) {
             return true;
@@ -193,7 +219,7 @@ class Other extends BaseInput {
         return false;
     }
 
-    public function getOs() {
+   protected function createOs() {
         $args = [
             'unknown',    //系统
             'unknown',     //系统版本
@@ -378,7 +404,7 @@ class Other extends BaseInput {
         return $args;
     }
 
-    public function getBrowser() {
+   protected function createBrowser() {
         $args = [
             'unknown',    //系统
             'unknown',     //系统版本

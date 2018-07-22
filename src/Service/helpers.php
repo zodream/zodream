@@ -1,6 +1,6 @@
 <?php
 use Zodream\Service\Factory;
-use Zodream\Service\Routing\Url;
+use Zodream\Infrastructure\Http\URL;
 use Zodream\Http\Uri;
 use Zodream\Service\Config;
 use Zodream\Infrastructure\Http\Request;
@@ -9,7 +9,6 @@ use Zodream\Infrastructure\Http\HttpException;
 use Zodream\Html\VerifyCsrfToken;
 use Zodream\Service\Application;
 use Zodream\Infrastructure\Http\Response;
-use Zodream\Infrastructure\Http\Request;
 
 
 if (! function_exists('app')) {
@@ -17,7 +16,7 @@ if (! function_exists('app')) {
      * @param string|null $abstract
      * @return Application|Response|Request
      */
-    function app(string $abstract = null): mixed {
+    function app(string $abstract = null) {
         if (empty($abstract)) {
             return Application::getInstance();
         }
@@ -153,7 +152,7 @@ if (! function_exists('request')) {
      * @return array|string|\Zodream\Infrastructure\Http\Input\Request
      */
     function request($key = null, $default = null) {
-        return Request::request($key, $default);
+        return app('request')->request($key, $default);
     }
 }
 
@@ -209,5 +208,14 @@ if (! function_exists('url')) {
      */
     function url($path = null, $parameters = [], $secure = null) {
         return Url::to($path, $parameters, $secure);
+    }
+}
+
+if (! function_exists('view')) {
+    function view($path = null) {
+        if (empty($path)) {
+            return Factory::view();
+        }
+        return Factory::view()->render($path);
     }
 }

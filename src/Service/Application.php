@@ -10,7 +10,9 @@ use Closure;
 use ReflectionClass;
 use Exception;
 use ReflectionParameter;
-use Zodream\Infrastructure\Route\Router;
+use Zodream\Route\Route;
+use Zodream\Route\Router;
+use Zodream\Template\ViewFactory;
 
 class Application implements ArrayAccess {
     /**
@@ -22,22 +24,8 @@ class Application implements ArrayAccess {
 
     protected $basePath;
 
-    protected $config;
+    protected $booted = false;
 
-    /**
-     * @var Route
-     */
-    protected $route;
-
-    /**
-     * @var Request
-     */
-    protected $request;
-
-    /**
-     * @var Response
-     */
-    protected $response;
 
     /**
      * 访问句柄
@@ -57,6 +45,18 @@ class Application implements ArrayAccess {
      */
     protected $bindings = [];
 
+    public function __construct(string $base_path = null, string $module = 'Home') {
+        if (!empty($base_path)) {
+            $this->setBasePath($base_path);
+        }
+        $this->registerBaseBindings();
+        $this->register('request', Request::class);
+        $this->register('response', Response::class);
+        $this->instance('app.module', $module);
+        $this->register('route', Route::class);
+        $this->register('view', ViewFactory::class);
+    }
+
     /**
      * @return string
      */
@@ -64,22 +64,42 @@ class Application implements ArrayAccess {
         return static::VERSION;
     }
 
-    public function singleton(string $abstract, mixed $concrete = null) {
+    public function isBooted() {
+        return $this->booted;
+    }
+
+    public function boot() {
+        if ($this->booted) {
+            return;
+        }
+
+    }
+
+    protected function registerBaseBindings() {
+        static::setInstance($this);
+        $this->instance('app', $this);
+        $this->instance(Application::class, $this);
+    }
+
+    public function singleton(string $abstract, $concrete = null) {
         $this->register($abstract, $concrete);
     }
 
-    public function register(string $key, mixed $abstract = null) {
+    public function register(string $key, string $abstract = null) {
         $this->bindings[$key] = empty($abstract) ? $key : $abstract;
+        if (!empty($abstract) && $key != $abstract) {
+            $this->alias($abstract, $key);
+        }
     }
 
-    public function registerIf(string $abstract, mixed $concrete = null) {
+    public function registerIf(string $abstract, $concrete = null) {
         if (! $this->has($abstract)) {
             $this->register($abstract, $concrete);
         }
     }
 
 
-    public function instance(string $key, mixed $instance): void {
+    public function instance(string $key, $instance): void {
         $this->alias($key, $key);
         $this->instances[$key] = $instance;
     }
@@ -103,22 +123,29 @@ class Application implements ArrayAccess {
         if (isset($this->instances[$abstract])) {
             return $this->instances[$abstract];
         }
-
+        if (!class_exists($abstract)) {
+            return null;
+        }
+        $object = $this->build($abstract);
+        $this->instance($abstract, $object);
+        return $object;
     }
 
-    public function build(mixed $concrete): mixed {
+    public function build($concrete) {
         if ($concrete instanceof Closure) {
             return $concrete($this);
         }
-
+        if (!class_exists($concrete)) {
+            throw new Exception(
+                __('Target {concrete} is not instantiable.', compact('concrete'))
+            );
+        }
         $reflector = new ReflectionClass($concrete);
-
         if (! $reflector->isInstantiable()) {
             throw new Exception(
                 __('Target {concrete} is not instantiable.', compact('concrete'))
             );
         }
-
         $constructor = $reflector->getConstructor();
         if (is_null($constructor)) {
             return new $concrete;
@@ -185,12 +212,14 @@ class Application implements ArrayAccess {
         return $uri;
     }
 
-    public function handle(string $uri): Response {
-        $this->route = $this[Router::class]->handle(
-            $this->request->getMethod(),
+    public function handle(string $uri = ''): Response {
+        /** @var Route $route */
+        $route = $this[Router::class]->handle(
+            $this['request']->method(),
             $this->formatUri($uri));
-        $this->route->handle($this->request, $this->response);
-        return $this->response;
+        $this->instance(Route::class, $route);
+        $response = $route->handle($this['request'], $this['response']);
+        return $response instanceof Response ? $response : $this['response'];
     }
 
     public function flush() {
@@ -238,9 +267,7 @@ class Application implements ArrayAccess {
      * @return void
      */
     public function offsetSet($key, $value) {
-        $this->instance($key, $value instanceof Closure ? $value : function () use ($value) {
-            return $value;
-        });
+        $this->instance($key, $value);
     }
 
     /**
