@@ -16,7 +16,7 @@ class Loader extends MagicObject {
 	 * @param string $action
 	 */
 	public function model($models, $action = null) {
-		$this->_add($models, $action, 'Domain\\Model\\', APP_MODEL);
+		$this->_add($models, $action, 'Domain\\Model\\', config('app.model'));
 	}
 	
 	/**
