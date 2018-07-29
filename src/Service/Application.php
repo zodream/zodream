@@ -3,6 +3,9 @@ declare(strict_types = 1);
 
 namespace Zodream\Service;
 
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Http\Response;
 use ArrayAccess;
@@ -14,7 +17,7 @@ use Zodream\Route\Route;
 use Zodream\Route\Router;
 use Zodream\Template\ViewFactory;
 
-class Application implements ArrayAccess {
+class Application implements ArrayAccess, ContainerInterface {
     /**
      * @var Application
      */
@@ -112,7 +115,7 @@ class Application implements ArrayAccess {
         return isset($this->aliases[$abstract]) ? $this->aliases[$abstract] : $abstract;
     }
 
-    public function has(string $key): bool {
+    public function has($key): bool {
         return isset($this->bindings[$key]) ||
             isset($this->instances[$key]) ||
             isset($this->aliases[$key]);
@@ -301,4 +304,8 @@ class Application implements ArrayAccess {
         $this[$key] = $value;
     }
 
+
+    public function get($id) {
+        return $this->make($id);
+    }
 }
