@@ -185,9 +185,10 @@ class Factory {
     /**
      * GET USER BY SESSION
      * @return UserModel
+     * @throws \Exception
      */
     public static function user() {
-        return Auth::user();
+        return auth()->user();
     }
 
     /**

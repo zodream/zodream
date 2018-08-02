@@ -9,18 +9,29 @@ use Zodream\Infrastructure\Http\HttpException;
 use Zodream\Html\VerifyCsrfToken;
 use Zodream\Service\Application;
 use Zodream\Infrastructure\Http\Response;
+use Zodream\Domain\Access\Auth;
 
 
 if (! function_exists('app')) {
     /**
      * @param string|null $abstract
-     * @return Application|Response|Request
+     * @return Application|Response|Request|mixed
      */
     function app(string $abstract = null) {
         if (empty($abstract)) {
             return Application::getInstance();
         }
         return Application::getInstance()->make($abstract);
+    }
+}
+
+if (! function_exists('auth')) {
+
+    /**
+     * @return Auth
+     */
+    function auth() {
+        return app('auth');
     }
 }
 
@@ -78,7 +89,7 @@ if (! function_exists('config')) {
      *
      * @param  array|string  $key
      * @param  mixed  $default
-     * @return mixed|Config
+     * @return mixed|Config|string
      */
     function config($key = null, $default = null) {
         return Factory::config($key, $default);

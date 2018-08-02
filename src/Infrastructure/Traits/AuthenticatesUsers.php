@@ -25,8 +25,8 @@ trait AuthenticatesUsers {
     }
 
     public function logout() {
-        if (!Auth::guest()) {
-            Auth::user()->logout();
+        if (!auth()->guest()) {
+            auth()->user()->logout();
         }
         return Factory::response()->redirect('/');
     }

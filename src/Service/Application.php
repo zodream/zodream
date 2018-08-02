@@ -7,6 +7,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Zodream\Debugger\Domain\Debugger;
+use Zodream\Domain\Access\Auth;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Http\Response;
 use ArrayAccess;
@@ -54,9 +55,10 @@ class Application implements ArrayAccess, ContainerInterface {
             $this->setBasePath($base_path);
         }
         $this->registerBaseBindings();
+        $this->instance('app.module', $module);
         $this->register('request', Request::class);
         $this->register('response', Response::class);
-        $this->instance('app.module', $module);
+        $this->register('auth', Auth::class);
         $this->register('route', Route::class);
         $this->register('view', ViewFactory::class);
         $this->register('debugger', Debugger::class);
