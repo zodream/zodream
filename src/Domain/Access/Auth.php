@@ -109,7 +109,7 @@ class Auth implements AuthObject {
 	    if (empty($this->user())) {
 	        return 0;
         }
-        return $this->user()->getIdentity();
+        return intval($this->user()->getIdentity());
     }
 
     /**
