@@ -10,6 +10,8 @@ use Zodream\Html\VerifyCsrfToken;
 use Zodream\Service\Application;
 use Zodream\Infrastructure\Http\Response;
 use Zodream\Domain\Access\Auth;
+use Zodream\Domain\Access\Token;
+use Zodream\Domain\Access\JWTAuth;
 
 
 if (! function_exists('app')) {
@@ -28,7 +30,7 @@ if (! function_exists('app')) {
 if (! function_exists('auth')) {
 
     /**
-     * @return Auth
+     * @return Auth|Token|JWTAuth
      */
     function auth() {
         return app('auth');
