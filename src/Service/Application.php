@@ -3,10 +3,8 @@ declare(strict_types = 1);
 
 namespace Zodream\Service;
 
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use Zodream\Debugger\Domain\Debugger;
+use Zodream\Debugger\Debugger;
 use Zodream\Domain\Access\Auth;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Http\Response;
@@ -51,6 +49,12 @@ class Application implements ArrayAccess, ContainerInterface {
      */
     protected $bindings = [];
 
+    /**
+     * Application constructor.
+     * @param string|null $base_path
+     * @param string $module
+     * @throws Exception
+     */
     public function __construct(string $base_path = null, string $module = 'Home') {
         if (!empty($base_path)) {
             $this->setBasePath($base_path);
@@ -63,7 +67,7 @@ class Application implements ArrayAccess, ContainerInterface {
         $this->register('url', UrlGenerator::class);
         $this->register('route', Route::class);
         $this->register('view', ViewFactory::class);
-        $this->register('debugger', Debugger::class);
+        $this->singleton(Debugger::class, 'debugger');
     }
 
     /**
@@ -90,10 +94,28 @@ class Application implements ArrayAccess, ContainerInterface {
         $this->instance(Application::class, $this);
     }
 
+    /**
+     * 注册并初始化实例
+     * @param string $abstract
+     * @param null $concrete
+     * @return mixed|object
+     * @throws Exception
+     */
     public function singleton(string $abstract, $concrete = null) {
-        $this->register($abstract, $concrete);
+        if (empty($concrete)) {
+            $concrete = $abstract;
+        }
+        $this->register($concrete, $abstract);
+        $object = $this->build($abstract);
+        $this->instance($abstract, $object);
+        return $object;
     }
 
+    /**
+     * 注册
+     * @param string $key
+     * @param string|null $abstract
+     */
     public function register(string $key, string $abstract = null) {
         $this->bindings[$key] = empty($abstract) ? $key : $abstract;
         if (!empty($abstract) && $key != $abstract) {
@@ -107,7 +129,11 @@ class Application implements ArrayAccess, ContainerInterface {
         }
     }
 
-
+    /**
+     * 绑定实例
+     * @param string $key
+     * @param $instance
+     */
     public function instance(string $key, $instance): void {
         $this->alias($key, $key);
         $this->instances[$key] = $instance;
@@ -127,6 +153,12 @@ class Application implements ArrayAccess, ContainerInterface {
             isset($this->aliases[$key]);
     }
 
+    /**
+     * 获取实例或初始化并绑定
+     * @param string $abstract
+     * @return mixed|null|object
+     * @throws Exception
+     */
     public function make(string $abstract) {
         $abstract = $this->getAlias($abstract);
         if (isset($this->instances[$abstract])) {
@@ -140,6 +172,12 @@ class Application implements ArrayAccess, ContainerInterface {
         return $object;
     }
 
+    /**
+     * 初始化实例
+     * @param $concrete
+     * @return mixed|object
+     * @throws Exception
+     */
     public function build($concrete) {
         if ($concrete instanceof Closure) {
             return $concrete($this);
