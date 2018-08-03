@@ -12,6 +12,7 @@ use Zodream\Infrastructure\Http\Response;
 use Zodream\Domain\Access\Auth;
 use Zodream\Domain\Access\Token;
 use Zodream\Domain\Access\JWTAuth;
+use Zodream\Infrastructure\Http\UrlGenerator;
 
 
 if (! function_exists('app')) {
@@ -217,10 +218,13 @@ if (! function_exists('url')) {
      * @param  string  $path
      * @param  mixed   $parameters
      * @param  bool    $secure
-     * @return Uri
+     * @return string| UrlGenerator
      */
     function url($path = null, $parameters = [], $secure = null) {
-        return Url::to($path, $parameters, $secure);
+        if (is_null($path) && empty($parameters) && is_null($secure)) {
+            return app('url');
+        }
+        return app('url')->to($path, $parameters, $secure);
     }
 }
 

@@ -3,13 +3,11 @@ declare(strict_types = 1);
 
 namespace Zodream\Service;
 
-use Zodream\Infrastructure\Http\URL;
-
 class Web extends Application {
 
     protected function formatUri(string $path): string {
         if ($path === '') {
-            $path = URL::getVirtualUri();
+            $path = $this['url']->getVirtualUri();
         }
         return $this->getRealPath($path);
     }

@@ -7,7 +7,7 @@ namespace Zodream\Infrastructure\Support;
  * Date: 2016/4/29
  * Time: 16:50
  */
-use Zodream\Infrastructure\Http\URL;
+
 
 class Html {
     /**
@@ -91,7 +91,7 @@ class Html {
         if (array_key_exists('href', $option)) {
             $href = $option['href'];
         }
-        $option['href'] = Url::to($href);
+        $option['href'] = url()->to($href);
         return static::tag('a', $text, $option);
     }
 
@@ -102,7 +102,7 @@ class Html {
      * @return string
      */
     public static function img($src = '#', $option = array()) {
-        $option['src'] = Url::to($src);
+        $option['src'] = url()->to($src);
         return static::tag('img', null, $option);
     }
 
@@ -193,7 +193,7 @@ class Html {
     public static function link($url, $attributes = []) {
         $defaults = ['media' => 'all', 'type' => 'text/css', 'rel' => 'stylesheet'];
         $attributes = $attributes + $defaults;
-        $attributes['href'] = Url::to($url);
+        $attributes['href'] = url()->to($url);
         return static::tag('link', null, $attributes);
     }
 
@@ -209,7 +209,7 @@ class Html {
             $content = null;
         }
         if (array_key_exists('src', $options)) {
-            $options['src'] = Url::to($options['src']);
+            $options['src'] = url()->to($options['src']);
         }
         return static::tag('script', $content, $options);
     }

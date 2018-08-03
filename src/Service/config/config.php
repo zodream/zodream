@@ -136,10 +136,8 @@ $configs = array(
 
 if (in_array(app('request')->ip(), ['unknown', '::1', '127.0.0.1'])){
     $configs['modules'] = array(   //生成模块
-        'gzo' => 'Zodream\Module\Gzo'
-    );
-    $configs['modules'] = array(   //调试模块
-        'debugger' => 'Zodream\Debugger'
+        'gzo' => 'Zodream\Module\Gzo',
+        'debugger' => 'Zodream\Debugger' //调试模块
     );
 }
 return $configs;

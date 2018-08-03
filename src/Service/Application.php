@@ -15,6 +15,7 @@ use Closure;
 use ReflectionClass;
 use Exception;
 use ReflectionParameter;
+use Zodream\Infrastructure\Http\UrlGenerator;
 use Zodream\Route\Route;
 use Zodream\Route\Router;
 use Zodream\Template\ViewFactory;
@@ -59,6 +60,7 @@ class Application implements ArrayAccess, ContainerInterface {
         $this->register('request', Request::class);
         $this->register('response', Response::class);
         $this->register('auth', Auth::class);
+        $this->register('url', UrlGenerator::class);
         $this->register('route', Route::class);
         $this->register('view', ViewFactory::class);
         $this->register('debugger', Debugger::class);
@@ -213,6 +215,10 @@ class Application implements ArrayAccess, ContainerInterface {
 
     public function basePath(): string {
         return $this->basePath;
+    }
+
+    public function isDebug(): bool {
+        return defined('DEBUG') && DEBUG;
     }
 
     protected function formatUri(string $uri): string {
