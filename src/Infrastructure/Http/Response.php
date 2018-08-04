@@ -8,6 +8,7 @@ namespace Zodream\Infrastructure\Http;
  * Date: 2016/7/16
  * Time: 12:55
  */
+use Zodream\Disk\Stream;
 use Zodream\Image\Image;
 use Zodream\Disk\File;
 use Zodream\Helpers\Json;
@@ -182,17 +183,18 @@ class Response {
             return $this;
         }
         if (is_array($this->parameter) && $this->parameter['file'] instanceof File) {
-            $fp = fopen($this->parameter['file']->getFullName(), 'rb');
-            fseek($fp, $this->parameter['offset']);
+            $stream = new Stream($this->parameter['file']);
+            $stream->open('rb');
+            $stream->move($this->parameter['offset']);
             //虚幻输出
-            while(!feof($fp)){
+            while(!$stream->isEnd()){
                 //设置文件最长执行时间
                 set_time_limit(0);
-                print(fread($fp, round($this->parameter['speed'] * 1024, 0)));//输出文件
+                print ($stream->read(round($this->parameter['speed'] * 1024, 0)));//输出文件
                 flush();//输出缓冲
                 ob_flush();
             }
-            fclose($fp);
+            $stream->close();
             return $this;
         }
         echo (string)$this->parameter;

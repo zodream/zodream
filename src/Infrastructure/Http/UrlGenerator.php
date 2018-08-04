@@ -181,7 +181,7 @@ class UrlGenerator {
 
     protected function getPath($path): string {
         if (empty($path) || $path === '0') {
-            return $this->current();
+            return $this->full();
         }
         if ($path === -1 || $path === '-1') {
             return $this->previous();
