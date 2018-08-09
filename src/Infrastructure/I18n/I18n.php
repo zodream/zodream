@@ -60,7 +60,7 @@ abstract class I18n extends MagicObject {
      */
     public function setLanguage($arg = null) {
         if (empty($arg)) {
-            $language = Request::server('HTTP_ACCEPT_LANGUAGE', 'ZH-CN');
+            $language = app('request')->server('HTTP_ACCEPT_LANGUAGE', 'ZH-CN');
             preg_match('/[\w-]+/', $language, $match);
             $arg = $match[0];
         }

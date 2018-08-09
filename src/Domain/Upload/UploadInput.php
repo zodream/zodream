@@ -11,7 +11,7 @@ use Zodream\Infrastructure\Http\Request;
 class UploadInput extends BaseUpload {
 
     public function __construct() {
-        $this->setName(Request::server('HTTP_X_FILENAME'));
+        $this->setName(app('request')->server('HTTP_X_FILENAME'));
     }
 
     public function setName($name) {

@@ -1,10 +1,12 @@
 <?php
+declare(strict_types = 1);
+
 namespace Zodream\Domain\Access;
 
 use Firebase\JWT\JWT;
 use Zodream\Database\Model\UserModel;
 use Zodream\Helpers\Str;
-use Zodream\Infrastructure\Http\Request;
+use Zodream\Infrastructure\Interfaces\UserObject;
 use Zodream\Service\Factory;
 
 /**
@@ -20,11 +22,9 @@ jti：JWT ID为web token提供唯一标识
  */
 class JWTAuth extends Token {
 
-    protected static $payload = [];
+    protected $payload = [];
 
-    protected static $token;
-
-    protected static function getConfigs() {
+    protected function getConfigs(): array {
         return Factory::config('auth', [
             'key' => 'uZXUa9ssSS5nr1lWvjTSwYhVxBxNsAyj',
             'alg' => 'HS256',
@@ -33,29 +33,12 @@ class JWTAuth extends Token {
         ]);
     }
 
-    /**
-     * @param mixed $token
-     */
-    public static function setToken($token) {
-        static::$token = $token;
-    }
-
-    /**
-     * @return mixed
-     */
-    public static function getToken() {
-        if (empty(static::$token)) {
-            static::$token = static::getTokenForRequest();
-        }
-        return static::$token;
-    }
-
 
     /**
      * @param mixed $payload
      */
-    public static function setPayload(array $payload) {
-        static::$payload = $payload;
+    public function setPayload(array $payload) {
+        $this->payload = $payload;
     }
 
     /**
@@ -63,34 +46,34 @@ class JWTAuth extends Token {
      * @param null $default
      * @return mixed
      */
-    public static function getPayload($key = null, $default = null) {
-        if (empty(static::$payload)) {
-            $configs = static::getConfigs();
-            static::setPayload(JWT::decode(static::getToken(),
+    public function getPayload($key = null, $default = null) {
+        if (empty($this->payload)) {
+            $configs = $this->getConfigs();
+            $this->setPayload(JWT::decode($this->getToken(),
                 isset($configs['publicKey']) ? $configs['publicKey']
                 : $configs['key'], [$configs['alg']]));
         }
         if (empty($key)) {
-            return static::$payload;
+            return $this->payload;
         }
-        if (array_key_exists($key, (array)static::$payload)) {
-            return static::$payload[$key];
+        if (array_key_exists($key, (array)$this->payload)) {
+            return $this->payload[$key];
         }
         return $default;
     }
 
 
-
     /**
      * 获取用户
-     * @return UserObject|null
+     * @return UserObject
+     * @throws \Exception
      */
-    protected static function getUser() {
-        $userClass = Config::auth('model');
+    protected function getUser() {
+        $userClass = config('auth.model');
         if (empty($userClass)) {
             return null;
         }
-        $token = static::getToken();
+        $token = $this->getToken();
         if (empty($token)) {
             return null;
         }
@@ -98,11 +81,11 @@ class JWTAuth extends Token {
             return null;
         }
         $time = time();
-        if ($time < static::$payload['nbf'] ||
-            (isset(static::$payload['exp']) && $time > static::$payload['exp'])) {
+        if ($time < $this->payload['nbf'] ||
+            (isset($this->payload['exp']) && $time > $this->payload['exp'])) {
             return null;
         }
-        return call_user_func($userClass.'::findByIdentity', static::$payload['sub']);
+        return call_user_func($userClass.'::findByIdentity', $this->payload['sub']);
     }
 
     /**
@@ -110,12 +93,12 @@ class JWTAuth extends Token {
      * @param UserModel $user
      * @return string
      */
-    public static function createToken(UserModel $user) {
-        $configs = static::getConfigs();
+    public function createToken(UserModel $user): string {
+        $configs = $this->getConfigs();
         $time = time();
         $payload = [
             'sub' => $user->getIdentity(),
-            'iss' => Request::url(),
+            'iss' => app('request')->url(),
             'iat' => $time,
             'nbf' => $time,
             'jti' => Str::random(60)
@@ -128,8 +111,11 @@ class JWTAuth extends Token {
             : $configs['key'], $configs['alg']);
     }
 
-    public static function logout() {
-        Factory::cache()->delete(static::getPayload('jti'));
+    /**
+     * @throws \Exception
+     */
+    public function logout() {
+        Factory::cache()->delete($this->getPayload('jti'));
         return parent::logout();
     }
 

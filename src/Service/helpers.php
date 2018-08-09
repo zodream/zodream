@@ -1,12 +1,42 @@
 <?php
 use Zodream\Service\Factory;
-use Zodream\Service\Routing\Url;
+use Zodream\Infrastructure\Http\URL;
 use Zodream\Http\Uri;
 use Zodream\Service\Config;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Error\NotFoundHttpException;
 use Zodream\Infrastructure\Http\HttpException;
 use Zodream\Html\VerifyCsrfToken;
+use Zodream\Service\Application;
+use Zodream\Infrastructure\Http\Response;
+use Zodream\Domain\Access\Auth;
+use Zodream\Domain\Access\Token;
+use Zodream\Domain\Access\JWTAuth;
+use Zodream\Infrastructure\Http\UrlGenerator;
+
+
+if (! function_exists('app')) {
+    /**
+     * @param string|null $abstract
+     * @return Application|Response|Request|mixed
+     */
+    function app(string $abstract = null) {
+        if (empty($abstract)) {
+            return Application::getInstance();
+        }
+        return Application::getInstance()->make($abstract);
+    }
+}
+
+if (! function_exists('auth')) {
+
+    /**
+     * @return Auth|Token|JWTAuth
+     */
+    function auth() {
+        return app('auth');
+    }
+}
 
 if (! function_exists('abort')) {
     /**
@@ -62,7 +92,7 @@ if (! function_exists('config')) {
      *
      * @param  array|string  $key
      * @param  mixed  $default
-     * @return mixed|Config
+     * @return mixed|Config|string
      */
     function config($key = null, $default = null) {
         return Factory::config($key, $default);
@@ -136,7 +166,7 @@ if (! function_exists('request')) {
      * @return array|string|\Zodream\Infrastructure\Http\Input\Request
      */
     function request($key = null, $default = null) {
-        return Request::request($key, $default);
+        return app('request')->request($key, $default);
     }
 }
 
@@ -188,9 +218,21 @@ if (! function_exists('url')) {
      * @param  string  $path
      * @param  mixed   $parameters
      * @param  bool    $secure
-     * @return Uri
+     * @return string| UrlGenerator
      */
     function url($path = null, $parameters = [], $secure = null) {
-        return Url::to($path, $parameters, $secure);
+        if (is_null($path) && empty($parameters) && is_null($secure)) {
+            return app('url');
+        }
+        return app('url')->to($path, $parameters, $secure);
+    }
+}
+
+if (! function_exists('view')) {
+    function view($path = null) {
+        if (empty($path)) {
+            return Factory::view();
+        }
+        return Factory::view()->render($path);
     }
 }

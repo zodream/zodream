@@ -29,7 +29,7 @@ class Cookie {
 	 * @return array|string
 	 */
 	public static function get($key, $default = NULL) {
-		 return Request::cookie($key, $default);
+		 return app('request')->cookie($key, $default);
 	}
 
 	/**
@@ -42,7 +42,7 @@ class Cookie {
 	 * @param boolean $secure 是否通过安全的 HTTPS 连接来传输 cookie。
 	 * @param boolean $httpOnly 是否只通过http协议 不允许js等脚本进入，防止xss
 	 */
-	public static function set($name, $value = '', $expire = 0, $path = null, $domain = null, $secure = FALSE, $httpOnly = true) {
+	public static function set($name, $value = '', $expire = 0, $path = null, $domain = '', $secure = FALSE, $httpOnly = true) {
         Factory::response()->header->setCookie($name, $value, time() + $expire, $path, $domain, $secure, $httpOnly);
 	}
 
@@ -55,7 +55,7 @@ class Cookie {
      * @param bool $secure
      * @param bool $httpOnly
      */
-    public static function forever($name, $value, $path = null, $domain = null, $secure = false, $httpOnly = true) {
+    public static function forever($name, $value, $path = null, $domain = '', $secure = false, $httpOnly = true) {
         static::set($name, $value, 2628000 * 60, $path, $domain, $secure, $httpOnly);
     }
 
@@ -66,7 +66,7 @@ class Cookie {
      * @param  string  $path
      * @param  string  $domain
      */
-    public static function forget($name, $path = null, $domain = null) {
+    public static function forget($name, $path = null, $domain = '') {
         static::set($name, null, -2628000 * 60, $path, $domain);
     }
 	

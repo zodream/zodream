@@ -1,21 +1,20 @@
 <?php
-namespace Zodream\Service;
+declare(strict_types = 1);
 
-use Zodream\Infrastructure\Http\Request;
-use Zodream\Service\Routing\Url;
+namespace Zodream\Service;
 
 class Web extends Application {
 
-    public function setPath($path) {
-        if (is_null($path)) {
-            $path = Url::getVirtualUri();
+    protected function formatUri(string $path): string {
+        if ($path === '') {
+            $path = $this['url']->getVirtualUri();
         }
-        return parent::setPath($this->getRealPath($path));
+        return $this->getRealPath($path);
     }
 
-    protected function getRealPath($path) {
+    protected function getRealPath(string $path): string {
         list($routes, $args) = $this->spiltArrayByNumber(explode('/', trim($path, '/')));
-        Request::get(true)->set($args);
+        $this['request']->append($args);
         return implode('/', $routes);
     }
 
@@ -24,7 +23,7 @@ class Web extends Application {
      * @param array $routes
      * @return array (routes, values)
      */
-    protected function spiltArrayByNumber(array $routes) {
+    protected function spiltArrayByNumber(array $routes): array {
         $values = array();
         for ($i = 0, $len = count($routes); $i < $len; $i++) {
             if (!is_numeric($routes[$i])) {
@@ -50,7 +49,7 @@ class Web extends Application {
      * @param $values
      * @return array
      */
-    protected function pairValues($values) {
+    protected function pairValues($values): array {
         $args = array();
         for ($i = 0, $len = count($values); $i < $len; $i += 2) {
             if (isset($values[$i + 1])) {

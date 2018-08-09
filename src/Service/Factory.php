@@ -11,8 +11,7 @@ namespace Zodream\Service;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
-use Zodream\Domain\Access\Auth;
-use Zodream\Domain\Debug\Timer;
+use Zodream\Debugger\Domain\Timer;
 use Zodream\Database\Model\UserModel;
 use Zodream\Infrastructure\Event\EventManger;
 use Zodream\Template\ViewFactory;
@@ -20,7 +19,6 @@ use Zodream\Infrastructure\Caching\Cache;
 use Zodream\Infrastructure\Caching\FileCache;
 use Zodream\Disk\Directory;
 use Zodream\Infrastructure\Exceptions\Handler;
-use Zodream\Infrastructure\Http\Request;
 use Zodream\Http\Header;
 use Zodream\Infrastructure\Http\Response;
 use Zodream\Infrastructure\I18n\I18n;
@@ -29,7 +27,7 @@ use Zodream\Infrastructure\Interfaces\ExceptionHandler;
 use Zodream\Infrastructure\Session\Session;
 use Zodream\Route\Router;
 
-defined('APP_DIR') || define('APP_DIR', Request::server('DOCUMENT_ROOT'));
+defined('APP_DIR') || define('APP_DIR', app('request')->server('DOCUMENT_ROOT'));
 
 class Factory {
     
@@ -179,15 +177,16 @@ class Factory {
      * @throws \Exception
      */
     public static function response() {
-        return self::getInstance('response', Response::class);
+        return app('response');
     }
 
     /**
      * GET USER BY SESSION
      * @return UserModel
+     * @throws \Exception
      */
     public static function user() {
-        return Auth::user();
+        return auth()->user();
     }
 
     /**
@@ -196,7 +195,7 @@ class Factory {
      * @throws \Exception
      */
     public static function view() {
-        return self::getInstance('viewFactory', ViewFactory::class);
+        return app('view');
     }
 
     /**
@@ -205,7 +204,7 @@ class Factory {
      * @throws \Exception
      */
     public static function timer() {
-        return self::getInstance('timer', Timer::class);
+        return app('timer');
     }
 
     /**
@@ -238,7 +237,7 @@ class Factory {
      */
     public static function root() {
         if (!array_key_exists(__FUNCTION__, static::$_instance)) {
-            static::$_instance[__FUNCTION__] = new Directory(defined('APP_DIR') ? APP_DIR : Request::server('DOCUMENT_ROOT'));
+            static::$_instance[__FUNCTION__] = new Directory(app()->basePath());
         }
         return static::$_instance[__FUNCTION__];
     }
@@ -251,7 +250,7 @@ class Factory {
         if (!array_key_exists(__FUNCTION__, static::$_instance)) {
             $path = self::config('app.public');
             static::$_instance[__FUNCTION__] = empty($path) ?
-                new Directory(Request::server('DOCUMENT_ROOT'))
+                new Directory(app('request')->server('DOCUMENT_ROOT'))
                 : self::root()->directory($path);
         }
         return static::$_instance[__FUNCTION__];

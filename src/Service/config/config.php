@@ -57,7 +57,7 @@ $configs = array(
 		'user'     => 'root',						//账号
 		'password' => 'root',						//密码
 		'prefix'   => 'zd_',					//前缀
-		'encoding' => 'utf8',					//编码
+		'encoding' => 'utf8mb4',					//编码
 		'allowCache' => true,                   //是否开启查询缓存
 		'cacheLife' => 3600,                      //缓存时间
 		'persistent' => false                   //使用持久化连接
@@ -110,7 +110,7 @@ $configs = array(
 	'alias'  => array(
 		'Cookie' => Cookie::class,
         'Request' => Request::class,
-        'Auth' => Auth::class
+        'Auth' => Auth::class,
 	),
 	// 注册事件
 	'event' => array(
@@ -128,17 +128,16 @@ $configs = array(
         'directory' => 'data/languages',
         'language' => 'en'//'zh-cn',
     ),
+    'view' => array(                           //视图文件信息
+        'directory' => 'UserInterface/'.app('app.module'),
+        'suffix' => '.php',
+    )
 );
 
-if (defined('APP_MODULE')) {
-	$configs['view'] = array(                           //视图文件信息
-		'directory' => 'UserInterface/'.APP_MODULE,
-		'suffix' => '.php',
-	);
-}
-if (in_array(Request::ip(), ['unknown', '::1', '127.0.0.1'])){
-    $configs['modules'] = array(   //模块
-        'gzo' => 'Zodream\Module\Gzo'
+if (in_array(app('request')->ip(), ['unknown', '::1', '127.0.0.1'])){
+    $configs['modules'] = array(   //生成模块
+        'gzo' => 'Zodream\Module\Gzo',
+        'debugger' => 'Zodream\Debugger' //调试模块
     );
 }
 return $configs;

@@ -1,8 +1,9 @@
 <?php
+declare(strict_types = 1);
+
 namespace Zodream\Service;
 
 use Zodream\Helpers\Str;
-use Zodream\Infrastructure\Http\Request;
 
 /**
  * Class Console
@@ -10,23 +11,26 @@ use Zodream\Infrastructure\Http\Request;
  * @example php artisan gzo/module/template --module=template
  */
 class Console extends Web {
-    public function setPath($path) {
+
+    protected function formatUri(string $path): string {
         list($module, $arg) = $this->getPathAndModule();
-        if (is_null($path)) {
+        if ($path === '') {
             $path = $arg;
         }
-        defined('APP_MODULE') || define('APP_MODULE', Str::studly($module));
-        Request::get()->set(Request::argv('options'));
-        Request::request()->set(Request::argv('options'));
-        return parent::setPath($path);
+        if (!empty($module)) {
+            $this->instance('app.module', Str::studly($module));
+        }
+        $this['request']->append($this['request']->argv('options'));
+        return $path;
     }
 
     /**
      * 获取
      * @return array
      */
-    protected function getPathAndModule() {
-        $arg = Request::argv('commands.0') ?: Request::argv('arguments.0');
+    protected function getPathAndModule(): array {
+        $arg = $this['request']->argv('commands.0') ?:
+            $this['request']->argv('arguments.0');
         if (empty($arg)) {
             return ['Home', 'index'];
         }

@@ -8,6 +8,8 @@ use Zodream\Service\Factory;
 
 class Config extends MagicObject {
 
+    protected $cache_data = [];
+
     /**
      * @var Directory
      */
@@ -28,7 +30,13 @@ class Config extends MagicObject {
      * @return array|null|string
      */
     public function get($key = null, $default = null) {
+        if (empty($default) && isset($this->cache_data[$key])) {
+            return $this->cache_data[$key];
+        }
         $args = parent::getAttribute($key, $default);
+        if (empty($default)) {
+            return $this->cache_data[$key] = $args;
+        }
         if (!is_array($default)) {
             return $args;
         }
@@ -45,6 +53,7 @@ class Config extends MagicObject {
      * @return Config
      */
     public function set($key, $value = null) {
+        $this->cache_data = [];
         if (!is_array($key) && $this->hasAttribute($key) && is_array($value)) {
             $this->__attributes[$key] = array_merge((array)$this->__attributes[$key], $value);
             return $this;

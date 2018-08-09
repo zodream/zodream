@@ -1,190 +1,130 @@
-<?php 
+<?php
+declare(strict_types = 1);
+
 namespace Zodream\Infrastructure\Http;
-/**
-* http 请求信息获取类
-* 
-* @author Jason
-*/
-use Zodream\Infrastructure\Http\Input\BaseInput;
-use Zodream\Infrastructure\Http\Input\Cookie;
-use Zodream\Infrastructure\Http\Input\Files;
-use Zodream\Infrastructure\Http\Input\Get;
-use Zodream\Infrastructure\Http\Input\Header;
-use Zodream\Infrastructure\Http\Input\Post;
-use Zodream\Infrastructure\Http\Input\Server;
-use Zodream\Infrastructure\Http\Input\Argv;
+
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\UriInterface;
+use Zodream\Helpers\Arr;
 use Zodream\Helpers\Str;
-use Zodream\Service\Config;
-use Zodream\Service\Routing\Url;
+use Zodream\Http\Uri;
+use Zodream\Infrastructure\Http\Input\Argv;
+use Zodream\Infrastructure\Http\Input\Header;
+use Zodream\Infrastructure\Http\Input\Other;
 use Zodream\Validate\ValidationException;
 use Zodream\Validate\Validator;
+use Exception;
 
-defined('APP_SAFE') || define('APP_SAFE', Config::app('safe', false));
+class Request implements ServerRequestInterface {
 
-final class Request {
-
-	private static $_instances = array(
-		'cookie' => null,
-		'files' => null,
-		'get' => null,
-		'post' => null,
-		'header' => null,
-		'request' => null,
-		'server' => null,
-		'other' => null,
-        'argv' => null,
-	);
-
-	/**
-	 * @param $name
-	 * @return BaseInput
-	 */
-	private static function _getInstance($name) {
-		$name = strtolower($name);
-		if (!array_key_exists($name, self::$_instances)) {
-			return null;
-		}
-		if (self::$_instances[$name] instanceof BaseInput) {
-			return self::$_instances[$name];
-		}
-		$class = 'Zodream\\Infrastructure\\Http\\Input\\'.ucfirst($name);
-		return self::$_instances[$name] = new $class;
-	}
-
-	/**
-	 * @param $key
-	 * @param string $name
-	 * @param mixed $default
-	 * @return array|string|BaseInput
-	 */
-	private static function getValue($key, $name = null, $default = null) {
-		$instance = self::_getInstance($key);
-		if (is_null($name) || $name === true) {
-			return $instance;
-		}
-		return $instance->get($name, $default);
-	}
-
-	/**
-	 * $_GET
-	 * @param string $name
-	 * @param string $default
-	 * @return array|string|Get
-	 */
-	public static function get($name = null, $default = null) {
-		return self::getValue(__FUNCTION__, $name, $default);
-	}
+    use Argv, Header, Other;
 
     /**
-     * CLI ARGV
-     * @param null $name
-     * @param null $default
-     * @return array|string|Argv
+     * Protocol version
+     *
+     * @var string
      */
-	public static function argv($name = null, $default = null) {
-        return self::getValue(__FUNCTION__, $name, $default);
+    protected $protocolVersion = '1.1';
+    /**
+     * A map of valid protocol versions
+     *
+     * @var array
+     */
+    protected static $validProtocolVersions = [
+        '1.0' => true,
+        '1.1' => true,
+        '2.0' => true,
+        '2'   => true,
+    ];
+
+    /**
+     * @var array
+     */
+    protected $data = [];
+
+    /**
+     * @var array
+     */
+    protected $cache_data = [];
+
+    public function __construct() {
+        $data = $this->getTypeParser();
+        $this->data = $this->cleanData(empty($data)
+            ? $_REQUEST : array_merge($_REQUEST, $data));
+    }
+
+    protected function getTypeParser() {
+        if ($this->isJson()) {
+            return json_decode($this->input(), true);
+        }
+        if ($this->isXml()) {
+            $backup = libxml_disable_entity_loader(true);
+            $backup_errors = libxml_use_internal_errors(true);
+            $data = simplexml_load_string($this->input());
+            libxml_disable_entity_loader($backup);
+            libxml_clear_errors();
+            libxml_use_internal_errors($backup_errors);
+            return $data;
+        }
+        return null;
+    }
+
+    public function has(string $key): bool {
+        return isset($this->data[$key]) || array_key_exists($key, $this->data);
+    }
+
+    public function get(string $key = null, $default = null) {
+        return $this->getValueWithDefault($this->data, $key, $default);
+    }
+
+    public function append(array $data): Request {
+        $this->data = array_merge($this->data, $data);
+        return $this;
+    }
+
+    public function all(): array {
+        return $this->data;
+    }
+
+    public function uri(): Uri {
+        return $this->getCacheData(__FUNCTION__);
+    }
+
+    public function server(string $key, $default = null) {
+        return $this->getValueWithDefault($_SERVER, $key, $default);
+    }
+
+    public function cookie(string $key, $default = null) {
+        return $this->getValueWithDefault($_COOKIE, $key, $default);
+    }
+
+    public function header(string $key, $default = ''): string {
+        return $this->getValueWithDefault($this->getCacheData(__FUNCTION__), $key, $default);
+    }
+
+    public function argv(string $key, $default = '') {
+        return $this->getValueWithDefault($this->getCacheData(__FUNCTION__), $key, $default);
+    }
+
+    public function files($name = null) {
+        return $this->getValueWithDefault($_FILES, $name);
     }
 
     /**
      * CLI 读取输入值
      * @return string
      */
-    public static function read() {
+    public function read(): string {
         return trim(fgets(STDIN));
     }
 
-	/**
-	 * $_POST
-	 * @param string $name
-	 * @param string $default
-	 * @return array|string|Post
-	 */
-	public static function post($name = null, $default = null) {
-		return self::getValue(__FUNCTION__, $name, $default);
-	}
-
-	/**
-	 * $_FILES
-	 * @param string $name
-	 * @param string $default
-	 * @return array|string|Files
-	 */
-	public static function files($name = null, $default = null) {
-		return self::getValue(__FUNCTION__, $name, $default);
-	}
-
-	/**
-	 * $_REQUEST
-	 * @param string $name
-	 * @param string $default
-	 * @return array|string|\Zodream\Infrastructure\Http\Input\Request
-	 */
-	public static function request($name = null, $default = null) {
-		return self::getValue(__FUNCTION__, $name, $default);
-	}
-
-    /**
-     * 判断是否有值
-     * @param string $key
-     * @return bool
-     */
-	public static function has($key) {
-	    return static::request(true)->has($key);
+    public function input(): string {
+        return file_get_contents('php://input');
     }
 
-	/**
-	 * $_COOKIE
-	 * @param string $name
-	 * @param string $default
-	 * @return array|string|Cookie
-	 */
-	public static function cookie($name = null, $default = null) {
-		return self::getValue(__FUNCTION__, $name, $default);
-	}
-	
-	/**
-	 * PHP://INPUT
-	 * @return string
-	 */
-	public static function input() {
-		return file_get_contents('php://input');
-	}
-
-	/**
-	 * $_SERVER
-	 * @param string $name
-	 * @param string $default
-	 * @return array|string|Server
-	 */
-	public static function server($name = null, $default = null) {
-		return self::getValue(__FUNCTION__, $name, $default);
-	}
-
-	/**
-	 * @param string $name
-	 * @param string $default
-	 * @return array|string|Header
-	 */
-	public static function header($name = null, $default = null) {
-		return self::getValue(__FUNCTION__, $name, $default);
-	}
-
-	/**
-	 * 一些手动添加的
-	 * @param null $name
-	 * @param null $default
-	 * @return array|string
-	 */
-	public static function other($name = null, $default = null) {
-		return self::getValue(__FUNCTION__, $name, $default);
-	}
-
-    /**
-     *
-     */
-	public static function path() {
-        $pattern = trim(static::server('PHP_SELF'), '/');
-        return $pattern == '' ? '/' : $pattern;
+    public function ip(): string {
+        return $this->getCacheData(__FUNCTION__);
     }
 
     /**
@@ -194,12 +134,12 @@ final class Request {
      * @throws ValidationException
      * @throws \Exception
      */
-    public static function validate(array $rules) {
+    public function validate(array $rules) {
         $data = [];
         $validator = new Validator();
         foreach ($rules as $key => $rule) {
             $rule = $validator->converterRule($rule);
-            $value = static::request($key);
+            $value = $this->get($key);
             if ($validator->validateRule($key, $value, $rule['rules'], $rule['message'])) {
                 $data[] = $value;
                 continue;
@@ -211,168 +151,768 @@ final class Request {
         throw new ValidationException($validator);
     }
 
-    /**
-     * 解密路径
-     * @return string
-     */
-    public static function decodedPath() {
-        return rawurldecode(static::path());
+
+    public function isCli(): bool {
+        return !is_null($this->server('argv'));
     }
 
-    /**
-     * 去除查询参数的路径
-     * @return string
-     */
-    public static function url() {
-        return rtrim(preg_replace('/\?.*/', '', static::fullUrl()), '/');
-    }
-
-    /**
-     * 完整的路径
-     * @return string
-     */
-    public static function fullUrl() {
-        return Url::getCurrentUri();
-    }
-
-    /**
-     * 判断是否网址
-     * @return bool
-     */
-    public static function is() {
-        foreach (func_get_args() as $pattern) {
-            if (Str::is($pattern, static::decodedPath())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-	
-	public static function isCli() {
-		return !is_null(self::server('argv'));
-	}
-
-	public static function isLinux() {
+    public function isLinux(): bool {
         return DIRECTORY_SEPARATOR == '/';
     }
 
-
-	public static function ip() {
-		return self::Other(__FUNCTION__);
-	}
-
-    public static function host() {
-        return self::Other(__FUNCTION__);
-    }
-	
-	public static function os() {
-		return self::Other(__FUNCTION__);
-	}
-	
-	public static function browser() {
-		return self::Other(__FUNCTION__);
-	}
-	
-	public static function isMobile() {
-		return self::Other(__FUNCTION__);
-	}
-
-	public static function isJson() {
-        return static::header('CONTENT_TYPE') == 'application/json';
+    public function os(): string {
+        return $this->getCacheData(__FUNCTION__);
     }
 
-	public static function isWeChat() {
-        return strpos(self::server('HTTP_USER_AGENT'), 'MicroMessenger') !== false;
+    public function browser(): string {
+        return $this->getCacheData(__FUNCTION__);
     }
-	
-	public static function method() {
-		return self::other('method');
-	}
-	
-	public static function isGet() {
-		return self::method() === 'GET';
-	}
-	
-	public static function isOptions() {
-		return self::method() === 'OPTIONS';
-	}
-	
-	public static function isHead() {
-		return self::method() === 'HEAD';
-	}
-	
-	public static function isPost() {
-		return self::method() === 'POST';
-	}
-	
-	public static function isDelete() {
-		return self::method() === 'DELETE';
-	}
-	
-	public static function isPut() {
-		return self::method() === 'PUT';
-	}
-	
-	public static function isPatch() {
-		return self::method() === 'PATCH';
-	}
-	
-	public static function isAjax() {
-		return self::server('HTTP_X_REQUESTED_WITH') === 'XMLHttpRequest';
-	}
-	
-	public static function isPjax() {
-		return self::isAjax() && !empty(self::server('HTTP_X_PJAX'));
-	}
+
+    public function isMobile(): bool {
+        return $this->getCacheData(__FUNCTION__);
+    }
+
+    public function isJson(): bool {
+        return $this->header('CONTENT_TYPE') == 'application/json';
+    }
+
+    public function isXml(): bool {
+        $type = $this->header('CONTENT_TYPE');
+        return $type == 'application/xml' || $type == 'text/xml';
+    }
+
+    public function isWeChat(): bool {
+        return strpos($this->server('HTTP_USER_AGENT'), 'MicroMessenger') !== false;
+    }
+
+    public function method(): string {
+        return $this->getCacheData('method');
+    }
+
+    public function isSSL(): bool {
+        return $this->getCacheData(__FUNCTION__);
+    }
+
+    public function isGet(): bool {
+        return $this->method() === 'GET';
+    }
+
+    public function isOptions(): bool {
+        return $this->method() === 'OPTIONS';
+    }
+
+    public function isHead(): bool {
+        return $this->method() === 'HEAD';
+    }
+
+    public function isPost(): bool {
+        return $this->method() === 'POST';
+    }
+
+    public function isDelete(): bool {
+        return $this->method() === 'DELETE';
+    }
+
+    public function isPut(): bool {
+        return $this->method() === 'PUT';
+    }
+
+    public function isPatch(): bool {
+        return $this->method() === 'PATCH';
+    }
+
+    public function isAjax(): bool {
+        return $this->server('HTTP_X_REQUESTED_WITH') === 'XMLHttpRequest';
+    }
+
+    public function isPjax(): bool {
+        return $this->isAjax() && !empty($this->server('HTTP_X_PJAX'));
+    }
 
     /**
      * 判断是否期望返回JSON
      * @return bool
      */
-    public static function expectsJson() {
-        return (static::isAjax() && !static::isPjax()) || static::wantsJson();
+    public function expectsJson(): bool {
+        return ($this->isAjax() && !$this->isPjax()) || $this->wantsJson();
     }
 
     /**
      * 请求头判断 接受类型为 JSON
      * @return bool
      */
-	public static function wantsJson() {
-	    $accept = static::header('ACCEPT');
-	    if (empty($accept)) {
-	        return false;
+    public function wantsJson(): bool {
+        $accept = $this->header('ACCEPT');
+        if (empty($accept)) {
+            return false;
         }
         $args = explode(';', $accept);
-	    return Str::contains($args[0], ['/json', '+json']);
+        return Str::contains($args[0], ['/json', '+json']);
     }
 
     /**
      * 是否是 flash
      * @return bool
      */
-	public static function isFlash() {
-		$arg = self::server('HTTP_USER_AGENT', '');
-		return stripos($arg, 'Shockwave') !== false || stripos($arg, 'Flash') !== false;
-	}
+    public function isFlash(): bool {
+        $arg = $this->server('HTTP_USER_AGENT', '');
+        return stripos($arg, 'Shockwave') !== false || stripos($arg, 'Flash') !== false;
+    }
+
+    public function referrer(): string {
+        return $this->server('HTTP_REFERER');
+    }
+
+    public function script(): string {
+        return $this->server('SCRIPT_NAME');
+    }
 
     /**
      * 只能获取基础验证的账号密码
      * @return array [username, password]
      */
-	public static function auth() {
-        return self::other('auth');
+    public function auth(): array {
+        return $this->getCacheData('auth');
     }
 
     /**
      * 获取 token
      * @return string|null
      */
-    public static function bearerToken() {
-        $header = static::header('Authorization', '');
+    public function bearerToken(): string {
+        $header = $this->header('Authorization', '');
         if (Str::startsWith($header, 'Bearer ')) {
             return substr($header, 7);
         }
-        return null;
+        return '';
+    }
+
+    /**
+     * @param $name
+     * @return string|array|bool|integer|mixed|null
+     */
+    protected function getCacheData($name) {
+        if (isset($this->cache_data[$name])) {
+            return $this->cache_data[$name];
+        }
+        $method = sprintf('create%s', Str::studly($name));
+        if (!method_exists($this, $method)) {
+            return null;
+        }
+        return $this->cache_data[$name]
+            = call_user_func([$this, $method]);
+    }
+
+    protected function getValueWithDefault(array $data, string $key = null, $default = null) {
+        if (empty($key)) {
+            return $data;
+        }
+        if (isset($data[$key]) || array_key_exists($key, $data)) {
+            return $data[$key];
+        }
+        if (strpos($key, ',') !== false) {
+            $result = Arr::getValues($key, $data, $default);
+        } else {
+            $result = Arr::getChild($key, $data, is_object($default) ? null : $default);
+        }
+        if (is_callable($default)) {
+            return $default($result);
+        }
+        return $result;
+    }
+
+
+
+    /**
+     * 格式化
+     * @param array|string $data
+     * @return array|string
+     */
+    protected function cleanData($data) {
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                unset($data[$key]);
+                $data[$this->cleanData($key)] = $this->cleanData($value);
+            }
+        } else if (defined('APP_SAFE') && APP_SAFE){
+            $data = htmlspecialchars($data, ENT_COMPAT);
+        }
+        return $data;
+    }
+
+    /**
+     * Retrieves the HTTP protocol version as a string.
+     *
+     * The string MUST contain only the HTTP version number (e.g., "1.1", "1.0").
+     *
+     * @return string HTTP protocol version.
+     */
+    public function getProtocolVersion() {
+        return $this->protocolVersion;
+    }
+
+    /**
+     * Return an instance with the specified HTTP protocol version.
+     *
+     * The version string MUST contain only the HTTP version number (e.g.,
+     * "1.1", "1.0").
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the message, and MUST return an instance that has the
+     * new protocol version.
+     *
+     * @param string $version HTTP protocol version
+     * @return static
+     */
+    public function withProtocolVersion($version) {
+        if (!isset(self::$validProtocolVersions[$version])) {
+            throw new Exception(
+                'Invalid HTTP version. Must be one of: '
+                . implode(', ', array_keys(self::$validProtocolVersions))
+            );
+        }
+        $clone = clone $this;
+        $clone->protocolVersion = $version;
+        return $clone;
+    }
+
+    /**
+     * Retrieves all message header values.
+     *
+     * The keys represent the header name as it will be sent over the wire, and
+     * each value is an array of strings associated with the header.
+     *
+     *     // Represent the headers as a string
+     *     foreach ($message->getHeaders() as $name => $values) {
+     *         echo $name . ": " . implode(", ", $values);
+     *     }
+     *
+     *     // Emit headers iteratively:
+     *     foreach ($message->getHeaders() as $name => $values) {
+     *         foreach ($values as $value) {
+     *             header(sprintf('%s: %s', $name, $value), false);
+     *         }
+     *     }
+     *
+     * While header names are not case-sensitive, getHeaders() will preserve the
+     * exact case in which headers were originally specified.
+     *
+     * @return string[][] Returns an associative array of the message's headers. Each
+     *     key MUST be a header name, and each value MUST be an array of strings
+     *     for that header.
+     */
+    public function getHeaders() {
+        return $this->getCacheData('header');
+    }
+
+    /**
+     * Checks if a header exists by the given case-insensitive name.
+     *
+     * @param string $name Case-insensitive header field name.
+     * @return bool Returns true if any header names match the given header
+     *     name using a case-insensitive string comparison. Returns false if
+     *     no matching header name is found in the message.
+     */
+    public function hasHeader($name) {
+        return !empty($this->header($name));
+    }
+
+    /**
+     * Retrieves a message header value by the given case-insensitive name.
+     *
+     * This method returns an array of all the header values of the given
+     * case-insensitive header name.
+     *
+     * If the header does not appear in the message, this method MUST return an
+     * empty array.
+     *
+     * @param string $name Case-insensitive header field name.
+     * @return string[] An array of string values as provided for the given
+     *    header. If the header does not appear in the message, this method MUST
+     *    return an empty array.
+     */
+    public function getHeader($name) {
+        return explode(',', $this->header($name));
+    }
+
+    /**
+     * Retrieves a comma-separated string of the values for a single header.
+     *
+     * This method returns all of the header values of the given
+     * case-insensitive header name as a string concatenated together using
+     * a comma.
+     *
+     * NOTE: Not all header values may be appropriately represented using
+     * comma concatenation. For such headers, use getHeader() instead
+     * and supply your own delimiter when concatenating.
+     *
+     * If the header does not appear in the message, this method MUST return
+     * an empty string.
+     *
+     * @param string $name Case-insensitive header field name.
+     * @return string A string of values as provided for the given header
+     *    concatenated together using a comma. If the header does not appear in
+     *    the message, this method MUST return an empty string.
+     */
+    public function getHeaderLine($name) {
+        return $this->header($name);
+    }
+
+    /**
+     * Return an instance with the provided value replacing the specified header.
+     *
+     * While header names are case-insensitive, the casing of the header will
+     * be preserved by this function, and returned from getHeaders().
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the message, and MUST return an instance that has the
+     * new and/or updated header and value.
+     *
+     * @param string $name Case-insensitive header field name.
+     * @param string|string[] $value Header value(s).
+     * @return static
+     * @throws \InvalidArgumentException for invalid header names or values.
+     */
+    public function withHeader($name, $value) {
+        // TODO: Implement withHeader() method.
+    }
+
+    /**
+     * Return an instance with the specified header appended with the given value.
+     *
+     * Existing values for the specified header will be maintained. The new
+     * value(s) will be appended to the existing list. If the header did not
+     * exist previously, it will be added.
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the message, and MUST return an instance that has the
+     * new header and/or value.
+     *
+     * @param string $name Case-insensitive header field name to add.
+     * @param string|string[] $value Header value(s).
+     * @return static
+     * @throws \InvalidArgumentException for invalid header names or values.
+     */
+    public function withAddedHeader($name, $value) {
+        // TODO: Implement withAddedHeader() method.
+    }
+
+    /**
+     * Return an instance without the specified header.
+     *
+     * Header resolution MUST be done without case-sensitivity.
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the message, and MUST return an instance that removes
+     * the named header.
+     *
+     * @param string $name Case-insensitive header field name to remove.
+     * @return static
+     */
+    public function withoutHeader($name)
+    {
+        // TODO: Implement withoutHeader() method.
+    }
+
+    /**
+     * Gets the body of the message.
+     *
+     * @return StreamInterface Returns the body as a stream.
+     */
+    public function getBody()
+    {
+        // TODO: Implement getBody() method.
+    }
+
+    /**
+     * Return an instance with the specified message body.
+     *
+     * The body MUST be a StreamInterface object.
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the message, and MUST return a new instance that has the
+     * new body stream.
+     *
+     * @param StreamInterface $body Body.
+     * @return static
+     * @throws \InvalidArgumentException When the body is not valid.
+     */
+    public function withBody(StreamInterface $body)
+    {
+        // TODO: Implement withBody() method.
+    }
+
+    /**
+     * Retrieves the message's request target.
+     *
+     * Retrieves the message's request-target either as it will appear (for
+     * clients), as it appeared at request (for servers), or as it was
+     * specified for the instance (see withRequestTarget()).
+     *
+     * In most cases, this will be the origin-form of the composed URI,
+     * unless a value was provided to the concrete implementation (see
+     * withRequestTarget() below).
+     *
+     * If no URI is available, and no request-target has been specifically
+     * provided, this method MUST return the string "/".
+     *
+     * @return string
+     */
+    public function getRequestTarget()
+    {
+        // TODO: Implement getRequestTarget() method.
+    }
+
+    /**
+     * Return an instance with the specific request-target.
+     *
+     * If the request needs a non-origin-form request-target — e.g., for
+     * specifying an absolute-form, authority-form, or asterisk-form —
+     * this method may be used to create an instance with the specified
+     * request-target, verbatim.
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the message, and MUST return an instance that has the
+     * changed request target.
+     *
+     * @link http://tools.ietf.org/html/rfc7230#section-5.3 (for the various
+     *     request-target forms allowed in request messages)
+     * @param mixed $requestTarget
+     * @return static
+     */
+    public function withRequestTarget($requestTarget)
+    {
+        // TODO: Implement withRequestTarget() method.
+    }
+
+    /**
+     * Retrieves the HTTP method of the request.
+     *
+     * @return string Returns the request method.
+     */
+    public function getMethod() {
+        return $this->method();
+    }
+
+    /**
+     * Return an instance with the provided HTTP method.
+     *
+     * While HTTP method names are typically all uppercase characters, HTTP
+     * method names are case-sensitive and thus implementations SHOULD NOT
+     * modify the given string.
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the message, and MUST return an instance that has the
+     * changed request method.
+     *
+     * @param string $method Case-sensitive method.
+     * @return static
+     * @throws \InvalidArgumentException for invalid HTTP methods.
+     */
+    public function withMethod($method) {
+        // TODO: Implement withMethod() method.
+    }
+
+    /**
+     * Retrieves the URI instance.
+     *
+     * This method MUST return a UriInterface instance.
+     *
+     * @link http://tools.ietf.org/html/rfc3986#section-4.3
+     * @return UriInterface Returns a UriInterface instance
+     *     representing the URI of the request.
+     */
+    public function getUri() {
+        return $this->uri();
+    }
+
+    /**
+     * Returns an instance with the provided URI.
+     *
+     * This method MUST update the Host header of the returned request by
+     * default if the URI contains a host component. If the URI does not
+     * contain a host component, any pre-existing Host header MUST be carried
+     * over to the returned request.
+     *
+     * You can opt-in to preserving the original state of the Host header by
+     * setting `$preserveHost` to `true`. When `$preserveHost` is set to
+     * `true`, this method interacts with the Host header in the following ways:
+     *
+     * - If the Host header is missing or empty, and the new URI contains
+     *   a host component, this method MUST update the Host header in the returned
+     *   request.
+     * - If the Host header is missing or empty, and the new URI does not contain a
+     *   host component, this method MUST NOT update the Host header in the returned
+     *   request.
+     * - If a Host header is present and non-empty, this method MUST NOT update
+     *   the Host header in the returned request.
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the message, and MUST return an instance that has the
+     * new UriInterface instance.
+     *
+     * @link http://tools.ietf.org/html/rfc3986#section-4.3
+     * @param UriInterface $uri New request URI to use.
+     * @param bool $preserveHost Preserve the original state of the Host header.
+     * @return static
+     */
+    public function withUri(UriInterface $uri, $preserveHost = false) {
+        // TODO: Implement withUri() method.
+    }
+
+    /**
+     * Retrieve server parameters.
+     *
+     * Retrieves data related to the incoming request environment,
+     * typically derived from PHP's $_SERVER superglobal. The data IS NOT
+     * REQUIRED to originate from $_SERVER.
+     *
+     * @return array
+     */
+    public function getServerParams()
+    {
+        // TODO: Implement getServerParams() method.
+    }
+
+    /**
+     * Retrieve cookies.
+     *
+     * Retrieves cookies sent by the client to the server.
+     *
+     * The data MUST be compatible with the structure of the $_COOKIE
+     * superglobal.
+     *
+     * @return array
+     */
+    public function getCookieParams()
+    {
+        // TODO: Implement getCookieParams() method.
+    }
+
+    /**
+     * Return an instance with the specified cookies.
+     *
+     * The data IS NOT REQUIRED to come from the $_COOKIE superglobal, but MUST
+     * be compatible with the structure of $_COOKIE. Typically, this data will
+     * be injected at instantiation.
+     *
+     * This method MUST NOT update the related Cookie header of the request
+     * instance, nor related values in the server params.
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the message, and MUST return an instance that has the
+     * updated cookie values.
+     *
+     * @param array $cookies Array of key/value pairs representing cookies.
+     * @return static
+     */
+    public function withCookieParams(array $cookies)
+    {
+        // TODO: Implement withCookieParams() method.
+    }
+
+    /**
+     * Retrieve query string arguments.
+     *
+     * Retrieves the deserialized query string arguments, if any.
+     *
+     * Note: the query params might not be in sync with the URI or server
+     * params. If you need to ensure you are only getting the original
+     * values, you may need to parse the query string from `getUri()->getQuery()`
+     * or from the `QUERY_STRING` server param.
+     *
+     * @return array
+     */
+    public function getQueryParams()
+    {
+        // TODO: Implement getQueryParams() method.
+    }
+
+    /**
+     * Return an instance with the specified query string arguments.
+     *
+     * These values SHOULD remain immutable over the course of the incoming
+     * request. They MAY be injected during instantiation, such as from PHP's
+     * $_GET superglobal, or MAY be derived from some other value such as the
+     * URI. In cases where the arguments are parsed from the URI, the data
+     * MUST be compatible with what PHP's parse_str() would return for
+     * purposes of how duplicate query parameters are handled, and how nested
+     * sets are handled.
+     *
+     * Setting query string arguments MUST NOT change the URI stored by the
+     * request, nor the values in the server params.
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the message, and MUST return an instance that has the
+     * updated query string arguments.
+     *
+     * @param array $query Array of query string arguments, typically from
+     *     $_GET.
+     * @return static
+     */
+    public function withQueryParams(array $query)
+    {
+        // TODO: Implement withQueryParams() method.
+    }
+
+    /**
+     * Retrieve normalized file upload data.
+     *
+     * This method returns upload metadata in a normalized tree, with each leaf
+     * an instance of Psr\Http\Message\UploadedFileInterface.
+     *
+     * These values MAY be prepared from $_FILES or the message body during
+     * instantiation, or MAY be injected via withUploadedFiles().
+     *
+     * @return array An array tree of UploadedFileInterface instances; an empty
+     *     array MUST be returned if no data is present.
+     */
+    public function getUploadedFiles()
+    {
+        // TODO: Implement getUploadedFiles() method.
+    }
+
+    /**
+     * Create a new instance with the specified uploaded files.
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the message, and MUST return an instance that has the
+     * updated body parameters.
+     *
+     * @param array $uploadedFiles An array tree of UploadedFileInterface instances.
+     * @return static
+     * @throws \InvalidArgumentException if an invalid structure is provided.
+     */
+    public function withUploadedFiles(array $uploadedFiles)
+    {
+        // TODO: Implement withUploadedFiles() method.
+    }
+
+    /**
+     * Retrieve any parameters provided in the request body.
+     *
+     * If the request Content-Type is either application/x-www-form-urlencoded
+     * or multipart/form-data, and the request method is POST, this method MUST
+     * return the contents of $_POST.
+     *
+     * Otherwise, this method may return any results of deserializing
+     * the request body content; as parsing returns structured content, the
+     * potential types MUST be arrays or objects only. A null value indicates
+     * the absence of body content.
+     *
+     * @return null|array|object The deserialized body parameters, if any.
+     *     These will typically be an array or object.
+     */
+    public function getParsedBody()
+    {
+        // TODO: Implement getParsedBody() method.
+    }
+
+    /**
+     * Return an instance with the specified body parameters.
+     *
+     * These MAY be injected during instantiation.
+     *
+     * If the request Content-Type is either application/x-www-form-urlencoded
+     * or multipart/form-data, and the request method is POST, use this method
+     * ONLY to inject the contents of $_POST.
+     *
+     * The data IS NOT REQUIRED to come from $_POST, but MUST be the results of
+     * deserializing the request body content. Deserialization/parsing returns
+     * structured data, and, as such, this method ONLY accepts arrays or objects,
+     * or a null value if nothing was available to parse.
+     *
+     * As an example, if content negotiation determines that the request data
+     * is a JSON payload, this method could be used to create a request
+     * instance with the deserialized parameters.
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the message, and MUST return an instance that has the
+     * updated body parameters.
+     *
+     * @param null|array|object $data The deserialized body data. This will
+     *     typically be in an array or object.
+     * @return static
+     * @throws \InvalidArgumentException if an unsupported argument type is
+     *     provided.
+     */
+    public function withParsedBody($data)
+    {
+        // TODO: Implement withParsedBody() method.
+    }
+
+    /**
+     * Retrieve attributes derived from the request.
+     *
+     * The request "attributes" may be used to allow injection of any
+     * parameters derived from the request: e.g., the results of path
+     * match operations; the results of decrypting cookies; the results of
+     * deserializing non-form-encoded message bodies; etc. Attributes
+     * will be application and request specific, and CAN be mutable.
+     *
+     * @return array Attributes derived from the request.
+     */
+    public function getAttributes()
+    {
+        // TODO: Implement getAttributes() method.
+    }
+
+    /**
+     * Retrieve a single derived request attribute.
+     *
+     * Retrieves a single derived request attribute as described in
+     * getAttributes(). If the attribute has not been previously set, returns
+     * the default value as provided.
+     *
+     * This method obviates the need for a hasAttribute() method, as it allows
+     * specifying a default value to return if the attribute is not found.
+     *
+     * @see getAttributes()
+     * @param string $name The attribute name.
+     * @param mixed $default Default value to return if the attribute does not exist.
+     * @return mixed
+     */
+    public function getAttribute($name, $default = null)
+    {
+        // TODO: Implement getAttribute() method.
+    }
+
+    /**
+     * Return an instance with the specified derived request attribute.
+     *
+     * This method allows setting a single derived request attribute as
+     * described in getAttributes().
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the message, and MUST return an instance that has the
+     * updated attribute.
+     *
+     * @see getAttributes()
+     * @param string $name The attribute name.
+     * @param mixed $value The value of the attribute.
+     * @return static
+     */
+    public function withAttribute($name, $value)
+    {
+        // TODO: Implement withAttribute() method.
+    }
+
+    /**
+     * Return an instance that removes the specified derived request attribute.
+     *
+     * This method allows removing a single derived request attribute as
+     * described in getAttributes().
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the message, and MUST return an instance that removes
+     * the attribute.
+     *
+     * @see getAttributes()
+     * @param string $name The attribute name.
+     * @return static
+     */
+    public function withoutAttribute($name)
+    {
+        // TODO: Implement withoutAttribute() method.
     }
 }

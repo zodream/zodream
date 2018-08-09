@@ -16,7 +16,7 @@ class UploadBase64 extends BaseUpload {
     }
 
     public function load($key = null) {
-        $content = Request::request($key);
+        $content = app('request')->request($key);
         if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $content, $result)){
             $this->setType($result[2]);
             $content = substr($content, strlen($result[1]));

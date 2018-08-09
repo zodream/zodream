@@ -1,26 +1,31 @@
 <?php
+declare(strict_types = 1);
+
 namespace Zodream\Domain\Access;
 /**
  * AUTH CONTROL
  *
  * @author Jason
  */
-use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Interfaces\UserObject;
-use Zodream\Service\Config;
 
 class Token extends Auth {
+
+    /**
+     * @var string
+     */
+    protected $token;
 
     /**
      * 获取用户
      * @return UserObject
      */
-    protected static function getUser() {
-        $userClass = Config::auth('model');
+    protected function getUser() {
+        $userClass = config('auth.model');
         if (empty($userClass)) {
             return null;
         }
-        $token = static::getTokenForRequest();
+        $token = $this->getToken();
         if (empty($token)) {
             return null;
         }
@@ -28,24 +33,40 @@ class Token extends Auth {
     }
 
     /**
+     * @return string
+     */
+    public function getToken(): string {
+        if (empty($this->token)) {
+            $this->token = static::getTokenForRequest();
+        }
+        return $this->token;
+    }
+
+    /**
+     * @param string $token
+     * @return static
+     */
+    public function setToken(string $token) {
+        $this->token = $token;
+        return $this;
+    }
+
+    /**
      * 获取 api token
      * @return string
      */
-	protected static function getTokenForRequest() {
-	    $inputKey = Config::auth('api_token', 'api_token');
-        $token = Request::get($inputKey);
+	protected function getTokenForRequest(): string {
+	    $inputKey = config('auth.api_token', 'api_token');
+        $token = app('request')->get($inputKey);
         if (empty($token)) {
-            $token = Request::request($inputKey);
+            $token = app('request')->request($inputKey);
         }
-
         if (empty($token)) {
-            $token = Request::bearerToken();
+            $token = app('request')->bearerToken();
         }
-
         if (empty($token)) {
-            list(, $token) = Request::auth();
+            list(, $token) = app('request')->auth();
         }
-
         return $token;
     }
 }

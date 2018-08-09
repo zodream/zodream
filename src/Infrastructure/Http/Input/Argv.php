@@ -1,15 +1,14 @@
 <?php
 namespace Zodream\Infrastructure\Http\Input;
 
-class Argv extends BaseInput {
-    public function __construct() {
+trait Argv {
+    protected function createArgv() {
         // SET ARGV TO GET PARAM, IF NO '=' , VALUE IS '', YOU CAN USE IS_NULL JUDGE
         $args = $_SERVER['argv'];
         if (empty($args)) {
-            return;
+            return [];
         }
-        $arguments = $this->getArguments($args);
-        $this->setValues($arguments);
+        return $this->getArguments($args);
     }
 
     /**

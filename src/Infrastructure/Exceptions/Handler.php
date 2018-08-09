@@ -119,7 +119,7 @@ class Handler implements ExceptionHandler {
 
         $errors = $e->validator->errors()->getMessages();
 
-        if (Request::expectsJson()) {
+        if (app('request')->expectsJson()) {
             return Factory::response()->setStatusCode(422)
                 ->json($errors);
         }
@@ -170,7 +170,7 @@ class Handler implements ExceptionHandler {
     }
 
     public function unauthenticated(AuthenticationException $e) {
-        return Factory::response()->redirect([Config::auth('home'), 'redirect_uri' => Url::to()]);
+        return Factory::response()->redirect([Config::auth('home'), 'redirect_uri' => url()->current()]);
     }
 
     /**

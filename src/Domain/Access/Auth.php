@@ -1,4 +1,6 @@
 <?php
+declare(strict_types = 1);
+
 namespace Zodream\Domain\Access;
 /**
  * AUTH CONTROL
@@ -9,7 +11,6 @@ use Zodream\Infrastructure\Cookie;
 use Zodream\Infrastructure\Interfaces\AuthObject;
 use Zodream\Infrastructure\Interfaces\UserObject;
 use Zodream\Helpers\Str;
-use Zodream\Service\Config;
 use Zodream\Service\Factory;
 
 class Auth implements AuthObject {
@@ -17,65 +18,66 @@ class Auth implements AuthObject {
 	/**
 	 * @var bool|UserObject
 	 */
-	protected static $identity = false;
+	protected $identity = false;
 
-	/**
-	 * @param bool $refresh
-	 * @return bool|UserObject
-	 */
-	public static function getIdentity($refresh = false) {
-		if (static::$identity === false || $refresh) {
-			static::$identity = static::getUser();
+    /**
+     * @param bool $refresh
+     * @return bool|UserObject
+     * @throws \Exception
+     */
+	public function getIdentity(bool $refresh = false) {
+		if ($this->identity === false || $refresh) {
+			$this->identity = $this->getUser();
 		}
-		return static::$identity;
+		return $this->identity;
 	}
 
     /**
      * 获取 session key
      * @return string
      */
-    public static function getName() {
-        return 'login_'.Config::auth('session_key', 'user').'_'.sha1(static::class);
+    public function getName(): string {
+        return 'login_'.config('auth.session_key', 'user').'_'.sha1(static::class);
     }
 
     /**
      * 获取 记住我 cookie key
      * @return string
      */
-    public static function getRememberName() {
-        return 'remember_'.Config::auth('session_key', 'user').'_'.sha1(static::class);
+    public function getRememberName(): string {
+        return 'remember_'.config('auth.session_key', 'user').'_'.sha1(static::class);
     }
 
     /**
      * @return UserObject
      * @throws \Exception
      */
-	protected static function getUser() {
-	    $userClass = Config::auth('model');
+	protected function getUser() {
+	    $userClass = config('auth.model');
 	    if (empty($userClass)) {
 	        return null;
         }
-        $key = static::getName();
+        $key = $this->getName();
 	    $id = Factory::session()->get($key);
 	    if (!empty($id)) {
             return call_user_func($userClass.'::findByIdentity', $id);
         }
-        $token = static::getRememberToken();
+        list($id, $token) = $this->getRememberToken();
 	    if (!empty($token)) {
-            return call_user_func_array($userClass.'::findByRememberToken',
-                $token);
+            return call_user_func($userClass.'::findByRememberToken',
+                $id, $token);
         }
         return null;
     }
 
-    protected static function getRememberToken() {
-	    $token = Cookie::get(static::getRememberName());
-	    if (empty($token) && strpos($token, '|') === false) {
-	        return null;
+    protected function getRememberToken(): array {
+	    $token = Cookie::get($this->getRememberName());
+	    if (empty($token) || strpos($token, '|') === false) {
+	        return [0, null];
         }
         list($id, $token) = explode('|', $token, 2);
 	    if (empty($id) || empty($token)) {
-	        return null;
+	        return [0, null];
         }
 	    return [$id, $token];
     }
@@ -83,77 +85,88 @@ class Auth implements AuthObject {
     /**
      * @param UserObject $user
      */
-    protected static function setRememberToken(UserObject $user) {
+    protected function setRememberToken(UserObject $user) {
         if (empty($user->getRememberToken())) {
             $user->setRememberToken(Str::random(60));
         }
-        Cookie::forever(static::getRememberName(), $user->getIdentity().'|'. $user->getRememberToken());
+        Cookie::forever($this->getRememberName(), $user->getIdentity().'|'. $user->getRememberToken());
     }
 
     /**
      * 设置用户
      * @param UserObject $user
      */
-    public static function setUser(UserObject $user) {
-	    static::$identity = $user;
+    public function setUser(UserObject $user) {
+	    $this->identity = $user;
     }
 
     /**
      * 用户id
      * @return int
+     * @throws \Exception
      */
-	public static function id() {
-	    if (empty(static::user())) {
-	        return false;
+	public function id(): int {
+	    if (empty($this->user())) {
+	        return 0;
         }
-        return static::user()->getIdentity();
+        return intval($this->user()->getIdentity());
     }
 
-	/**
-	 * 获取登录
-	 * @return bool|UserObject
-	 */
-	public static function user() {
-		if (!empty(static::getIdentity())) {
-			return static::$identity;
+    /**
+     * 获取登录
+     * @return UserObject
+     * @throws \Exception
+     */
+	public function user() {
+		if (!empty($this->getIdentity())) {
+			return $this->identity;
 		}
-		return false;
+		return null;
 	}
 
-	/**
-	 * 判断是否是游客
-	 * @return bool
-	 */
-	public static function guest() {
-		return empty(static::getIdentity());
+    /**
+     * 判断是否是游客
+     * @return bool
+     * @throws \Exception
+     */
+	public function guest(): bool {
+		return empty($this->getIdentity());
 	}
 
-    public static function login(UserObject $user, $remember = false) {
-        static::updateSession($user->getIdentity());
+    /**
+     * 登录
+     * @param UserObject $user
+     * @param bool $remember
+     * @throws \Exception
+     */
+    public function login(UserObject $user, $remember = false) {
+        $this->updateSession($user->getIdentity());
         if ($remember) {
-            static::setRememberToken($user);
+            $this->setRememberToken($user);
         }
-        static::setUser($user);
+        $this->setUser($user);
     }
 
     /**
      * Update the session with the given ID.
      *
-     * @param  string  $id
+     * @param  string $id
      * @return void
+     * @throws \Exception
      */
-    protected static function updateSession($id) {
-        Factory::session()->set(static::getName(), $id);
+    protected function updateSession(string $id) {
+        Factory::session()->set($this->getName(), $id);
     }
 
     /**
      * 登出
+     * @throws \Exception
      */
-    public static function logout() {
-        if (empty(static::user())) {
+    public function logout() {
+        if (empty($this->user())) {
             return;
         }
-        static::user()
+        $this->user()
             ->setRememberToken(Str::random(60));
         Factory::session()->destroy();
         //throw new AuthenticationException();
