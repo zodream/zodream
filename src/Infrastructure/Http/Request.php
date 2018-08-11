@@ -181,6 +181,12 @@ class Request implements ServerRequestInterface {
         return $type == 'application/xml' || $type == 'text/xml';
     }
 
+    public function isHtml(): bool {
+        return empty($_SERVER['HTTP_X_REQUESTED_WITH']) && empty($_SERVER['HTTP_X_TRACY_AJAX'])
+                && PHP_SAPI !== 'cli'
+                && !preg_match('#^Content-Type: (?!text/html)#im', implode("\n", headers_list()));
+    }
+
     public function isWeChat(): bool {
         return strpos($this->server('HTTP_USER_AGENT'), 'MicroMessenger') !== false;
     }
