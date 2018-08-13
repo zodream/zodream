@@ -17,7 +17,9 @@ trait Argv {
      * @return array
      */
     protected function getArguments($args) {
-        array_shift($args);
+        if (isset($args[0])) {
+            array_shift($args);
+        }
         $endOfOptions = false;
 
         $ret = array (
