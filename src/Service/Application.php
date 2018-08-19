@@ -56,7 +56,7 @@ class Application implements ArrayAccess, ContainerInterface {
      * @param string $module
      * @throws Exception
      */
-    public function __construct(string $base_path = null, string $module = 'Home') {
+    public function __construct(string $base_path = '', string $module = 'Home') {
         if (!empty($base_path)) {
             $this->setBasePath($base_path);
         }
@@ -276,6 +276,10 @@ class Application implements ArrayAccess, ContainerInterface {
         return $response instanceof Response ? $response : $this['response'];
     }
 
+    public function autoResponse() {
+        return $this->handle()->send();
+    }
+
     public function flush() {
         $this->aliases = [];
         $this->bindings = [];
@@ -289,7 +293,7 @@ class Application implements ArrayAccess, ContainerInterface {
      */
     public static function getInstance() {
         if (is_null(static::$instance)) {
-            static::$instance = new static;
+            static::$instance = new static(defined('APP_DIR') ? APP_DIR : '');
         }
         return static::$instance;
     }
