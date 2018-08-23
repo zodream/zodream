@@ -142,7 +142,7 @@ class Html {
     protected static function getLi(array $args) {
         $html = null;
         foreach ($args as $item) {
-            $html .= call_user_func_array(static::li, (array)$item);
+            $html .= static::li(...(array)$item);
         }
         return $html;
     }

@@ -80,6 +80,15 @@ class Application implements ArrayAccess, ContainerInterface {
         return static::VERSION;
     }
 
+    /**
+     * 是否是
+     * @param string $abstract
+     * @return bool
+     */
+    public function is(string $abstract): bool {
+        return $this instanceof $abstract;
+    }
+
     public function isBooted() {
         return $this->booted;
     }

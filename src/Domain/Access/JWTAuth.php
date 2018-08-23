@@ -77,7 +77,7 @@ class JWTAuth extends Token {
         if (empty($token)) {
             return null;
         }
-        if (!Factory::cache()->has(static::getPayload('jti'))) {
+        if (!cache()->has(static::getPayload('jti'))) {
             return null;
         }
         $time = time();
@@ -98,7 +98,7 @@ class JWTAuth extends Token {
         $time = time();
         $payload = [
             'sub' => $user->getIdentity(),
-            'iss' => app('request')->url(),
+            'iss' => url()->getHost(),
             'iat' => $time,
             'nbf' => $time,
             'jti' => Str::random(60)
@@ -106,7 +106,7 @@ class JWTAuth extends Token {
         if ($configs['refreshTTL'] > 0) {
             $payload['exp'] = $time + $configs['refreshTTL'];
         }
-        Factory::cache()->set($payload['jti'], $payload, $configs['refreshTTL']);
+        cache()->set($payload['jti'], $payload, $configs['refreshTTL']);
         return JWT::encode($payload, isset($configs['privateKey']) ? $configs['privateKey']
             : $configs['key'], $configs['alg']);
     }
@@ -115,7 +115,7 @@ class JWTAuth extends Token {
      * @throws \Exception
      */
     public function logout() {
-        Factory::cache()->delete($this->getPayload('jti'));
+        cache()->delete($this->getPayload('jti'));
         return parent::logout();
     }
 
