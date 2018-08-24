@@ -8,6 +8,7 @@ use Zodream\Domain\Access\Auth;
 use Zodream\Database\Engine\Pdo;
 use Zodream\Infrastructure\Mailer\Mailer;
 use Zodream\Infrastructure\Cookie;
+use Zodream\Service\Config;
 
 /**
  * 配置文件模板
@@ -134,7 +135,7 @@ $configs = array(
     )
 );
 
-if (in_array(app('request')->ip(), ['unknown', '::1', '127.0.0.1'])){
+if (Config::isDebug()){
     $configs['modules'] = array(   //生成模块
         'gzo' => 'Zodream\Module\Gzo',
         'debugger' => 'Zodream\Debugger' //调试模块

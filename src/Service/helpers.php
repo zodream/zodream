@@ -13,12 +13,14 @@ use Zodream\Domain\Access\Auth;
 use Zodream\Domain\Access\Token;
 use Zodream\Domain\Access\JWTAuth;
 use Zodream\Infrastructure\Http\UrlGenerator;
+use Zodream\Debugger\Domain\Timer;
 
 
 if (! function_exists('app')) {
     /**
      * @param string|null $abstract
      * @return Application|Response|Request|mixed
+     * @throws Exception
      */
     function app(string $abstract = null) {
         if (empty($abstract)) {
@@ -32,6 +34,7 @@ if (! function_exists('auth')) {
 
     /**
      * @return Auth|Token|JWTAuth
+     * @throws Exception
      */
     function auth() {
         return app('auth');
@@ -161,9 +164,10 @@ if (! function_exists('request')) {
     /**
      * Get an instance of the current request or an input item from the request.
      *
-     * @param  array|string  $key
-     * @param  mixed   $default
+     * @param  array|string $key
+     * @param  mixed $default
      * @return array|string|\Zodream\Infrastructure\Http\Input\Request
+     * @throws Exception
      */
     function request($key = null, $default = null) {
         return app('request')->request($key, $default);
@@ -215,10 +219,11 @@ if (! function_exists('url')) {
     /**
      * Generate a url for the application.
      *
-     * @param  string  $path
-     * @param  mixed   $parameters
-     * @param  bool    $secure
+     * @param  string $path
+     * @param  mixed $parameters
+     * @param  bool $secure
      * @return string| UrlGenerator
+     * @throws Exception
      */
     function url($path = null, $parameters = [], $secure = null) {
         if (is_null($path) && empty($parameters) && is_null($secure)) {
@@ -234,5 +239,19 @@ if (! function_exists('view')) {
             return Factory::view();
         }
         return Factory::view()->render($path);
+    }
+}
+
+if (! function_exists('timer')) {
+    /**
+     * @param null $name
+     * @return Timer|mixed
+     * @throws Exception
+     */
+    function timer($name = null) {
+        if (is_null($name)) {
+            return app('timer');
+        }
+        return app('timer')->record($name);
     }
 }

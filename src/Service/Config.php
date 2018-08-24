@@ -32,10 +32,15 @@ class Config extends BaseConfig {
         return $this->getDirectory()->file(app('app.module').'.php');
     }
 
+    public function file($name) {
+        return $this->getConfigByFile($this->getDirectory()->file($name.'.php'));
+    }
+
     /**
      * 重新加载配置
      * @param array $args
      * @return $this
+     * @throws \Exception
      */
     public function reset($args = array()) {
         $this->__attributes = $args;

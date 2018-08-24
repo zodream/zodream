@@ -84,7 +84,7 @@ class Factory {
      */
     public static function session($key = null, $default = null) {
         /** @var Session $session */
-        $session = self::getInstance('session', Session::class);
+        $session = app('session');
         if (is_null($key)) {
             return $session;
         }
@@ -102,7 +102,7 @@ class Factory {
      */
     public static function cache() {
         /** @var Cache $cache */
-        $cache = self::getInstance('cache', FileCache::class);
+        $cache = app('cache');
         $arguments = func_get_args();
         if (empty($arguments)) {
             return $cache;
@@ -144,7 +144,7 @@ class Factory {
      */
     public static function i18n($message = null, $param = [], $name = null) {
         /** @var I18n $i18n */
-        $i18n = self::getInstance('i18n', PhpSource::class);
+        $i18n = app('i18n');
         if (is_null($message)) {
             return $i18n;
         }
@@ -158,7 +158,7 @@ class Factory {
      * @throws \Exception
      */
     public static function router() {
-        return self::getInstance('router', Router::class);
+        return app('router');
     }
 
     /**

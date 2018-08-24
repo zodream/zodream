@@ -242,6 +242,7 @@ class Response {
      * SET JSONP
      * @param array $data
      * @return Response
+     * @throws \Exception
      */
     public function jsonp(array $data) {
        return $this->json(
@@ -361,6 +362,7 @@ class Response {
     /** 获取header range信息
      * @param int $fileSize 文件大小
      * @return array|null
+     * @throws \Exception
      */
     protected function getRange($fileSize){
         $range = app('request')->server('HTTP_RANGE');

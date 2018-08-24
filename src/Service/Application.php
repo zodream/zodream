@@ -61,16 +61,17 @@ class Application implements ArrayAccess, ContainerInterface {
             $this->setBasePath($base_path);
         }
         $this->registerBaseBindings();
+
         $this->instance('app.module', $module);
         $this->register('request', Request::class);
         $this->register('response', Response::class);
-        $this->register('auth', Auth::class);
         $this->register('url', UrlGenerator::class);
         $this->register('route', Route::class);
         $this->register('view', ViewFactory::class);
         $this->singleton(Timer::class, 'timer');
+        $this->registerConfigBindings();
+        $this->registerCoreAliases();
         $this->singleton(Debugger::class, 'debugger');
-
     }
 
     /**
@@ -105,6 +106,29 @@ class Application implements ArrayAccess, ContainerInterface {
         $this->instance('app', $this);
         $this->instance(Application::class, $this);
     }
+
+    protected function registerConfigBindings() {
+        foreach (config()->get() as $key => $item) {
+            if (!is_array($item) || !isset($item['driver'])
+                || !class_exists($item['driver'])) {
+                continue;
+            }
+            $this->register($key, $item['driver']);
+        }
+
+    }
+
+    public function registerCoreAliases() {
+        foreach ([
+
+                 ] as $key => $aliases) {
+            foreach ($aliases as $alias) {
+                $this->alias($key, $alias);
+            }
+        }
+    }
+
+
 
     /**
      * 注册并初始化实例
