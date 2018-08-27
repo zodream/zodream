@@ -110,7 +110,8 @@ class Application implements ArrayAccess, ContainerInterface {
     protected function registerConfigBindings() {
         foreach (config()->get() as $key => $item) {
             if (!is_array($item) || !isset($item['driver'])
-                || !class_exists($item['driver'])) {
+                || !class_exists($item['driver'])
+                || $key == 'db') {
                 continue;
             }
             $this->register($key, $item['driver']);
