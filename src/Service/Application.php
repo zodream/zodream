@@ -73,9 +73,6 @@ class Application implements ArrayAccess, ContainerInterface {
         $this->singleton(Timer::class, 'timer');
         $this->registerConfigBindings();
         $this->registerCoreAliases();
-        $this->bootstrapWith([
-            HandleExceptions::class
-        ]);
         $this->singleton(Debugger::class, 'debugger');
     }
 
@@ -315,6 +312,11 @@ class Application implements ArrayAccess, ContainerInterface {
     }
 
     public function handle(string $uri = ''): Response {
+        if (!$this->hasBeenBootstrapped()) {
+            $this->bootstrapWith([
+                HandleExceptions::class
+            ]);
+        }
         /** @var Route $route */
         $route = $this[Router::class]->handle(
             $this['request']->method(),
