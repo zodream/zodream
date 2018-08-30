@@ -170,7 +170,27 @@ class AliPay extends BasePay {
                 'extern_token',
                 'promo_params'
             ]
-        ]
+        ],
+        'refund' => [
+            'https://mapi.alipay.com/gateway.do',
+            [
+                'service' => 'refund_fastpay_by_platform_pwd',
+                '#partner',
+                '_input_charset' => 'UTF-8',
+                'sign_type' => 'MD5',
+                'sign',
+                'notify_url',
+                [
+                    'seller_email',
+                    'seller_user_id'
+                ],
+                '#refund_date',   //yyyy-MM-dd HH:mm:ss
+                '#batch_no',
+                '#batch_num' => 1,
+                '#detail_data' // 第一笔交易退款数据集#第二笔交易退款数据集
+                //交易退款数据集的格式为：原付款支付宝交易号^退款总金额^退款理由
+            ]
+        ],
     ];
 
     public function __construct(array $config = array()) {
@@ -517,9 +537,20 @@ class AliPay extends BasePay {
      * @param array $arg
      * @return $this
      */
+    /**
+     * 及时支付
+     * @param array $arg
+     * @return $this
+     */
     public function getWebPayUrl($arg = array()) {
         $uri = new Uri();
-        return $uri->decode($this->getMap('pay')[0])
+        return $uri->decode($this->getMap('webPay')[0])
             ->setData($this->getSignData('webPay', $arg));
+    }
+
+    public function getRefundUrl($arg = array()) {
+        $uri = new Uri();
+        return $uri->decode($this->getMap('refund')[0])
+            ->setData($this->getSignData('refund', $arg));
     }
 }
