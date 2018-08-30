@@ -116,7 +116,9 @@ class WeChat extends BasePay {
                 '#total_fee',
                 '#refund_fee',
                 'refund_fee_type',
-                '#op_user_id'
+                'refund_desc',
+                'notify_url',
+                'refund_account'
             ],
             'POST'
         ],
@@ -369,15 +371,18 @@ class WeChat extends BasePay {
 
         //第二种方式，两个文件合成一个.pem文件
         $this->http->addOption(CURLOPT_SSLCERT, (string)$this->privateKeyFile);
-        $args = XmlExpand::decode(
+        $args = XmlExpand::specialDecode(
             $this->httpPost($this->apiMap['refund'][0],
-                XmlExpand::encode($data, 'xml'
+                XmlExpand::specialEncode($data, 'xml'
                 )));
         if ($args['return_code'] != 'SUCCESS') {
-            throw new \ErrorException($args['return_msg']);
+            throw new \Exception($args['return_msg']);
+        }
+        if ($args['result_code'] != 'SUCCESS') {
+            throw new \Exception($args['err_code_des']);
         }
         if (!$this->verify($args, $args['sign'])) {
-            throw new \InvalidArgumentException('数据验签失败！');
+            throw new \Exception('数据验签失败！');
         }
         return $args;
     }
