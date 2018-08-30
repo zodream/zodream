@@ -4,17 +4,18 @@ namespace Zodream\Infrastructure\Exceptions;
 use Exception;
 use HttpException;
 use Zodream\Database\Model\ModelNotFoundException;
+use Zodream\Domain\Access\AuthorizationException;
+use Zodream\Infrastructure\Http\HttpResponseException;
 use Zodream\Infrastructure\Interfaces\Responsable;
 use Zodream\Route\Router;
 use Zodream\Service\Config;
 use Zodream\Validate\ValidationException;
 use Zodream\Domain\Access\AuthenticationException;
 use Zodream\Infrastructure\Error\NotFoundHttpException;
-use Zodream\Infrastructure\Http\HttpResponseException;
-use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Http\Response;
 use Zodream\Infrastructure\Interfaces\ExceptionHandler;
 use Zodream\Service\Factory;
+use Throwable;
 
 class Handler implements ExceptionHandler {
 
@@ -24,6 +25,15 @@ class Handler implements ExceptionHandler {
      * @var array
      */
     protected $dontReport = [];
+
+    protected $internalDontReport = [
+        AuthenticationException::class,
+        AuthorizationException::class,
+        HttpException::class,
+        HttpResponseException::class,
+        ModelNotFoundException::class,
+        ValidationException::class,
+    ];
 
     /**
      * Report or log an exception.
@@ -38,7 +48,15 @@ class Handler implements ExceptionHandler {
             return;
         }
 
-        Factory::log()->error($e);
+        if (method_exists($e, 'report')) {
+            return $e->report();
+        }
+
+
+        Factory::log()->error(
+            $e->getMessage(),
+            array_merge($this->context(), ['exception' => $e]
+            ));
     }
 
     /**
@@ -58,13 +76,29 @@ class Handler implements ExceptionHandler {
      * @return bool
      */
     protected function shouldntReport(Exception $e) {
-        $dontReport = array_merge($this->dontReport, [HttpResponseException::class]);
+        $dontReport = array_merge($this->dontReport, $this->internalDontReport);
         foreach ($dontReport as $type) {
             if ($e instanceof $type) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Get the default context variables for logging.
+     *
+     * @return array
+     */
+    protected function context() {
+        try {
+            return array_filter([
+                'userId' => auth()->id(),
+                'email' => auth()->user() ? auth()->user()->email : null,
+            ]);
+        } catch (Throwable $e) {
+            return [];
+        }
     }
 
     /**
@@ -120,7 +154,7 @@ class Handler implements ExceptionHandler {
         $errors = $e->validator->errors()->getMessages();
 
         if (app('request')->expectsJson()) {
-            return Factory::response()->setStatusCode(422)
+            return app('response')->setStatusCode(422)
                 ->json($errors);
         }
 
@@ -134,19 +168,7 @@ class Handler implements ExceptionHandler {
      * @return Response
      */
     protected function prepareResponse(Exception $e){
-        if (Config::isDebug() && function_exists('xdebug_get_function_stack')) {
-            throw $e;
-        }
-        $status = $e->getCode();
-        Factory::response()->setStatusCode(404);
-        if (Factory::view()->exist("errors/{$status}")) {
-            return Factory::response()
-                ->view("errors/{$status}", ['exception' => $e]);
-        }
-        if (property_exists($e, '')) {
-            return Factory::response()->html($e->xdebug_message);
-        }
-        return Factory::response()->html($e->getMessage());
+        return app('debugger')->exceptionHandler($e, true);
     }
 
     /**
@@ -170,7 +192,7 @@ class Handler implements ExceptionHandler {
     }
 
     public function unauthenticated(AuthenticationException $e) {
-        return Factory::response()->redirect([Config::auth('home'), 'redirect_uri' => url()->current()]);
+        return app('response')->redirect([Config::auth('home'), 'redirect_uri' => url()->current()]);
     }
 
     /**

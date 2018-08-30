@@ -7,20 +7,16 @@ namespace Zodream\Infrastructure\Error;
 */
 use Exception;
 use ErrorException;
+use Zodream\Infrastructure\Exceptions\Handler;
 use Zodream\Service\Config;
-use Zodream\Service\Factory;
 
-class Error {
+class HandleExceptions {
 
     /**
      * 启动 如果有 xdebug 就用 xdebug
      */
     public function bootstrap() {
-       if (Config::isDebug() && function_exists('xdebug_get_function_stack')) {
-           error_reporting(E_ALL);
-           return;
-       }
-        error_reporting(-1);
+        error_reporting(Config::isDebug() ? E_ALL : -1);
         set_error_handler([$this, 'handleError']);
         set_exception_handler([$this, 'handleException']);
         register_shutdown_function([$this, 'handleShutdown']);
@@ -32,18 +28,21 @@ class Error {
     /**
      * Convert PHP errors to ErrorException instances.
      *
-     * @param  int $level
+     * @param $severity
      * @param  string $message
      * @param  string $file
      * @param  int $line
+     * @param array $context
      * @return void
      * @throws ErrorException
+     * @throws Exception
      * @internal param array $context
      */
-    public function handleError($level, $message, $file = '', $line = 0) {
-        if (error_reporting() & $level) {
-            throw new \ErrorException($message, 0, $level, $file, $line);
+    public function handleError($severity, $message, $file, $line, $context = []) {
+        if (error_reporting() & $severity) {
+            throw new \ErrorException($message, 0, $severity, $file, $line);
         }
+        app('debugger')->errorHandler($severity, $message, $file, $line, $context);
     }
 
     /**
@@ -53,17 +52,15 @@ class Error {
      * the HTTP and Console kernels. But, fatal error exceptions must
      * be handled differently since they are not normal exceptions.
      *
-     * @param  \Throwable  $e
+     * @param  \Throwable $e
      * @return void
+     * @throws Exception
      */
-    public function handleException($e)
-    {
+    public function handleException($e) {
         if (! $e instanceof Exception) {
             $e = new FatalThrowableError($e);
         }
-
         $this->getExceptionHandler()->report($e);
-
         $this->renderHttpResponse($e);
     }
 
@@ -82,6 +79,7 @@ class Error {
      *
      * @param Exception $e
      * @return void
+     * @throws Exception
      */
     protected function renderHttpResponse(Exception $e) {
         $this->getExceptionHandler()->render($e)->send();
@@ -91,15 +89,18 @@ class Error {
      * Handle the PHP shutdown event.
      *
      * @return void
+     * @throws Exception
      */
     public function handleShutdown() {
         $error = error_get_last();
         if (is_null($error)) {
+            app('debugger')->shutdownHandler();
             return;
         }
         if ($this->isFatal($error['type'])) {
             $this->handleException($this->fatalExceptionFromError($error, 0));
         }
+        app('debugger')->shutdownHandler();
     }
 
     /**
@@ -125,7 +126,11 @@ class Error {
         return in_array($type, [E_COMPILE_ERROR, E_CORE_ERROR, E_ERROR, E_PARSE]);
     }
 
+    /**
+     * @return Handler
+     * @throws Exception
+     */
     protected function getExceptionHandler() {
-        return Factory::handler();
+        return app('exception');
     }
 }

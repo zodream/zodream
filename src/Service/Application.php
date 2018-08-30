@@ -7,6 +7,7 @@ use Psr\Container\ContainerInterface;
 use Zodream\Debugger\Debugger;
 use Zodream\Debugger\Domain\Timer;
 use Zodream\Domain\Access\Auth;
+use Zodream\Infrastructure\Error\HandleExceptions;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Http\Response;
 use ArrayAccess;
@@ -30,6 +31,8 @@ class Application implements ArrayAccess, ContainerInterface {
     protected $basePath;
 
     protected $booted = false;
+
+    protected $hasBeenBootstrapped = false;
 
 
     /**
@@ -61,7 +64,6 @@ class Application implements ArrayAccess, ContainerInterface {
             $this->setBasePath($base_path);
         }
         $this->registerBaseBindings();
-
         $this->instance('app.module', $module);
         $this->register('request', Request::class);
         $this->register('response', Response::class);
@@ -71,6 +73,9 @@ class Application implements ArrayAccess, ContainerInterface {
         $this->singleton(Timer::class, 'timer');
         $this->registerConfigBindings();
         $this->registerCoreAliases();
+        $this->bootstrapWith([
+            HandleExceptions::class
+        ]);
         $this->singleton(Debugger::class, 'debugger');
     }
 
@@ -98,7 +103,6 @@ class Application implements ArrayAccess, ContainerInterface {
         if ($this->booted) {
             return;
         }
-
     }
 
     protected function registerBaseBindings() {
@@ -129,6 +133,16 @@ class Application implements ArrayAccess, ContainerInterface {
         }
     }
 
+    public function hasBeenBootstrapped(): bool  {
+        return $this->hasBeenBootstrapped;
+    }
+
+    public function bootstrapWith(array $bootstrappers) {
+        $this->hasBeenBootstrapped = true;
+        foreach ($bootstrappers as $bootstrapper) {
+            $this->make($bootstrapper)->bootstrap($this);
+        }
+    }
 
 
     /**

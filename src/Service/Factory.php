@@ -213,7 +213,7 @@ class Factory {
      * @throws \Exception
      */
     public static function handler() {
-        return self::getInstance('exception', Handler::class);
+        return app('exception');
     }
 
     /**

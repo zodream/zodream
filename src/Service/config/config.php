@@ -9,6 +9,7 @@ use Zodream\Database\Engine\Pdo;
 use Zodream\Infrastructure\Mailer\Mailer;
 use Zodream\Infrastructure\Cookie;
 use Zodream\Service\Config;
+use Zodream\Infrastructure\Exceptions\Handler;
 
 /**
  * 配置文件模板
@@ -16,8 +17,8 @@ use Zodream\Service\Config;
  * @author Jason
  * @time 2015-12-2
  */
-$configs = array(
-	'app'    => array(                           //网站信息
+$configs = [
+	'app'    => [                           //网站信息
         'name'       => 'ZoDream',               //应用程序名称
 		'title'      => 'ZoDream',
 //		'host'       => 'localhost',        //主目录
@@ -25,31 +26,34 @@ $configs = array(
 		'form'       => 'Form',
 		'controller' => 'Controller',
 		'action'     => 'Action',
-	),
-	'session' => array(
+	],
+	'session' => [
 		'driver' => Session::class,
         'directory' => null
-	),
-	'cache' => array(
+	],
+	'cache' => [
 		'driver' => FileCache::class,
 		'auto' => false,
         'directory' => 'data/cache',
         'extension' => '.cache',
         'gc' => 10
-	),
-	'auth'   => array(
+	],
+	'auth'   => [
 		'driver' => Auth::class,        //用户判断
 		'home'  => 'account'                             //用户登录主页
-	),
-	'route'  => array(
+	],
+	'route'  => [
 		'default' => 'Home@index',                        //注册路由， (?<参数>值) 参数为方法接收的参数 值为正则表达式 或 :num :any
-	),
+	],
     'formatter' => [
         'date' => 'Y-m-d',
         'datetime' => 'Y-m-d H:i:s',
         'timezone' => 'Etc/GMT-8'
     ],
-	'db'     => array(							//MYSQL数据库的信息
+    'exception' => [                            // 错误处理程序
+        'driver' => Handler::class,  
+    ],
+	'db'     => [							//MYSQL数据库的信息
         'driver'   => Pdo::class,
         'type'     => 'mysql',
         'host'     => '127.0.0.1',                //服务器
@@ -62,8 +66,8 @@ $configs = array(
         'allowCache' => true,                   //是否开启查询缓存
         'cacheLife' => 3600,                      //缓存时间
         'persistent' => false                   //使用持久化连接
-	),
-	'mail'   => array(
+	],
+	'mail'   => [
 		'driver'   => Mailer::class,
 		'host'     => 'smtp.zodream.cn',
 		'port'     => 25,
@@ -71,25 +75,25 @@ $configs = array(
 		'name'     => 'ZoDream', //发送者名字
 		'email'    => '',  //发送者邮箱
 		'password' => ''
-	),
-	'verify' => array(
+	],
+	'verify' => [
 		'length' => 4,
 		'width' => 100,
 		'height' => 30,
 		'fontsize' => 20,
 		'font' => 5
-	),
-	'upload' => array(
+	],
+	'upload' => [
 		'maxsize'   => '',                  //最大上传大小 ，单位kb
 		'allowtype' => 'mp3',				//允许上次类型，用‘；’分开
 		'savepath'  => 'upload/'               //文件保存路径
-	),
-    'log' => array(
+	],
+    'log' => [
         'name' => 'ZoDream',
         'level' => 'debug',
         'file' => sprintf('data/log/%s.log', date('Y-m-d'))
-    ),
-	'safe' => array(
+    ],
+	'safe' => [
 		'csrf' => false,						//是否使用csrf防止表单注入攻击
         //http://www.ruanyifeng.com/blog/2016/09/csp.html
         'csp' => [                              // 网页安全政策 Content-Security-Policy
@@ -107,38 +111,38 @@ $configs = array(
             'manifest-src' => '',
             'report-uri' => '',*/
         ]
-	),
-	'alias'  => array(
+	],
+	'alias'  => [
 		'Cookie' => Cookie::class,
         'Request' => Request::class,
         'Auth' => Auth::class,
-	),
+	],
 	// 注册事件
-	'event' => array(
+	'event' => [
 		'canAble' => true,            //是否启动注册事件
-		'appRun' => array(),
-		'getRoute' => array(),
-		'runController' => array(),
-		'showView' => array(),
-		'response' => array(),
-		'download' => array(),
-		'executeSql' => array(),
-	),
-    'i18n' => array(
+		'appRun' => [],
+		'getRoute' => [],
+		'runController' => [],
+		'showView' => [],
+		'response' => [],
+		'download' => [],
+		'executeSql' => [],
+	],
+    'i18n' => [
         'driver' => PhpSource::class,
         'directory' => 'data/languages',
         'language' => 'en'//'zh-cn',
-    ),
-    'view' => array(                           //视图文件信息
+    ],
+    'view' => [                           //视图文件信息
         'directory' => 'UserInterface/'.app('app.module'),
         'suffix' => '.php',
-    )
-);
+    ]
+];
 
 if (Config::isDebug()){
-    $configs['modules'] = array(   //生成模块
+    $configs['modules'] = [   //生成模块
         'gzo' => 'Zodream\Module\Gzo',
         'debugger' => 'Zodream\Debugger' //调试模块
-    );
+    ];
 }
 return $configs;
