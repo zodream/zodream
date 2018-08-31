@@ -193,12 +193,10 @@ class AliPay extends BasePay {
         ],
     ];
 
-    public function __construct(array $config = array()) {
-        parent::__construct($config);
-        if ($this->has('publicKey')) {
-            $this->publicKey = $this->get('publicKey');
-        }
+    public function setSignType($arg = null) {
+        parent::setSignType($arg);
         $this->set('sign_type', $this->signType);
+        return $this;
     }
 
     protected function getSignData($name, array $args = array()) {
@@ -335,14 +333,15 @@ class AliPay extends BasePay {
             && $this->signType != self::RSA2) {
             return null;
         }
-        if (!$this->privateKeyFile->exist()) {
-            throw new FileException('私钥文件不存在');
-            return '';
+        $res = $this->getPrivateKeyResource();
+        if (empty($res)) {
+            throw new \Exception('RSA私钥错误');
         }
-        $res = openssl_get_privatekey($this->privateKeyFile->read());
         openssl_sign($content, $sign, $res,
             $this->signType == self::RSA ? OPENSSL_ALGO_SHA1 : OPENSSL_ALGO_SHA256);
-        openssl_free_key($res);
+        if (is_resource($res)) {
+            openssl_free_key($res);
+        }
         //base64编码
         return base64_encode($sign);
     }
@@ -364,52 +363,20 @@ class AliPay extends BasePay {
         if ($this->signType == self::MD5) {
             return md5($content. $this->key) == $sign;
         }
-        return $this->checkRsa($content, $sign);
-    }
-
-    /**
-     * 根据公钥地址验签
-     * @param string $content
-     * @param string $sign
-     * @return bool
-     * @throws FileException
-     */
-    protected function checkRsaByFile($content, $sign) {
-        if (!$this->publicKeyFile->exist()) {
-            throw new FileException('公钥文件不存在');
+        if ($this->signType != self::RSA
+            && $this->signType != self::RSA2) {
             return false;
         }
-        //转换为openssl格式密钥
-        $res = openssl_get_publickey($this->publicKeyFile->read());
-        if(!$res){
-            throw new \InvalidArgumentException('公钥格式错误');
-            return false;
+        $res = $this->getPublicKeyResource();
+        if (!$res) {
+            throw new \Exception('支付宝RSA公钥错误。请检查公钥文件格式是否正确');
         }
-        //调用openssl内置方法验签，返回bool值
         $result = (bool)openssl_verify($content, base64_decode($sign), $res,
             $this->signType == self::RSA ? OPENSSL_ALGO_SHA1 : OPENSSL_ALGO_SHA256);
-        //释放资源
-        openssl_free_key($res);
-        return $result;
-    }
-
-    /**
-     * 验签
-     * @param string $content
-     * @param string $sign
-     * @return bool
-     */
-    protected function checkRsa($content, $sign) {
-        $res = "-----BEGIN PUBLIC KEY-----\n" .
-            wordwrap($this->publicKey, 64, "\n", true) .
-            "\n-----END PUBLIC KEY-----";
-
-        if (!$res) {
-            throw new \InvalidArgumentException('支付宝RSA公钥错误。请检查公钥文件格式是否正确');
-            return false;
+        if (is_resource($res)) {
+            openssl_free_key($res);
         }
-        return (bool)openssl_verify($content, base64_decode($sign), $res,
-            $this->signType == self::RSA ? OPENSSL_ALGO_SHA1 : OPENSSL_ALGO_SHA256);
+        return $result;
     }
 
     protected function getSignContent(array $params) {

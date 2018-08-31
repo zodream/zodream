@@ -35,6 +35,18 @@ abstract class BasePay extends ThirdParty  {
      */
     protected $publicKeyFile;
 
+    /**
+     * 支付宝公钥
+     * @var string
+     */
+    protected $publicKey = '';
+
+    /**
+     * 私钥
+     * @var string
+     */
+    protected $privateKey = '';
+
     public function __construct(array $config = array()) {
         parent::__construct($config);
         if ($this->has('key')) {
@@ -46,6 +58,12 @@ abstract class BasePay extends ThirdParty  {
         if ($this->has('publicKeyFile')) {
             $this->setPublicKeyFile($this->get('publicKeyFile'));
         }
+        if ($this->has('publicKey')) {
+            $this->publicKey = $this->get('publicKey');
+        }
+        if ($this->has('privateKey')) {
+            $this->privateKey = $this->get('privateKey');
+        }
         if ($this->has('caFile')) {
             $this->setCaFile($this->get('caFile'));
         }
@@ -54,7 +72,7 @@ abstract class BasePay extends ThirdParty  {
     
     public function setSignType($arg = null) {
         if (empty($arg)) {
-            $arg = empty($this->privateKeyFile) ? self::MD5 : self::RSA;
+            $arg = !empty($this->key) ? self::MD5 : self::RSA;
         }
         $this->signType = strtoupper($arg);
         return $this;
@@ -94,6 +112,36 @@ abstract class BasePay extends ThirdParty  {
     public function setCaFile($file) {
         $this->caFile = $file instanceof File ? $file : new File($file);
         return $this;
+    }
+
+    /**
+     * @return bool|resource|string
+     */
+    protected function getPrivateKeyResource() {
+        if (!empty($this->privateKeyFile)) {
+            return openssl_get_privatekey($this->privateKeyFile->read());
+        }
+        if (empty($this->privateKey)) {
+            return false;
+        }
+        return "-----BEGIN PRIVATE KEY-----\n" .
+            wordwrap($this->privateKey, 64, "\n", true) .
+            "\n-----END PRIVATE KEY-----";
+    }
+
+    /**
+     * @return bool|resource|string
+     */
+    protected function getPublicKeyResource() {
+        if (!empty($this->publicKeyFile)) {
+            return openssl_get_publickey($this->publicKeyFile->read());
+        }
+        if (empty($this->publicKey)) {
+            return false;
+        }
+        return "-----BEGIN PRIVATE KEY-----\n" .
+            wordwrap($this->publicKey, 64, "\n", true) .
+            "\n-----END PRIVATE KEY-----";
     }
 
     /**
