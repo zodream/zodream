@@ -234,11 +234,11 @@ if (! function_exists('url')) {
 }
 
 if (! function_exists('view')) {
-    function view($path = null) {
+    function view($path = null, array $data = []) {
         if (empty($path)) {
             return Factory::view();
         }
-        return Factory::view()->render($path);
+        return Factory::view()->render($path, $data);
     }
 }
 
