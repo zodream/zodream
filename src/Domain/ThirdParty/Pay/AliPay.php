@@ -9,6 +9,7 @@ namespace Zodream\Domain\ThirdParty\Pay;
  */
 use Zodream\Infrastructure\Error\FileException;
 use Zodream\Infrastructure\Http\Component\Uri;
+use Zodream\Service\Factory;
 
 class AliPay extends BasePay {
 
