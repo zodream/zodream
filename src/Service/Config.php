@@ -21,6 +21,7 @@ class Config extends BaseConfig {
     use SingletonPattern;
 
     private function __construct($args = array()) {
+        self::$instance = $this;
         $this->reset($args);
     }
 

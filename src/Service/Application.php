@@ -109,6 +109,9 @@ class Application implements ArrayAccess, ContainerInterface {
     }
 
     protected function registerConfigBindings() {
+        if (empty(config())) {
+            return;
+        }
         foreach (config()->get() as $key => $item) {
             if (!is_array($item) || !isset($item['driver'])
                 || !class_exists($item['driver'])
@@ -360,8 +363,9 @@ class Application implements ArrayAccess, ContainerInterface {
     /**
      * Get the value at a given offset.
      *
-     * @param  string  $key
+     * @param  string $key
      * @return mixed
+     * @throws Exception
      */
     public function offsetGet($key) {
         return $this->make($key);
