@@ -126,7 +126,7 @@ class UrlGenerator {
      * @return string
      */
     public function to($path = null, $extra = null, $complete = true): string {
-        if (is_string($path) && $this->isValidUrl($path)) {
+        if (is_string($path) && ($this->isSpecialUrl($path) || $this->isValidUrl($path))) {
             return $path;
         }
         return (string)$this->toUri($path, $extra, $complete);
@@ -306,5 +306,9 @@ class UrlGenerator {
             return filter_var($path, FILTER_VALIDATE_URL) !== false;
         }
         return true;
+    }
+
+    public function isSpecialUrl(string $path): bool  {
+        return $path == '#' || strpos($path, 'javascript:') === 0;
     }
 }
