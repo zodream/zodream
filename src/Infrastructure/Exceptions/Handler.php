@@ -104,12 +104,14 @@ class Handler implements ExceptionHandler {
     /**
      * Render an exception into a response.
      *
-     * @param  \Exception  $e
+     * @param  \Exception $e
      * @return Response
+     * @throws Exception
      */
     public function render(Exception $e) {
         if (method_exists($e, 'render') && $response = $e->render()) {
-            return Router::toResponse($response);
+            return $response instanceof Response ? $response
+                : app('response')->setParameter($response);
         } elseif ($e instanceof Responsable) {
             return $e->toResponse();
         }
@@ -121,7 +123,6 @@ class Handler implements ExceptionHandler {
         } elseif ($e instanceof ValidationException) {
             return $this->convertValidationExceptionToResponse($e);
         }
-
         return $this->prepareResponse($e);
     }
 
@@ -168,7 +169,8 @@ class Handler implements ExceptionHandler {
      * @return Response
      */
     protected function prepareResponse(Exception $e){
-        return app('debugger')->exceptionHandler($e, true);
+        app('debugger')->exceptionHandler($e, true);
+        return app('response');
     }
 
     /**
