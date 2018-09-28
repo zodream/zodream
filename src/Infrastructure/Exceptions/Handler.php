@@ -167,8 +167,12 @@ class Handler implements ExceptionHandler {
      *
      * @param  \Exception $e
      * @return Response
+     * @throws Exception
      */
     protected function prepareResponse(Exception $e){
+        if (!app('debugger')) {
+            throw $e;
+        }
         app('debugger')->exceptionHandler($e, true);
         return app('response');
     }

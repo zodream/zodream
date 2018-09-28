@@ -71,9 +71,10 @@ class Application implements ArrayAccess, ContainerInterface {
         $this->register('route', Route::class);
         $this->register('view', ViewFactory::class);
         $this->singleton(Timer::class, 'timer');
+        $this->singleton(Debugger::class, 'debugger');
         $this->registerConfigBindings();
         $this->registerCoreAliases();
-        $this->singleton(Debugger::class, 'debugger');
+
     }
 
     /**
