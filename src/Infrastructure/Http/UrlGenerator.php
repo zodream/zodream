@@ -29,8 +29,8 @@ class UrlGenerator {
     public function __construct() {
         $this->setRequest(app('request'));
         $uri = $this->request->uri();
-        $host = config('app.host');
-        $this->setHost(app()->isDebug() || empty($host) ? $uri->getHost() : $host);
+        //$host = config('app.host');
+        $this->setHost($uri->getHost());
         $this->setSchema($uri->getScheme());
     }
 
@@ -46,20 +46,21 @@ class UrlGenerator {
      * @param string $host
      */
     public function setHost($host) {
-        $real_host = $this->request->uri()->getHost();
-        if ($host == '*' || empty($host)) {
-            $this->host = $real_host;
-            return;
-        }
-        if (!is_array($host)) {
-            $this->host = $host;
-            return;
-        }
-        if (in_array($real_host, $host)) {
-            $this->host = $real_host;
-            return;
-        }
-        $this->host = reset($host);
+        $this->host = $host;
+//        $real_host = $this->request->uri()->getHost();
+//        if ($host == '*' || empty($host)) {
+//            $this->host = $real_host;
+//            return;
+//        }
+//        if (!is_array($host)) {
+//            $this->host = $host;
+//            return;
+//        }
+//        if (in_array($real_host, $host)) {
+//            $this->host = $real_host;
+//            return;
+//        }
+//        $this->host = reset($host);
     }
 
     /**

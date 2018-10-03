@@ -7,6 +7,7 @@ use Psr\Container\ContainerInterface;
 use Zodream\Debugger\Debugger;
 use Zodream\Debugger\Domain\Timer;
 use Zodream\Domain\Access\Auth;
+use Zodream\Infrastructure\Error\DomainException;
 use Zodream\Infrastructure\Error\HandleExceptions;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Http\Response;
@@ -311,6 +312,12 @@ class Application implements ArrayAccess, ContainerInterface {
         return defined('DEBUG') && DEBUG;
     }
 
+    public function isAllowDomain(): bool  {
+        $host = config('app.host');
+        $real_host = $this['request']->uri()->getHost();
+        return $host == '*' || empty($host) || $host == $real_host || (is_array($host) && in_array($real_host, $host));
+    }
+
     protected function formatUri(string $uri): string {
         return $uri;
     }
@@ -320,6 +327,13 @@ class Application implements ArrayAccess, ContainerInterface {
             $this->bootstrapWith([
                 HandleExceptions::class
             ]);
+        }
+        if (!$this->isDebug() && !$this->isAllowDomain()) {
+            throw new DomainException(__(
+                '{domain} Domain Is Disallow', [
+                    'domain' => $this['request']->uri()->getHost()
+                ]
+            ));
         }
         /** @var Route $route */
         $route = $this[Router::class]->handle(
