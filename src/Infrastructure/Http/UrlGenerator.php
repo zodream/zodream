@@ -42,10 +42,24 @@ class UrlGenerator {
     }
 
     /**
+     *
      * @param string $host
      */
-    public function setHost(string $host) {
-        $this->host = $host;
+    public function setHost($host) {
+        $real_host = $this->request->uri()->getHost();
+        if ($host == '*' || empty($host)) {
+            $this->host = $real_host;
+            return;
+        }
+        if (!is_array($host)) {
+            $this->host = $host;
+            return;
+        }
+        if (in_array($real_host, $host)) {
+            $this->host = $real_host;
+            return;
+        }
+        $this->host = reset($host);
     }
 
     /**
