@@ -136,6 +136,8 @@ $configs = [
     'view' => [                           //视图文件信息
         'directory' => 'UserInterface/'.app('app.module'),
         'suffix' => '.php',
+        'assets' => 'assets',
+        'cache' => 'data/views'
     ]
 ];
 
