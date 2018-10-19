@@ -110,7 +110,7 @@ abstract class ThirdParty extends MagicObject {
             );
         }
         $url->decode($map[0]);
-        if (count($map) != 3 || strtoupper($map[2]) != self::POST) {
+        if (count($map) < 3 || strtoupper($map[2]) != self::POST) {
             return $this->httpGet($url->addData($this->getData((array)$map[1], $args)));
         }
         return $this->httpPost($url,
