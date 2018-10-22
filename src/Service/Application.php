@@ -315,7 +315,11 @@ class Application implements ArrayAccess, ContainerInterface {
     public function isAllowDomain(): bool  {
         $host = config('app.host');
         $real_host = $this['request']->uri()->getHost();
-        return $host == '*' || empty($host) || $host == $real_host || (is_array($host) && in_array($real_host, $host));
+        if ($host == '*' || empty($host) || $host == $real_host || (is_array($host) && in_array($real_host, $host))) {
+            return true;
+        }
+        // 允许www.默认域名
+        return is_string($host) && str_replace('www.', '', $host) == str_replace('www.', '', $real_host);
     }
 
     protected function formatUri(string $uri): string {
