@@ -150,7 +150,7 @@ trait Attributes {
      * @return  $this->set()
      */
     public function __set($attribute, $value) {
-        return $this->setAttribute($attribute, $value);
+        $this->setAttribute($attribute, $value);
     }
     /**
      * `__unset` clears an attribute's value
