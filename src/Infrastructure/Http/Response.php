@@ -108,7 +108,7 @@ class Response {
     public function __construct($parameter = null, $statusCode = 200, array $headers = array()) {
         $this->header = new Header();
         $headers['Content-Security-Policy'] = Config::safe('csp');
-        if (defined('DEBUG') && DEBUG) {
+        if (app()->isDebug()) {
             $headers['Access-Control-Allow-Origin'] = '*'; //ajax 跨域
         }
         $this->header->parse($headers);
@@ -204,6 +204,7 @@ class Response {
     /**
      * 发送响应结果
      * @return boolean
+     * @throws \Exception
      */
     public function send() {
         if (empty($this->parameter)) {

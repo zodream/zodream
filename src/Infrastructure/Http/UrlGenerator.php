@@ -168,6 +168,9 @@ class UrlGenerator {
             $path->setScheme($this->getSchema())
                 ->setHost($this->getHost());
         }
+        if (!$complete) {
+            $path->setHost(null);
+        }
         return $path;
     }
 
@@ -181,14 +184,17 @@ class UrlGenerator {
         if (!is_array($file)) {
             return $uri->decode($this->getPath($file));
         }
-        $path = '';
-        $data = array();
+        $path = false;
+        $data = [];
         foreach ($file as $key => $item) {
             if (is_integer($key)) {
                 $path = $item;
                 continue;
             }
             $data[$key] = (string)$item;
+        }
+        if ($path === false) {
+            return (clone $this->request->uri())->addData($data);
         }
         return $uri->decode($this->addScript($this->getPath($path)))
             ->addData($data);

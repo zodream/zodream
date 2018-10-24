@@ -225,8 +225,8 @@ if (! function_exists('url')) {
      * @return string| UrlGenerator
      * @throws Exception
      */
-    function url($path = null, $parameters = [], $secure = null) {
-        if (is_null($path) && empty($parameters) && is_null($secure)) {
+    function url($path = null, $parameters = [], $secure = true) {
+        if (is_null($path) && empty($parameters) && $secure === true) {
             return app('url');
         }
         return app('url')->to($path, $parameters, $secure);
