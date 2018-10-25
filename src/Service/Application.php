@@ -327,6 +327,7 @@ class Application implements ArrayAccess, ContainerInterface {
     }
 
     public function handle(string $uri = ''): Response {
+        timer('uri analysis');
         if (!$this->hasBeenBootstrapped()) {
             $this->bootstrapWith([
                 HandleExceptions::class
