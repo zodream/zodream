@@ -27,6 +27,7 @@ abstract class I18n extends MagicObject {
         $configs = Config::i18n();
         $this->setDirectory($configs['directory']);
         $this->setLanguage($configs['language']);
+        $this->reset();
     }
 
 
@@ -57,6 +58,7 @@ abstract class I18n extends MagicObject {
      * 设置应用程序语言包
      * @param string $arg 语言
      * @return $this
+     * @throws \Exception
      */
     public function setLanguage($arg = null) {
         if (empty($arg)) {
