@@ -17,7 +17,7 @@ class Config extends MagicObject {
 
     public function setDirectory($value = null) {
         if (!is_dir($value) && defined('APP_DIR') && is_dir(APP_DIR)) {
-            $value = 'Service/config'; ;
+            $value = 'Service/config';
         }
         $this->directory = Factory::root()->directory($value);
         return $this;
