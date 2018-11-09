@@ -86,12 +86,20 @@ class Application implements ArrayAccess, ContainerInterface {
     }
 
     /**
-     * 是否是
+     * 是否是， 允许更改
      * @param string $abstract
      * @return bool
      */
     public function is(string $abstract): bool {
-        return $this instanceof $abstract;
+        return $this['app::class'] == $abstract;
+    }
+
+    /**
+     * 是否是API
+     * @return bool
+     */
+    public function isApi(): bool {
+        return $this->is(Api::class);
     }
 
     public function isBooted() {
@@ -107,6 +115,7 @@ class Application implements ArrayAccess, ContainerInterface {
     protected function registerBaseBindings() {
         static::setInstance($this);
         $this->instance('app', $this);
+        $this->instance('app::class', static::class);
         $this->instance(Application::class, $this);
     }
 
