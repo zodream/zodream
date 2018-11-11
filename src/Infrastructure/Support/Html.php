@@ -182,6 +182,10 @@ class Html {
         return static::tag('meta', null, $option);
     }
 
+    public function nbsp($num = 1) {
+        return str_repeat('&nbsp;', $num);
+    }
+
 
     /**
      * LINK OUTSIDE RESOURCE

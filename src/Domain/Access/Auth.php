@@ -154,7 +154,7 @@ class Auth implements AuthObject {
      * @return void
      * @throws \Exception
      */
-    protected function updateSession(string $id) {
+    protected function updateSession($id) {
         Factory::session()->set($this->getName(), $id);
     }
 
