@@ -109,9 +109,9 @@ class Response {
         $this->header = new Header();
         $headers['Content-Security-Policy'] = Config::safe('csp');
         if (app()->isDebug()) {
-            $headers['Access-Control-Allow-Origin'] = '*'; //ajax 跨域
+            $this->header->setCORS();
         }
-        $this->header->parse($headers);
+        $this->header->add($headers);
         $this->setStatusCode($statusCode)
             ->setParameter($parameter);
     }
@@ -124,7 +124,11 @@ class Response {
     public function setStatusCode($statusCode, $text = null) {
         $this->statusCode = (int) $statusCode;
         if ($this->statusCode > 600 || $this->statusCode < 100) {
-            throw new \InvalidArgumentException(sprintf('The HTTP status code "%s" is not valid.', $statusCode));
+            throw new \InvalidArgumentException(
+                __('The HTTP status code "{code}" is not valid', [
+                    'code' => $statusCode
+                ])
+            );
         }
         $this->statusText = false === $text ? '' : (null === $text ? self::$statusTexts[$this->statusCode] : $text);
         return $this;
