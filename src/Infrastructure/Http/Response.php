@@ -19,12 +19,14 @@ use Zodream\Disk\FileException;
 use Zodream\Http\Header;
 use Zodream\Helpers\Str;
 use Zodream\Http\Uri;
+use Zodream\Infrastructure\Interfaces\IPreResponse;
 use Zodream\Service\Config;
 use Zodream\Service\Factory;
 
 class Response {
 
     use Console;
+
 
     protected $statusCode = 200;
 
@@ -211,6 +213,9 @@ class Response {
      * @throws \Exception
      */
     public function send() {
+        if ($this->parameter instanceof IPreResponse) {
+            $this->parameter->ready($this);
+        }
         if (empty($this->parameter)) {
             $this->sendHeaders();
             return true;
@@ -240,7 +245,7 @@ class Response {
      */
     public function json($data) {
         $this->header->setContentType('json');
-        return $this->setParameter(Json::encode($data));
+        return $this->setParameter(is_array($data) ? Json::encode($data) : $data);
     }
 
     /**
@@ -263,10 +268,7 @@ class Response {
      */
     public function xml($data) {
         $this->header->setContentType('xml');
-        if (!is_array($data)) {
-            return $this->setParameter($data);
-        }
-        return $this->setParameter(Xml::encode($data));
+        return $this->setParameter(is_array($data) ? Xml::encode($data) : $data);
     }
 
     /**
@@ -303,6 +305,7 @@ class Response {
      * @param int $speed
      * @return Response
      * @throws FileException
+     * @throws \Exception
      */
     public function file(File $file, $speed = 512) {
         $args = [
@@ -396,6 +399,7 @@ class Response {
      * @param $uri
      * @param $name
      * @return Response
+     * @throws \Exception
      */
     public function fileUrl($uri, $name) {
         $this->header->setContentType('application/save-as')->setContentDisposition($name);
@@ -418,6 +422,7 @@ class Response {
      * 响应导出
      * @param ExpertObject $expert
      * @return Response
+     * @throws \Exception
      */
     public function export(ExpertObject $expert) {
         $this->header->setContentType($expert->getName());
