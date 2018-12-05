@@ -110,9 +110,6 @@ class Response {
     public function __construct($parameter = null, $statusCode = 200, array $headers = array()) {
         $this->header = new Header();
         $headers['Content-Security-Policy'] = Config::safe('csp');
-        if (app()->isDebug()) {
-            $this->header->setCORS();
-        }
         $this->header->add($headers);
         $this->setStatusCode($statusCode)
             ->setParameter($parameter);
@@ -431,6 +428,15 @@ class Response {
         $this->header->setExpires(0);
         $this->header->setPragma('public');
         return $this->setParameter($expert);
+    }
+
+    /**
+     * 响应允许cors
+     * @return Response
+     */
+    public function allowCors() {
+        $this->header->setCORS();
+        return $this->setParameter('');
     }
 
     /**

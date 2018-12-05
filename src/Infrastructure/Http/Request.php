@@ -100,7 +100,15 @@ class Request implements ServerRequestInterface {
     }
 
     public function header(string $key, $default = ''): string {
-        return $this->getValueWithDefault($this->getCacheData(__FUNCTION__), $key, $default);
+        $data = $this->getCacheData(__FUNCTION__);
+        if (isset($data[$key])) {
+            return $data[$key];
+        }
+        if (strpos($key, '-') !== false) {
+            $key = str_replace('-', '_', $key);
+        }
+        $key = strtoupper($key);
+        return $this->getValueWithDefault($data, $key, $default);
     }
 
     public function argv(string $key, $default = '') {
@@ -173,7 +181,9 @@ class Request implements ServerRequestInterface {
     }
 
     public function isJson(): bool {
-        return $this->header('CONTENT_TYPE') == 'application/json';
+        $type = $this->header('CONTENT_TYPE');
+        return !empty($type)
+            && Str::contains($type, ['/json', '+json']);
     }
 
     public function isXml(): bool {
@@ -225,6 +235,15 @@ class Request implements ServerRequestInterface {
 
     public function isPatch(): bool {
         return $this->method() === 'PATCH';
+    }
+
+    /**
+     * 当前请求是不cors的预检请求
+     * @return bool
+     */
+    public function isPreFlight(): bool {
+        return $this->method() === 'OPTIONS'
+            && !empty($this->header('Origin'));
     }
 
     public function isAjax(): bool {

@@ -61,6 +61,7 @@ class RestResponse implements IPreResponse {
      * @throws \Exception
      */
     public function ready(Response $response) {
+        $response->header->setCORS();
         if ($this->type == self::TYPE_XML) {
             $response->xml($this->formatXml($this->data));
             return;
