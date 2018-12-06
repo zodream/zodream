@@ -182,7 +182,7 @@ class UrlGenerator {
     public function createUri($file) {
         $uri = new Uri();
         if (!is_array($file)) {
-            return $uri->decode($this->getPath($file));
+            return $uri->decode($this->addScript($this->getPath($file)));
         }
         $path = false;
         $data = [];
