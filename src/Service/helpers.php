@@ -19,7 +19,7 @@ use Zodream\Debugger\Domain\Timer;
 if (! function_exists('app')) {
     /**
      * @param string|null $abstract
-     * @return Application|Response|Request|mixed
+     * @return Application|Response|Request|UrlGenerator|mixed
      * @throws Exception
      */
     function app(string $abstract = null) {
@@ -222,14 +222,15 @@ if (! function_exists('url')) {
      * @param  string $path
      * @param  mixed $parameters
      * @param  bool $secure
+     * @param bool $rewrite
      * @return string| UrlGenerator
      * @throws Exception
      */
-    function url($path = null, $parameters = [], $secure = true) {
+    function url($path = null, $parameters = [], $secure = true, $rewrite = true) {
         if (is_null($path) && empty($parameters) && $secure === true) {
             return app('url');
         }
-        return app('url')->to($path, $parameters, $secure);
+        return app('url')->to($path, $parameters, $secure, $rewrite);
     }
 }
 

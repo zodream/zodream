@@ -5,8 +5,11 @@ namespace Zodream\Infrastructure\Http;
 
 use Zodream\Helpers\Str;
 use Zodream\Http\Uri;
+use Zodream\Infrastructure\Http\Input\UrlRewrite;
 
 class UrlGenerator {
+
+    use UrlRewrite;
 
     /**
      * @var string
@@ -113,7 +116,8 @@ class UrlGenerator {
      * @return string
      */
     public function current(): string {
-        return (string)$this->to($this->request->uri()->getPath());
+        $uri = clone $this->request->uri();
+        return (string)$uri->setData([])->setFragment(null);
     }
 
     /**
@@ -138,13 +142,30 @@ class UrlGenerator {
      * @param null $path
      * @param null $extra
      * @param bool $complete
+     * @param bool $rewrite
      * @return string
      */
-    public function to($path = null, $extra = null, $complete = true): string {
+    public function to($path = null, $extra = null, $complete = true, $rewrite = true): string {
+        $uri = $this->toRealUri($path, $extra, $complete);
+        if ($rewrite && $uri instanceof Uri) {
+            list($path, $data) = $this->enRewrite($uri->getPath(), $uri->getData());
+            $uri->setPath($path)->setData($data);
+        }
+        return (string)$uri;
+    }
+
+    /**
+     * 获取真实的uri 不经过重写的
+     * @param string|array $path
+     * @param null $extra
+     * @param bool $complete
+     * @return string|Uri
+     */
+    public function toRealUri($path = null, $extra = null, $complete = true) {
         if (is_string($path) && ($this->isSpecialUrl($path) || $this->isValidUrl($path))) {
             return $path;
         }
-        return (string)$this->toUri($path, $extra, $complete);
+        return $this->toUri($path, $extra, $complete);
     }
 
     /**
@@ -279,35 +300,6 @@ class UrlGenerator {
             $root .= ltrim($self, '/');
         }
         return $root;
-    }
-
-    /**
-     * 获取网址中的虚拟路径
-     * @return string
-     */
-    public function getVirtualUri() {
-        $path = $this->request->server('PATH_INFO');
-        if (!empty($path)) {
-            // 在nginx 下虚拟路径无法获取
-            return $path;
-        }
-        $script = $this->request->script();
-        $scriptFile = basename($script);
-        $path = $this->request->uri()->getPath();
-        if (strpos($scriptFile, $path) === 0) {
-            $path = rtrim($path, '/'). '/'. $scriptFile;
-        } elseif (strpos($script, '.php') > 0) {
-            $script = preg_replace('#/[^/]+\.php$#i', '', $script);
-        }
-        // 判断是否是二级文件默认入口
-        if (!empty($script) && strpos($path, $script) === 0) {
-            return substr($path, strlen($script));
-        }
-        // 判断是否是根目录其他文件入口
-        if (strpos($path, $scriptFile) === 1) {
-            return '/'.substr($path, strlen($scriptFile) + 1);
-        }
-        return $path;
     }
 
     public function asset(string $path): string {
