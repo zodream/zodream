@@ -146,6 +146,9 @@ class UrlGenerator {
      * @return string
      */
     public function to($path = null, $extra = null, $complete = true, $rewrite = true): string {
+        if ($path instanceof Uri && empty($extra) && !empty($path->getHost())) {
+            return (string)$path;
+        }
         $uri = $this->toRealUri($path, $extra, $complete);
         if ($rewrite && $uri instanceof Uri) {
             list($path, $data) = $this->enRewrite($uri->getPath(), $uri->getData());
