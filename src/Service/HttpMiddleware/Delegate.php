@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Moon\HttpMiddleware;
+namespace Zodream\Service\HttpMiddleware;
 
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
