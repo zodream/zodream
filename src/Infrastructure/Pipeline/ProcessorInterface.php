@@ -1,18 +1,17 @@
 <?php
+declare(strict_types=1);
+
 namespace Zodream\Infrastructure\Pipeline;
 /**
- * Created by PhpStorm.
- * User: zx648
- * Date: 2016/7/18
- * Time: 16:54
+ * @see https://github.com/thephpleague/pipeline
  */
 interface ProcessorInterface {
 
     /**
      * Let payload processed the stages.
-     * @param array $stages
-     * @param mixed $payload
+     * @param $payload
+     * @param callable[] ...$stages
      * @return mixed
      */
-    public function process(array $stages, $payload);
+    public function process($payload, callable ...$stages);
 }

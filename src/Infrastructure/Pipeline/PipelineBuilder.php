@@ -1,10 +1,9 @@
 <?php
+declare(strict_types=1);
+
 namespace Zodream\Infrastructure\Pipeline;
 /**
- * Created by PhpStorm.
- * User: zx648
- * Date: 2016/7/18
- * Time: 17:28
+ * @see https://github.com/thephpleague/pipeline
  */
 class PipelineBuilder {
     /**
@@ -13,25 +12,17 @@ class PipelineBuilder {
     private $stages = [];
 
     /**
-     * Add an stage.
-     *
-     * @param callable $stage
-     *
-     * @return $this
+     * @param callable[] $stages
+     * @return self
      */
-    public function add(callable $stage) {
-        $this->stages[] = $stage;
+    public function add(callable ...$stages) {
+        foreach ($stages as $stage) {
+            $this->stages[] = $stage;
+        }
         return $this;
     }
 
-    /**
-     * Build a new Pipeline object
-     *
-     * @param  ProcessorInterface|null $processor
-     *
-     * @return Pipeline
-     */
-    public function build(ProcessorInterface $processor = null) {
-        return new Pipeline($this->stages, $processor);
+    public function build(ProcessorInterface $processor = null): PipelineInterface {
+        return new Pipeline($processor, ...$this->stages);
     }
 }

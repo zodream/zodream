@@ -1,23 +1,20 @@
 <?php
+declare(strict_types=1);
+
 namespace Zodream\Infrastructure\Pipeline;
 /**
- * Created by PhpStorm.
- * User: zx648
- * Date: 2016/7/18
- * Time: 17:33
+ * @see https://github.com/thephpleague/pipeline
  */
 class FingersCrossedProcessor implements ProcessorInterface {
     /**
-     * @param array $stages
-     * @param mixed $payload
-     *
+     * @param $payload
+     * @param callable[] ...$stages
      * @return mixed
      */
-    public function process(array $stages, $payload) {
+    public function process($payload, callable ...$stages) {
         foreach ($stages as $stage) {
-            $payload = call_user_func($stage, $payload);
+            $payload = $stage($payload);
         }
-
         return $payload;
     }
 }

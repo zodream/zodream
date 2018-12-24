@@ -1,10 +1,9 @@
 <?php
+declare(strict_types=1);
+
 namespace Zodream\Infrastructure\Pipeline;
 /**
- * Created by PhpStorm.
- * User: zx648
- * Date: 2016/7/18
- * Time: 16:53
+ * @see https://github.com/thephpleague/pipeline
  */
 interface StageInterface {
     /**

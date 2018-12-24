@@ -1,10 +1,9 @@
 <?php
+declare(strict_types=1);
+
 namespace Zodream\Infrastructure\Pipeline;
 /**
- * Created by PhpStorm.
- * User: zx648
- * Date: 2016/7/18
- * Time: 16:54
+ * @see https://github.com/thephpleague/pipeline
  */
 use InvalidArgumentException;
 
@@ -28,28 +27,21 @@ class Pipeline implements PipelineInterface {
      *
      * @throws InvalidArgumentException
      */
-    public function __construct(array $stages = [], ProcessorInterface $processor = null) {
-        foreach ($stages as $stage) {
-            if (false === is_callable($stage)) {
-                throw new InvalidArgumentException(
-                    __('All stages should be callable.')
-                );
-            }
-        }
-
+    public function __construct(ProcessorInterface $processor = null, callable ...$stages) {
+        $this->processor = $processor ?? new FingersCrossedProcessor;
         $this->stages = $stages;
-        $this->processor = $processor ?: new FingersCrossedProcessor;
     }
 
     /**
      * Create a new Pipeline with append stage.
-     * @param callable $stage
+     * @param callable[] $stages
      * @return mixed
      */
-    public function pipe(callable $stage) {
+    public function pipe(callable ...$stages) {
         $pipeline = clone $this;
-        $pipeline->stages[] = $stage;
-
+        foreach ($stages as $stage) {
+            $pipeline->stages[] = $stage;
+        }
         return $pipeline;
     }
 
@@ -57,16 +49,15 @@ class Pipeline implements PipelineInterface {
      * Process the payload.
      *
      * @param $payload
-     *
      * @return mixed
      */
     public function process($payload) {
-        return $this->processor->process($this->stages, $payload);
+        return $this->processor->process($payload, ...$this->stages);
     }
 
     /**
      * Process the payload
-     * @param mixed $payload
+     * @param $payload
      * @return mixed
      */
     public function __invoke($payload) {

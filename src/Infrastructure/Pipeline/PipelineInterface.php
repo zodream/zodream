@@ -1,17 +1,16 @@
 <?php
+declare(strict_types=1);
+
 namespace Zodream\Infrastructure\Pipeline;
 /**
- * Created by PhpStorm.
- * User: zx648
- * Date: 2016/7/18
- * Time: 16:52
+ * @see https://github.com/thephpleague/pipeline
  */
 interface PipelineInterface extends StageInterface {
 
     /**
      * Create a new Pipeline with append stage.
-     * @param callable $stage
+     * @param callable[] $stages
      * @return mixed
      */
-    public function pipe(callable $stage);
+    public function pipe(callable ...$stages);
 }

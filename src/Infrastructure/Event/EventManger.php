@@ -74,7 +74,7 @@ class EventManger {
     /**
      * 执行某个事件
      * @param string $event
-     * @param array $args
+     * @param array $payload
      */
     public function dispatch($event = null, $payload = []) {
         list($event, $payload) = $this->parseEventAndPayload(

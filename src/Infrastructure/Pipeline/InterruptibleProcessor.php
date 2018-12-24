@@ -1,10 +1,9 @@
 <?php
+declare(strict_types=1);
+
 namespace Zodream\Infrastructure\Pipeline;
 /**
- * Created by PhpStorm.
- * User: zx648
- * Date: 2016/7/18
- * Time: 17:33
+ * @see https://github.com/thephpleague/pipeline
  */
 class InterruptibleProcessor implements ProcessorInterface {
     /**
@@ -12,29 +11,18 @@ class InterruptibleProcessor implements ProcessorInterface {
      */
     private $check;
 
-    /**
-     * InterruptibleProcessor constructor.
-     *
-     * @param callable $check
-     */
     public function __construct(callable $check) {
         $this->check = $check;
     }
 
-    /**
-     * @param array $stages
-     * @param mixed $payload
-     *
-     * @return mixed
-     */
-    public function process(array $stages, $payload) {
+    public function process($payload, callable ...$stages) {
+        $check = $this->check;
         foreach ($stages as $stage) {
-            $payload = call_user_func($stage, $payload);
-            if (true !== call_user_func($this->check, $payload)) {
+            $payload = $stage($payload);
+            if (true !== $check($payload)) {
                 return $payload;
             }
         }
-
         return $payload;
     }
 }
