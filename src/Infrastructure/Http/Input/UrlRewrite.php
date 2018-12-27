@@ -49,6 +49,12 @@ trait UrlRewrite {
             return ['', $args];
         }
         $ext = config('app.rewrite');
+        if (!empty($ext) && strpos($path, $ext) !== false) {
+            return [
+                $path,
+                $args
+            ];
+        }
         if (empty($ext) || empty($args) || count($args) > 2) {
             return [
                 $path.$ext,
