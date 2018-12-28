@@ -9,6 +9,7 @@ use Zodream\Debugger\Domain\Timer;
 use Zodream\Domain\Access\Auth;
 use Zodream\Infrastructure\Error\DomainException;
 use Zodream\Infrastructure\Error\HandleExceptions;
+use Zodream\Infrastructure\Event\EventManger;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Http\Response;
 use ArrayAccess;
@@ -71,6 +72,7 @@ class Application implements ArrayAccess, ContainerInterface {
         $this->register('url', UrlGenerator::class);
         $this->register('route', Route::class);
         $this->register('view', ViewFactory::class);
+        $this->register('events', EventManger::class);
         $this->singleton(Timer::class, 'timer');
         $this->singleton(Debugger::class, 'debugger');
         $this->registerConfigBindings();

@@ -1,5 +1,8 @@
 <?php
 namespace Zodream\Infrastructure\Event;
+
+use Zodream\Helpers\Str;
+
 /**
  * Created by PhpStorm.
  * User: zx648
@@ -9,28 +12,19 @@ namespace Zodream\Infrastructure\Event;
 
 class EventManger {
 
-    protected $canAble = true;
-    protected $events = array();
+    protected $listeners = [];
 
     /**
      * @var array [$name => $event]
      */
-    protected $actionNames = array();
-
-    /**
-     * @param bool $canAble
-     */
-    public function setCanAble($canAble) {
-        $this->canAble = $canAble;
-        return $this;
-    }
+    protected $actionNames = [];
 
     /**
      * 获取已经注册的事件名
      * @return array
      */
     public function getEventName() {
-        return array_keys($this->events);
+        return array_keys($this->listeners);
     }
 
     /**
@@ -41,24 +35,51 @@ class EventManger {
      * @param int $priority
      */
     public function add($event, $class, $function = 10, $file = null, $priority = 10) {
-        if (!$this->canAble) {
-            return;
+        if (!isset($this->listeners[$event]) || !($this->listeners[$event] instanceof Event)) {
+            $this->listeners[$event] = new Event();
         }
-        if (!isset($this->events[$event]) || !($this->events[$event] instanceof Event)) {
-            $this->events[$event] = new Event();
-        }
-        $this->events[$event]->add($class, $function, $file, $priority);
+        $this->listeners[$event]->add($class, $function, $file, $priority);
     }
 
     public function run($event, $args = array()) {
-        if (!$this->canAble ||
-            !isset($this->events[$event]) ||
-            !($this->events[$event] instanceof Event)) {
+        if (!isset($this->listeners[$event]) ||
+            !($this->listeners[$event] instanceof Event)) {
             return;
         }
-        $this->events[$event]->run($args);
+        $this->listeners[$event]->run($args);
     }
 
+    public function getListeners($eventName) {
+        $listeners = isset($this->listeners[$eventName]) ? $this->listeners[$eventName] : [];
+        $listeners = array_merge(
+            $listeners, $this->getWildcardListeners($eventName)
+        );
+
+        return class_exists($eventName, false)
+            ? $this->addInterfaceListeners($eventName, $listeners)
+            : $listeners;
+    }
+
+    protected function getWildcardListeners($eventName) {
+        $wildcards = [];
+        foreach ($this->listeners as $key => $listeners) {
+            if (Str::contains($key, '*') && Str::is($key, $eventName)) {
+                $wildcards = array_merge($wildcards, $listeners);
+            }
+        }
+        return $wildcards;
+    }
+
+    protected function addInterfaceListeners($eventName, array $listeners = []) {
+        foreach (class_implements($eventName) as $interface) {
+            if (isset($this->listeners[$interface])) {
+                foreach ($this->listeners[$interface] as $names) {
+                    $listeners = array_merge($listeners, (array) $names);
+                }
+            }
+        }
+        return $listeners;
+    }
 
     /**
      * 删除某个
@@ -68,7 +89,7 @@ class EventManger {
         if (!isset($this->actionNames[$name])) {
             return;
         }
-        $this->events[$this->actionNames[$name]]->delete($name);
+        $this->listeners[$this->actionNames[$name]]->delete($name);
     }
 
     /**
