@@ -44,8 +44,7 @@ trait UrlRewrite {
         if (empty($path)) {
             return ['', $args];
         }
-        $path = trim($path, '/');
-        if (empty($path)) {
+        if (empty($path) || $path == '/') {
             return ['', $args];
         }
         $ext = config('app.rewrite');
@@ -61,7 +60,7 @@ trait UrlRewrite {
                 $args
             ];
         }
-        return $this->mergeUri($path, $args, $ext);
+        return $this->mergeUri(trim($path, '/'), $args, $ext);
     }
 
     /**
