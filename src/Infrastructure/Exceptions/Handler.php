@@ -7,7 +7,6 @@ use Zodream\Database\Model\ModelNotFoundException;
 use Zodream\Domain\Access\AuthorizationException;
 use Zodream\Infrastructure\Http\HttpResponseException;
 use Zodream\Infrastructure\Interfaces\Responsable;
-use Zodream\Route\Router;
 use Zodream\Service\Config;
 use Zodream\Validate\ValidationException;
 use Zodream\Domain\Access\AuthenticationException;
@@ -122,6 +121,8 @@ class Handler implements ExceptionHandler {
             return $this->unauthenticated($e);
         } elseif ($e instanceof ValidationException) {
             return $this->convertValidationExceptionToResponse($e);
+        } elseif ($e instanceof NotFoundHttpException) {
+            return app('response')->redirect('error');
         }
         return $this->prepareResponse($e);
     }
