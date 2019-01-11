@@ -92,6 +92,12 @@ trait UrlRewrite {
             $data[] = $key;
             $data[] = $arg;
         }
+        if ($spilt === '0' && substr_count($path, '/') % 2 == 0) {
+            return [
+                $path . $ext,
+                $args
+            ];
+        }
         if (!empty($data)) {
             $spilt = sprintf('%s/%s', $spilt, implode('/', $data));
         }
