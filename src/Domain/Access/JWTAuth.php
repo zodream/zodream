@@ -22,7 +22,7 @@ jti：JWT ID为web token提供唯一标识
  */
 class JWTAuth extends Token {
 
-    protected $payload = [];
+    protected $payload;
 
     protected function getConfigs(): array {
         return Factory::config('auth', [
@@ -37,7 +37,7 @@ class JWTAuth extends Token {
     /**
      * @param mixed $payload
      */
-    public function setPayload(array $payload) {
+    public function setPayload($payload) {
         $this->payload = $payload;
     }
 
@@ -56,8 +56,8 @@ class JWTAuth extends Token {
         if (empty($key)) {
             return $this->payload;
         }
-        if (array_key_exists($key, (array)$this->payload)) {
-            return $this->payload[$key];
+        if (!empty($this->payload) && property_exists($this->payload, $key)) {
+            return $this->payload->{$key};
         }
         return $default;
     }
@@ -81,11 +81,11 @@ class JWTAuth extends Token {
             return null;
         }
         $time = time();
-        if ($time < $this->payload['nbf'] ||
-            (isset($this->payload['exp']) && $time > $this->payload['exp'])) {
+        if ($time < $this->getPayload('nbf') ||
+            (!empty($this->getPayload('exp')) && $time > $this->getPayload('exp'))) {
             return null;
         }
-        return call_user_func($userClass.'::findByIdentity', $this->payload['sub']);
+        return call_user_func($userClass.'::findByIdentity', $this->getPayload('sub'));
     }
 
     /**

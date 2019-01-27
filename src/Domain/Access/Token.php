@@ -59,7 +59,7 @@ class Token extends Auth {
 	    $inputKey = config('auth.api_token', 'api_token');
         $token = app('request')->get($inputKey);
         if (empty($token)) {
-            $token = app('request')->request($inputKey);
+            $token = app('request')->get($inputKey);
         }
         if (empty($token)) {
             $token = app('request')->bearerToken();
