@@ -35,7 +35,7 @@ class Token extends Auth {
     /**
      * @return string
      */
-    public function getToken(): string {
+    public function getToken() {
         if (empty($this->token)) {
             $this->token = static::getTokenForRequest();
         }
@@ -55,7 +55,7 @@ class Token extends Auth {
      * 获取 api token
      * @return string
      */
-	protected function getTokenForRequest(): string {
+	protected function getTokenForRequest() {
 	    $inputKey = config('auth.api_token', 'api_token');
         $token = app('request')->get($inputKey);
         if (empty($token)) {
