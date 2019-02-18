@@ -8,6 +8,7 @@ use Zodream\Database\Model\UserModel;
 use Zodream\Helpers\Str;
 use Zodream\Infrastructure\Interfaces\UserObject;
 use Zodream\Service\Factory;
+use Exception;
 
 /**
  * Class JWTAuth
@@ -22,7 +23,7 @@ jti：JWT ID为web token提供唯一标识
  */
 class JWTAuth extends Token {
 
-    protected $payload;
+    protected $payload = false;
 
     protected function getConfigs(): array {
         return Factory::config('auth', [
@@ -41,17 +42,26 @@ class JWTAuth extends Token {
         $this->payload = $payload;
     }
 
+    protected function decodePayload() {
+        try {
+            $configs = $this->getConfigs();
+            $this->setPayload(JWT::decode($this->getToken(),
+                isset($configs['publicKey']) ? $configs['publicKey']
+                    : $configs['key'], [$configs['alg']]));
+        } catch (Exception $ex) {
+            $this->setPayload(null);
+            logger(sprintf('jwt token error: %s', $ex->getMessage()));
+        }
+    }
+
     /**
      * @param null $key
      * @param null $default
      * @return mixed
      */
     public function getPayload($key = null, $default = null) {
-        if (empty($this->payload)) {
-            $configs = $this->getConfigs();
-            $this->setPayload(JWT::decode($this->getToken(),
-                isset($configs['publicKey']) ? $configs['publicKey']
-                : $configs['key'], [$configs['alg']]));
+        if ($this->payload === false) {
+            $this->decodePayload();
         }
         if (empty($key)) {
             return $this->payload;
@@ -77,7 +87,8 @@ class JWTAuth extends Token {
         if (empty($token)) {
             return null;
         }
-        if (!cache()->has(static::getPayload('jti'))) {
+        $jti = static::getPayload('jti');
+        if (empty($jti) || !cache()->has($jti)) {
             return null;
         }
         $time = time();
