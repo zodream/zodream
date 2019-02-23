@@ -1,11 +1,8 @@
 <?php
 use Zodream\Service\Factory;
-use Zodream\Infrastructure\Http\URL;
-use Zodream\Http\Uri;
 use Zodream\Service\Config;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Error\NotFoundHttpException;
-use Zodream\Infrastructure\Http\HttpException;
 use Zodream\Html\VerifyCsrfToken;
 use Zodream\Service\Application;
 use Zodream\Infrastructure\Http\Response;
@@ -14,6 +11,7 @@ use Zodream\Domain\Access\Token;
 use Zodream\Domain\Access\JWTAuth;
 use Zodream\Infrastructure\Http\UrlGenerator;
 use Zodream\Debugger\Domain\Timer;
+use Zodream\Disk\FileObject;
 
 
 if (! function_exists('app')) {
@@ -150,7 +148,7 @@ if (! function_exists('public_path')) {
      * Get the path to the public folder.
      *
      * @param  string  $path
-     * @return string
+     * @return FileObject
      */
     function public_path($path = '') {
         if (!$path) {
