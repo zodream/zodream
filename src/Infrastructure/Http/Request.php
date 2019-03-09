@@ -121,10 +121,16 @@ class Request implements ServerRequestInterface {
 
     /**
      * CLI 读取输入值
+     * @param string $default
+     * @param string $tip
      * @return string
      */
-    public function read(): string {
-        return trim(fgets(STDIN));
+    public function read($default = '', $tip = ''): string {
+        if (!empty($tip)) {
+            echo $tip;
+        }
+        $input = trim(fgets(STDIN));
+        return $input === '' ? $default : $input;
     }
 
     public function input(): string {
