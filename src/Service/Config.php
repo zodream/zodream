@@ -69,6 +69,18 @@ class Config extends BaseConfig {
         return $this->__attributes[$method][$value[0]];
     }
 
+    public function getModulePath($className) {
+        $className = trim($className, '\\');
+        $modules = config('modules');
+        foreach ($modules as $key => $module) {
+            $module = trim(str_replace('/', '\\', $module), '\\');
+            if (strpos($className, $module) === 0) {
+                return $key;
+            }
+        }
+        return '';
+    }
+
     public function __call($method, $value) {
         if (empty($value)) {
             return $this->get($method);
