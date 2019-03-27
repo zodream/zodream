@@ -6,8 +6,6 @@ namespace Zodream\Service;
 use Psr\Container\ContainerInterface;
 use Zodream\Debugger\Debugger;
 use Zodream\Debugger\Domain\Timer;
-use Zodream\Domain\Access\Auth;
-use Zodream\Infrastructure\Error\DomainException;
 use Zodream\Infrastructure\Error\HandleExceptions;
 use Zodream\Infrastructure\Event\EventManger;
 use Zodream\Infrastructure\Http\Request;
@@ -18,8 +16,17 @@ use ReflectionClass;
 use Exception;
 use ReflectionParameter;
 use Zodream\Infrastructure\Http\UrlGenerator;
+use Zodream\Infrastructure\Pipeline\MiddlewareProcessor;
 use Zodream\Route\Route;
 use Zodream\Route\Router;
+use Zodream\Service\Middleware\CacheMiddleware;
+use Zodream\Service\Middleware\CORSMiddleware;
+use Zodream\Service\Middleware\DefaultRouteMiddle;
+use Zodream\Service\Middleware\DomainMiddleware;
+use Zodream\Service\Middleware\GZIPMiddleware;
+use Zodream\Service\Middleware\MatchRouteMiddle;
+use Zodream\Service\Middleware\ModuleMiddleware;
+use Zodream\Service\Middleware\RouterMiddleware;
 use Zodream\Template\ViewFactory;
 
 class Application implements ArrayAccess, ContainerInterface {
@@ -54,6 +61,8 @@ class Application implements ArrayAccess, ContainerInterface {
      * @var array
      */
     protected $bindings = [];
+
+    protected $middlewares = [];
 
     /**
      * Application constructor.
@@ -217,6 +226,11 @@ class Application implements ArrayAccess, ContainerInterface {
             isset($this->aliases[$key]);
     }
 
+    public function middleware(...$middlewares) {
+        $this->middlewares = array_merge($this->middlewares, $middlewares);
+        return $this;
+    }
+
     /**
      * 获取实例或初始化并绑定
      * @param string $abstract
@@ -344,23 +358,22 @@ class Application implements ArrayAccess, ContainerInterface {
                 HandleExceptions::class
             ]);
         }
-        if (!$this->isDebug() && !$this->isAllowDomain()) {
-            throw new DomainException(__(
-                '{domain} Domain Is Disallow', [
-                    'domain' => $this['request']->uri()->getHost()
-                ]
-            ));
-        }
-        /** @var Route $route */
-        $route = $this[Router::class]->handle(
-            $this['request']->method(),
-            $this->formatUri($uri));
-        $this->instance(Route::class, $route);
-        $response = $route->handle($this['request'], $this['response']);
+        $middlewares = array_merge($this->middlewares, [RouterMiddleware::class]);
+        $response = (new MiddlewareProcessor())
+            ->process($this->formatUri($uri), ...$middlewares);
         return $response instanceof Response ? $response : $this['response'];
     }
 
     public function autoResponse() {
+        $this->middleware(
+                        GZIPMiddleware::class,
+                        DomainMiddleware::class,
+                        CORSMiddleware::class,
+                        CacheMiddleware::class);
+        $this[Router::class]->middleware(
+                        MatchRouteMiddle::class,
+                        ModuleMiddleware::class,
+                        DefaultRouteMiddle::class);
         return $this->handle()->send();
     }
 

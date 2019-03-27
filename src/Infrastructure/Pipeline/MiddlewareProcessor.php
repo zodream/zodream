@@ -6,11 +6,11 @@ namespace Zodream\Infrastructure\Pipeline;
  * Class MiddlewareProcessor
  * @package Zodream\Infrastructure\Pipeline
  */
-class MiddlewareProcessor implements ProcessorInterface {
+class MiddlewareProcessor {
 
     protected $method = 'handle';
 
-    public function process($payload, callable ...$stages) {
+    public function process($payload, ...$stages) {
         $stage = array_reduce(
             array_reverse($stages),
             $this->carry(),
