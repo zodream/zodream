@@ -361,7 +361,10 @@ class Application implements ArrayAccess, ContainerInterface {
         $middlewares = array_merge($this->middlewares, [RouterMiddleware::class]);
         $response = (new MiddlewareProcessor())
             ->process($this->formatUri($uri), ...$middlewares);
-        return $response instanceof Response ? $response : $this['response'];
+        if (!$response instanceof Response) {
+            return $this['response']->setParameter($response);
+        }
+        return $response;
     }
 
     public function autoResponse() {
