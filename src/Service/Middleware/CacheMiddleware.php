@@ -11,9 +11,21 @@ class CacheMiddleware implements MiddlewareInterface {
         if (empty($urls) || !array_key_exists($payload, $urls)) {
             return $next($payload);
         }
-        return cache()->getOrSet(self::class.$payload.$this->getPath($urls[$payload]), function () use ($payload, $next) {
-            return $next($payload);
-        }, $urls[$payload]['time']);
+        $key = self::class.$payload.$this->getPath($urls[$payload]);
+        if (($page = cache($key)) !== false) {
+            return $this->formatPage($page, $urls[$payload]);
+        }
+        $page = $next($payload);
+        cache()->set($key, $page, $urls[$payload]['time']);
+        return $page;
+    }
+
+    private function formatPage($page, $args) {
+        if (!isset($args['callback']) || !is_callable($args['callback'])) {
+            return $page;
+        }
+        $arg = call_user_func($args['callback'], $page);
+        return empty($arg) ? $page : $arg;
     }
 
     private function formatUri($uris) {
