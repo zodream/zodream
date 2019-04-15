@@ -1,7 +1,8 @@
 <?php
 namespace Zodream\Infrastructure\Caching;
 
-use Redis as RedisClient;
+use Zodream\Database\RedisManager;
+
 /**
  * Created by PhpStorm.
  * User: zx648
@@ -12,33 +13,25 @@ class Redis extends Cache {
 
     protected $configs = [
         'gc' => 10,
-        'host' => '127.0.0.1',
-        'port' => 6379,
+        'connection' => null,
         'serializer' => null,
         'keyPrefix' => ''
     ];
 
-    /**
-     * @var RedisClient
-     */
-    protected $client;
-
     public function __construct() {
         $this->loadConfigs();
-        $this->client = new RedisClient();
-        $this->client->connect($this->configs['host'], $this->configs['port']);
     }
 
 
     protected function getValue($key) {
-        return $this->client->get($key);
+        return $this->getConnection()->get($key);
     }
 
     protected function setValue($key, $value, $duration) {
         if ($duration < 0) {
             $duration = 0;
         }
-        return $this->client->setex($key, $duration, $value);
+        return $this->getConnection()->setex($key, $duration, $value);
     }
 
     protected function addValue($key, $value, $duration) {
@@ -47,14 +40,14 @@ class Redis extends Cache {
 
 
     protected function deleteValue($key) {
-        return $this->client->delete($key);
+        return $this->getConnection()->del($key);
     }
 
     protected function clearValue() {
-        return $this->client->flushDB();
+        return $this->getConnection()->flushDB();
     }
 
-    public function close() {
-        $this->client->close();
+    protected function getConnection() {
+        return RedisManager::connection($this->configs['connection']);
     }
 }
