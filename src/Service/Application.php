@@ -137,7 +137,7 @@ class Application implements ArrayAccess, ContainerInterface {
         foreach (config()->get() as $key => $item) {
             if (!is_array($item) || !isset($item['driver'])
                 || !class_exists($item['driver'])
-                || $key == 'db') {
+                || in_array($key, ['db', 'redis', 'queue'])) {
                 continue;
             }
             $this->register($key, $item['driver']);

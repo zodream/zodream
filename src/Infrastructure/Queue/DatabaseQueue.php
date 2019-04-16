@@ -29,6 +29,18 @@ class DatabaseQueue extends Queue {
             ->count();
     }
 
+    public function bulk($jobs, $data = '', $queue = null)
+    {
+        $queue = $this->getQueue($queue);
+
+        $availableAt = $this->availableAt();
+
+        return DB::table($this->table)->insert(array_map(
+            function ($job) use ($queue, $data, $availableAt) {
+                return $this->buildDatabaseRecord($queue, $this->createPayload($job, $data), $availableAt);
+            }, (array) $jobs));
+    }
+
     /**
      * Push a new job onto the queue.
      *

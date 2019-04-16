@@ -132,6 +132,8 @@ abstract class Job {
         return $this->failed;
     }
 
+    abstract public function attempts();
+
     /**
      * Mark the job as "failed".
      *

@@ -3,6 +3,7 @@ namespace Zodream\Infrastructure\Queue;
 
 use Zodream\Infrastructure\Base\ConfigObject;
 use Zodream\Infrastructure\Error\Exception;
+use Zodream\Infrastructure\Queue\Jobs\Job;
 
 abstract class Queue extends ConfigObject {
     /**
@@ -61,6 +62,47 @@ abstract class Queue extends ConfigObject {
      * @return Job|null
      */
     abstract public function pop($queue = null);
+
+    /**
+     * Push a new job onto the queue.
+     *
+     * @param  string  $queue
+     * @param  string  $job
+     * @param  mixed   $data
+     * @return mixed
+     */
+    public function pushOn($queue, $job, $data = '')
+    {
+        return $this->push($job, $data, $queue);
+    }
+
+    /**
+     * Push a new job onto the queue after a delay.
+     *
+     * @param  string  $queue
+     * @param  int  $delay
+     * @param  string  $job
+     * @param  mixed   $data
+     * @return mixed
+     */
+    public function laterOn($queue, $delay, $job, $data = '')
+    {
+        return $this->later($delay, $job, $data, $queue);
+    }
+
+    /**
+     * Push an array of jobs onto the queue.
+     *
+     * @param  array   $jobs
+     * @param  mixed   $data
+     * @param  string  $queue
+     * @return mixed
+     */
+    public function bulk($jobs, $data = '', $queue = null) {
+        foreach ((array) $jobs as $job) {
+            $this->push($job, $data, $queue);
+        }
+    }
 
     /**
      * Create a payload string from the given job and data.

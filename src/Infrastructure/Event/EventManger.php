@@ -12,6 +12,9 @@ use Zodream\Helpers\Str;
 
 class EventManger {
 
+    /**
+     * @var Event[]
+     */
     protected $listeners = [];
 
     /**
@@ -98,6 +101,13 @@ class EventManger {
      * @param array $payload
      */
     public function dispatch($event = null, $payload = []) {
+        list($event, $payload) = $this->parseEventAndPayload(
+            $event, $payload
+        );
+        $this->run($event, $payload);
+    }
+
+    public function dispatchNow($event = null, $payload = []) {
         list($event, $payload) = $this->parseEventAndPayload(
             $event, $payload
         );
