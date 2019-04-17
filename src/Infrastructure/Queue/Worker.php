@@ -123,9 +123,9 @@ class Worker {
      */
     protected function daemonShouldRun(WorkerOptions $options, $connectionName, $queue)
     {
-        return ! (($this->manager->isDownForMaintenance() && ! $options->force) ||
+        return ! ((true && ! $options->force) ||
             $this->paused ||
-            $this->events->until(new Events\Looping($connectionName, $queue)) === false);
+            event(new Events\Looping($connectionName, $queue)) === false);
     }
 
     /**
@@ -172,7 +172,7 @@ class Worker {
     public function runNextJob($connectionName, $queue, WorkerOptions $options)
     {
         $job = $this->getNextJob(
-            $this->manager->connection($connectionName), $queue
+            QueueManager::connection($connectionName), $queue
         );
 
         // If we're able to pull a job off of the stack, we will process it and then return
@@ -342,7 +342,7 @@ class Worker {
 
         $timeoutAt = $job->timeoutAt();
 
-        if ($timeoutAt && Carbon::now()->getTimestamp() <= $timeoutAt) {
+        if ($timeoutAt && time() <= $timeoutAt) {
             return;
         }
 
