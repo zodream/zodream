@@ -56,7 +56,7 @@ trait UrlRewrite {
         }
         if (empty($ext) || empty($args) || count($args) > 2) {
             return [
-                $path.$ext,
+                trim($path, '/').$ext,
                 $args
             ];
         }
