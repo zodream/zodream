@@ -86,7 +86,7 @@ class FileCache extends Cache {
 	
 	protected function deleteValue($key) {
 		$cacheFile = $this->getCacheFile($key);
-        return $cacheFile->delete();
+        return $cacheFile->exist() && $cacheFile->delete();
 	}
 	
 	protected function clearValue() {
