@@ -155,7 +155,7 @@ class Request implements ServerRequestInterface {
             $rule = $validator->converterRule($rule);
             $value = $this->get($key);
             if ($validator->validateRule($key, $value, $rule['rules'], $rule['message'])) {
-                $data[] = $value;
+                $data[$key] = $value;
                 continue;
             }
         }
