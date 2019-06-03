@@ -93,18 +93,16 @@ class Config extends MagicObject {
             $args = func_get_args();
         }
         $data = [];
-        if ($this->has()) {
-            $data[] = $this->get();
-        }
         foreach ($args as $arg) {
             $arg = $this->getConfigByFile($arg);
             if (!empty($arg)) {
                 $data[] = $arg;
             }
         }
-        $this->__attributes = call_user_func_array('Zodream\Helpers\Arr::merge2D', $data);
-        return $this;
+        return call_user_func_array('Zodream\Helpers\Arr::merge2D', $data);
     }
+
+
 
     /**
      * @param $file

@@ -20,9 +20,9 @@ class Config extends BaseConfig {
 
     use SingletonPattern;
 
-    private function __construct($args = array()) {
+    private function __construct() {
         self::$instance = $this;
-        $this->reset($args);
+        $this->reset();
     }
 
     /**
@@ -39,14 +39,24 @@ class Config extends BaseConfig {
 
     /**
      * 重新加载配置
-     * @param array $args
      * @return $this
      * @throws \Exception
      */
-    public function reset($args = array()) {
-        $this->__attributes = $args;
-        $files = [__DIR__. '/config/config.php', 'config', app('app.module')];
-        return $this->mergeFiles($files);
+    public function reset() {
+        $this->__attributes = $this->moduleConfigs();
+        return $this;
+    }
+
+    /**
+     * @param string $module
+     * @return array
+     * @throws \Exception
+     */
+    public function moduleConfigs($module = null) {
+        if (empty($module)) {
+            $module = app('app.module');
+        }
+        return $this->mergeFiles(__DIR__. '/config/config.php', 'config', $module);
     }
 
     /**

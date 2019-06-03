@@ -29,6 +29,8 @@ class UrlGenerator {
      */
     protected $request;
 
+    protected $useScript = false;
+
     public function __construct() {
         $this->setRequest(app('request'));
         $uri = $this->request->uri();
@@ -260,7 +262,7 @@ class UrlGenerator {
             || strpos($path, '/') === 0) {
             return $path;
         }
-        $name = $this->request->script();
+        $name = $this->useScript ?: $this->request->script();
         if ($name === '/index.php') {
             return '/'.$path;
         }
@@ -326,5 +328,10 @@ class UrlGenerator {
 
     public function isSpecialUrl(string $path): bool  {
         return $path == '#' || strpos($path, 'javascript:') === 0;
+    }
+
+    public function useCustomScript($script = 'index.php') {
+        $this->useScript = $script;
+        return $this;
     }
 }
