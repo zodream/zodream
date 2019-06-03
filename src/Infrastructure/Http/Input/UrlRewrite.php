@@ -15,9 +15,9 @@ trait UrlRewrite {
             // 在nginx 下虚拟路径无法获取
             return $path;
         }
-        $script = $this->request->script();
+        $script = $this->request->script().'';
         $scriptFile = basename($script);
-        $path = $this->request->uri()->getPath();
+        $path = $this->request->uri()->getPath().'';
         if (strpos($scriptFile, $path) === 0) {
             $path = rtrim($path, '/'). '/'. $scriptFile;
         } elseif (strpos($script, '.php') > 0) {

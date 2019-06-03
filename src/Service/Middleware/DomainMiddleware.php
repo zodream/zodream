@@ -3,6 +3,8 @@ declare(strict_types=1);
 namespace Zodream\Service\Middleware;
 
 
+use Zodream\Infrastructure\Error\DomainException;
+
 class DomainMiddleware implements MiddlewareInterface {
 
     public function handle($payload, callable $next) {
