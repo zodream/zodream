@@ -257,12 +257,26 @@ class UrlGenerator {
         return $this->modulePath .'/'.$path;
     }
 
+    protected function getCurrentScript() {
+        if ($this->useScript === false) {
+            return $this->request->script();
+        }
+        if ($this->useScript === true || empty($this->useScript)) {
+            return '/index.php';
+        }
+        $this->useScript = ltrim((string)$this->useScript, '/');
+        if (empty($this->useScript)) {
+            return '/index.php';
+        }
+        return '/'.$this->useScript;
+    }
+
     protected function addScript($path) {
         if (strpos($path, '.') > 0
             || strpos($path, '/') === 0) {
             return $path;
         }
-        $name = $this->useScript ?: $this->request->script();
+        $name = $this->getCurrentScript();
         if ($name === '/index.php') {
             return '/'.$path;
         }
