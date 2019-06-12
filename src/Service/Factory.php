@@ -261,11 +261,11 @@ class Factory {
      */
     public static function log() {
         if (!array_key_exists('log', static::$_instance)) {
-            $args = Config::log() ?: [
+            $args = static::config('log', [
                 'name' => 'ZoDream',
                 'level' => 'debug',
                 'file' => sprintf('data/log/%s.log', date('Y-m-d'))
-            ];
+            ]);
             $log = new Logger($args['name']);
             $log->pushHandler(new StreamHandler((string)static::root()
                 ->childFile($args['file']),
