@@ -55,13 +55,19 @@ class CacheMiddleware implements MiddlewareInterface {
         if (is_callable($args['params'])) {
             return call_user_func($args['params']);
         }
-        $data = [];
         foreach ((array)$args['params'] as $item) {
             if (empty($item)) {
                 continue;
             }
-            $data[] = sprintf('%s=%s', $item, app('request')->get($item));
+            $data[] = sprintf('%s=%s', $item, $this->getPathParam($item));
         }
         return implode('-', $data);
+    }
+
+    private function getPathParam($item) {
+        if ($item === '@language') {
+            return trans()->getLanguage();
+        }
+        return app('request')->get($item);
     }
 }

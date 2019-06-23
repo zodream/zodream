@@ -26,7 +26,7 @@ abstract class I18n extends MagicObject {
     public function __construct() {
         $configs = Config::i18n();
         $this->setDirectory($configs['directory']);
-        $this->setLanguage($configs['language']);
+        $this->setLanguage(isset($configs['language']) ? $configs['language'] : null);
         $this->reset();
     }
 
