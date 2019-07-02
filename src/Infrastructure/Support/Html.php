@@ -213,7 +213,7 @@ class Html {
             $content = null;
         }
         if (array_key_exists('src', $options)) {
-            $options['src'] = url()->to($options['src']);
+            $options['src'] = url()->asset($options['src']);
         }
         return static::tag('script', $content, $options);
     }
