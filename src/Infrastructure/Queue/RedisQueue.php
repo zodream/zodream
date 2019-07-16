@@ -16,10 +16,6 @@ class RedisQueue extends Queue {
         'blockFor' => null,
     ];
 
-    public function __construct() {
-        $this->loadConfigs();
-    }
-
     /**
      * Get the size of the queue.
      *
@@ -38,10 +34,11 @@ class RedisQueue extends Queue {
     /**
      * Push a new job onto the queue.
      *
-     * @param  object|string  $job
-     * @param  mixed   $data
-     * @param  string  $queue
+     * @param  object|string $job
+     * @param  mixed $data
+     * @param  string $queue
      * @return mixed
+     * @throws \Zodream\Infrastructure\Error\Exception
      */
     public function push($job, $data = '', $queue = null)
     {
@@ -66,11 +63,12 @@ class RedisQueue extends Queue {
     /**
      * Push a new job onto the queue after a delay.
      *
-     * @param  \DateTimeInterface|\DateInterval|int  $delay
-     * @param  object|string  $job
-     * @param  mixed   $data
-     * @param  string  $queue
+     * @param  \DateTimeInterface|\DateInterval|int $delay
+     * @param  object|string $job
+     * @param  mixed $data
+     * @param  string $queue
      * @return mixed
+     * @throws \Zodream\Infrastructure\Error\Exception
      */
     public function later($delay, $job, $data = '', $queue = null)
     {

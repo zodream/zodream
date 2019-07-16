@@ -32,7 +32,7 @@ class Action {
             return $this->_callFunc($this->class, $args);
         }
         if (strpos($this->class, '::') === false &&
-            (!class_exists($this->class) || !function_exists($this->function))) {
+            !class_exists($this->class) && !function_exists($this->function)) {
             return require($this->file);
         }
         if (empty($this->class)) {
@@ -92,7 +92,6 @@ class Action {
         );
 
         $queue = $listener->queue ?? null;
-
         isset($listener->delay)
             ? $connection->laterOn($queue, $listener->delay, $job)
             : $connection->pushOn($queue, $job);

@@ -13,7 +13,10 @@ abstract class Queue extends ConfigObject {
      */
     protected $connectionName;
 
-    protected $configKey = 'queue';
+    public function __construct($configs) {
+        $this->configs = array_merge($this->configs, $configs);
+    }
+
 
     /**
      * Get the size of the queue.
@@ -149,7 +152,7 @@ abstract class Queue extends ConfigObject {
     {
         return [
             'displayName' => $this->getDisplayName($job),
-            'job' => 'Illuminate\Queue\CallQueuedHandler@call',
+            'job' => 'Zodream\Infrastructure\Queue\CallQueuedHandler@call',
             'maxTries' => $job->tries ?? null,
             'timeout' => $job->timeout ?? null,
             'timeoutAt' => $this->getJobExpiration($job),

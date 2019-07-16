@@ -9,22 +9,20 @@ use Zodream\Infrastructure\Queue\Jobs\DatabaseJobRecord;
 class DatabaseQueue extends Queue {
 
     protected $configs = [
-        'table' => '',
+        'table' => 'queue',
         'default' => 'default',
         'retryAfter' => 60
     ];
 
-    public function __construct() {
-        $this->loadConfigs();
-    }
     /**
      * Get the size of the queue.
      *
      * @param  string $queue
      * @return int
+     * @throws \Exception
      */
     public function size($queue = null) {
-        return DB::table($this->table)
+        return $this->getConnection()
             ->where('queue', $this->getQueue($queue))
             ->count();
     }
@@ -33,9 +31,9 @@ class DatabaseQueue extends Queue {
     {
         $queue = $this->getQueue($queue);
 
-        $availableAt = $this->availableAt();
+        $availableAt = time();
 
-        return DB::table($this->table)->insert(array_map(
+        return $this->getConnection()->insert(array_map(
             function ($job) use ($queue, $data, $availableAt) {
                 return $this->buildDatabaseRecord($queue, $this->createPayload($job, $data), $availableAt);
             }, (array) $jobs));
@@ -48,6 +46,8 @@ class DatabaseQueue extends Queue {
      * @param  mixed $data
      * @param  string $queue
      * @return mixed
+     * @throws \Exception
+     * @throws \Zodream\Infrastructure\Error\Exception
      */
     public function push($job, $data = '', $queue = null) {
         return $this->pushToDatabase($queue, $this->createPayload($job, $data));
@@ -60,6 +60,7 @@ class DatabaseQueue extends Queue {
      * @param  string $queue
      * @param  array $options
      * @return mixed
+     * @throws \Exception
      */
     public function pushRaw($payload, $queue = null, array $options = [])
     {
@@ -74,6 +75,8 @@ class DatabaseQueue extends Queue {
      * @param  mixed $data
      * @param  string $queue
      * @return mixed
+     * @throws \Exception
+     * @throws \Zodream\Infrastructure\Error\Exception
      */
     public function later($delay, $job, $data = '', $queue = null)
     {
@@ -83,10 +86,11 @@ class DatabaseQueue extends Queue {
     /**
      * Release a reserved job back onto the queue.
      *
-     * @param  string  $queue
-     * @param  DatabaseJobRecord  $job
-     * @param  int  $delay
+     * @param  string $queue
+     * @param  DatabaseJobRecord $job
+     * @param  int $delay
      * @return mixed
+     * @throws \Exception
      */
     public function release($queue, $job, $delay)
     {
@@ -105,7 +109,7 @@ class DatabaseQueue extends Queue {
      */
     protected function pushToDatabase($queue, $payload, $delay = 0, $attempts = 0)
     {
-        return DB::table($this->configs['table'])->insert($this->buildDatabaseRecord(
+        return $this->getConnection()->insert($this->buildDatabaseRecord(
             $this->getQueue($queue), $payload, time() + $delay, $attempts
         ));
     }
@@ -155,7 +159,7 @@ class DatabaseQueue extends Queue {
      */
     protected function getNextAvailableJob($queue)
     {
-        $job = DB::table($this->configs['table'])
+        $job = $this->getConnection()
             ->where('queue', $this->getQueue($queue))
             ->where(function ($query) {
                 $this->isAvailable($query);
@@ -199,9 +203,10 @@ class DatabaseQueue extends Queue {
     /**
      * Marshal the reserved job into a DatabaseJob instance.
      *
-     * @param  string  $queue
-     * @param  DatabaseJobRecord  $job
+     * @param  string $queue
+     * @param  DatabaseJobRecord $job
      * @return DatabaseJob
+     * @throws \Exception
      */
     protected function marshalJob($queue, $job)
     {
@@ -215,10 +220,11 @@ class DatabaseQueue extends Queue {
     /**
      * Mark the given job ID as reserved.
      *
+     * @throws \Exception
      */
     protected function markJobAsReserved($job)
     {
-        DB::table($this->configs['table'])->where('id', $job->id)->update([
+        $this->getConnection()->where('id', $job->id)->update([
             'reserved_at' => $job->touch(),
             'attempts' => $job->increment(),
         ]);
@@ -235,11 +241,20 @@ class DatabaseQueue extends Queue {
      */
     public function deleteReserved($queue, $id)
     {
-        DB::table($this->configs['table'])->where('id', $id)->delete();
+        $this->getConnection()->where('id', $id)->delete();
     }
 
 
     public function getQueue($queue) {
         return $queue ?: $this->configs['default'];
+    }
+
+    /**
+     * Get the connection for the queue.
+     *
+     * @return Builder
+     */
+    protected function getConnection() {
+        return DB::table($this->configs['table'], $this->configs['connection']);
     }
 }

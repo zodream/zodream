@@ -12,6 +12,7 @@ use Zodream\Domain\Access\JWTAuth;
 use Zodream\Infrastructure\Http\UrlGenerator;
 use Zodream\Debugger\Domain\Timer;
 use Zodream\Disk\FileObject;
+use Zodream\Infrastructure\Event\EventManger;
 
 
 if (! function_exists('app')) {
@@ -259,13 +260,17 @@ if (! function_exists('event')) {
     /**
      * Dispatch an event and call the listeners.
      *
-     * @param  string|object  $event
-     * @param  mixed  $payload
-     * @param  bool  $halt
-     * @return array|null
+     * @param  string|object $event
+     * @param  mixed $payload
+     * @param  bool $halt
+     * @return EventManger|null
+     * @throws Exception
      */
     function event(...$args)
     {
+        if (count($args) === 0) {
+            return app('events');
+        }
         return app('events')->dispatch(...$args);
     }
 }

@@ -8,8 +8,10 @@ use Zodream\Infrastructure\Traits\SingletonPattern;
 class QueueManager extends Manager {
     use SingletonPattern;
 
+    protected $configKey = 'queue';
+
     /**
-     * @var Redis[]
+     * @var Queue[]
      */
     protected $engines = [];
 
@@ -18,6 +20,7 @@ class QueueManager extends Manager {
     /**
      * @param string $name
      * @return Queue
+     * @throws \Exception
      */
     public static function connection($name = null) {
         return static::getInstance()->getEngine($name);
