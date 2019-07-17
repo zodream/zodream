@@ -62,12 +62,18 @@ abstract class I18n extends MagicObject {
      */
     public function setLanguage($arg = null) {
         if (empty($arg)) {
-            $language = app('request')->server('HTTP_ACCEPT_LANGUAGE', 'ZH-CN');
-            preg_match('/[\w-]+/', $language, $match);
-            $arg = $match[0];
+            $arg = $this->getBrowserLanguage();
         }
         $this->language = strtolower($arg);
         return $this;
+    }
+
+    protected function getBrowserLanguage() {
+        $language = app('request')->server('HTTP_ACCEPT_LANGUAGE', 'ZH-CN');
+        if (!empty($language) && preg_match('/[\w-]+/', $language, $match)) {
+            return $match[0];
+        }
+        return 'ZH-CN';
     }
 
     /**
