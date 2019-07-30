@@ -204,12 +204,16 @@ if (! function_exists('__')) {
     /**
      * Translate the given message.
      *
-     * @param  string  $key
-     * @param  array  $replace
-     * @param  string  $locale
+     * @param  string $key
+     * @param  array $replace
+     * @param  string $locale
+     * @return string
      * @throws Exception
      */
     function __($key, $replace = [], $locale = null) {
+        if (empty(Factory::i18n())) {
+            return $key;
+        }
         return Factory::i18n()->translate($key, $replace, $locale);
     }
 }

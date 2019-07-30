@@ -3,6 +3,7 @@ namespace Zodream\Infrastructure\Queue;
 
 use Zodream\Database\DB;
 use Zodream\Database\Query\Builder;
+use Zodream\Database\Schema\Table;
 use Zodream\Infrastructure\Queue\Jobs\DatabaseJob;
 use Zodream\Infrastructure\Queue\Jobs\DatabaseJobRecord;
 
@@ -128,7 +129,7 @@ class DatabaseQueue extends Queue {
         return [
             'queue' => $queue,
             'attempts' => $attempts,
-            'reserved_at' => null,
+            'reserved_at' => 0,
             'available_at' => $availableAt,
             'created_at' => time(),
             'payload' => $payload,
@@ -147,7 +148,7 @@ class DatabaseQueue extends Queue {
         $queue = $this->getQueue($queue);
 
         if ($job = $this->getNextAvailableJob($queue)) {
-            $this->marshalJob($queue, $job);
+            return $this->marshalJob($queue, $job);
         }
     }
 
@@ -167,7 +168,6 @@ class DatabaseQueue extends Queue {
             })
             ->orderBy('id', 'asc')
             ->first();
-
         return $job ? new DatabaseJobRecord((object) $job) : null;
     }
 
@@ -180,7 +180,7 @@ class DatabaseQueue extends Queue {
     protected function isAvailable($query)
     {
         $query->where(function (Builder $query) {
-            $query->whereNull('reserved_at')
+            $query->where('reserved_at', 0)
                 ->where('available_at', '<=', time());
         });
     }
@@ -256,5 +256,15 @@ class DatabaseQueue extends Queue {
      */
     protected function getConnection() {
         return DB::table($this->configs['table'], $this->configs['connection']);
+    }
+
+    public static function createMigration(Table $table) {
+        $table->set('id')->pk()->ai();
+        $table->set('queue')->varchar(200)->index();
+        $table->set('payload')->longtext();
+        $table->set('attempts')->tinyint(2)->unsigned()->defaultVal(0);
+        $table->timestamp('reserved_at');
+        $table->timestamp('available_at');
+        $table->timestamp('created_at');
     }
 }

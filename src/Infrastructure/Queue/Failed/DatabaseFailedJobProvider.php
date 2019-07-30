@@ -5,6 +5,7 @@ namespace Zodream\Infrastructure\Queue\Failed;
 
 use Zodream\Database\DB;
 use Zodream\Database\Query\Builder;
+use Zodream\Database\Schema\Table;
 
 class DatabaseFailedJobProvider implements FailedJobProviderInterface {
 
@@ -92,8 +93,16 @@ class DatabaseFailedJobProvider implements FailedJobProviderInterface {
      *
      * @return Builder
      */
-    protected function getTable()
-    {
+    protected function getTable() {
         return DB::table($this->table);
+    }
+
+    public static function createMigration(Table $table) {
+        $table->set('id')->pk()->ai();
+        $table->set('connection')->text();
+        $table->set('queue')->text();
+        $table->set('payload')->longtext();
+        $table->set('exception')->longtext();
+        $table->timestamp('failed_at');
     }
 }

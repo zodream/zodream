@@ -275,7 +275,6 @@ class Application implements ArrayAccess, ContainerInterface {
         if (is_null($constructor)) {
             return new $concrete;
         }
-
         $dependencies = $constructor->getParameters();
         $instances = $this->resolveDependencies(
             $dependencies

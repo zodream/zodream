@@ -50,7 +50,7 @@ class Action {
         }
         $class = $this->class;
         $instance = new $class;
-        return $this->_callFunc(array($instance, $this->function), $args);
+        return static::callFunc(array($instance, $this->function), $args);
     }
 
     private function _runWithClass($args) {
@@ -63,16 +63,9 @@ class Action {
             return false;
         }
         if (is_callable($this->function)) {
-            return $this->_callFunc($this->function, $args);
+            return static::callFunc($this->function, $args);
         }
         return false;
-    }
-
-    private function _callFunc($func, $args) {
-        if (is_array($args)) {
-            return call_user_func_array($func, $args);
-        }
-        return call_user_func($func, $args);
     }
 
     protected function queueHandler(array $args) {
@@ -132,5 +125,12 @@ class Action {
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    public static function callFunc($func, $args) {
+        if (is_array($args)) {
+            return call_user_func_array($func, $args);
+        }
+        return call_user_func($func, $args);
     }
 }

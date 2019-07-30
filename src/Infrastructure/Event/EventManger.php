@@ -108,10 +108,10 @@ class EventManger {
     }
 
     public function dispatchNow($event = null, $payload = []) {
-        list($event, $payload) = $this->parseEventAndPayload(
-            $event, $payload
-        );
-        $this->run($event, $payload);
+        if (is_object($event)) {
+            return Action::callFunc([$event, 'handle'], $payload);
+        }
+        return (new Action($event, 'handle'))->run($payload);
     }
 
     protected function parseEventAndPayload($event, $payload) {
@@ -125,5 +125,29 @@ class EventManger {
         foreach ((array) $events as $event) {
             $this->add($event, $listener);
         }
+    }
+
+    /**
+     * Determine if the given command has a handler.
+     *
+     * @param  mixed  $command
+     * @return bool
+     */
+    public function hasCommandHandler($command) {
+        return array_key_exists(get_class($command), $this->handlers);
+    }
+
+    /**
+     * Retrieve the handler for a command.
+     *
+     * @param  mixed  $command
+     * @return bool|mixed
+     */
+    public function getCommandHandler($command) {
+        if ($this->hasCommandHandler($command)) {
+            return app($this->handlers[get_class($command)]);
+        }
+
+        return false;
     }
 }

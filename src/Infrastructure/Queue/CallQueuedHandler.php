@@ -5,6 +5,7 @@ use Zodream\Database\Model\ModelNotFoundException;
 use Zodream\Infrastructure\Queue\Jobs\Job;
 
 class CallQueuedHandler {
+
     /**
      * Handle the queued job.
      *
@@ -22,7 +23,7 @@ class CallQueuedHandler {
             return $this->handleModelNotFound($job, $e);
         }
 
-        $this->dispatcher->dispatchNow(
+        event()->dispatchNow(
             $command, $this->resolveHandler($job, $command)
         );
 
@@ -44,7 +45,7 @@ class CallQueuedHandler {
      */
     protected function resolveHandler($job, $command)
     {
-        $handler = $this->dispatcher->getCommandHandler($command) ?: null;
+        $handler = event()->getCommandHandler($command) ?: null;
 
         if ($handler) {
             $this->setJobInstanceIfNecessary($job, $handler);

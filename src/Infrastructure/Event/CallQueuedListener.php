@@ -59,8 +59,7 @@ class CallQueuedListener implements ShouldQueue {
      * @param  array  $data
      * @return void
      */
-    public function __construct($class, $method, $data)
-    {
+    public function __construct($class, $method, $data) {
         $this->data = $data;
         $this->class = $class;
         $this->method = $method;
@@ -71,8 +70,8 @@ class CallQueuedListener implements ShouldQueue {
      *
      * @return void
      */
-    public function handle()
-    {
+    public function handle() {
+
         $this->prepareData();
 
         $handler = $this->setJobInstanceIfNecessary(
@@ -91,8 +90,7 @@ class CallQueuedListener implements ShouldQueue {
      * @param  mixed  $instance
      * @return mixed
      */
-    protected function setJobInstanceIfNecessary(Job $job, $instance)
-    {
+    protected function setJobInstanceIfNecessary(Job $job, $instance) {
         if (in_array(InteractsWithQueue::class, class_uses_recursive($instance))) {
             $instance->setJob($job);
         }
@@ -108,8 +106,7 @@ class CallQueuedListener implements ShouldQueue {
      * @param  \Exception  $e
      * @return void
      */
-    public function failed($e)
-    {
+    public function failed($e) {
         $this->prepareData();
 
         $handler = app($this->class);
