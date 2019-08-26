@@ -91,15 +91,24 @@ class Upload extends MagicObject {
         $result = true;
         foreach ($this->_data as $item) {
             $item->setFile($this->directory->childFile($item->getRandomName()));
-            $result = !$item->save() || $result;
+            if (!$item->save()) {
+                $result = false;
+            }
         }
         return $result;
     }
-    
+
+    /**
+     * @param array|string $args 不带点的拓展名
+     * @param bool $allow 是否允许上传
+     * @return bool
+     */
     public function checkType($args, $allow = true) {
         $result = true;
         foreach ($this->_data as $item) {
-            $result = !$item->checkType($args, $allow) || $result;
+            if (!$item->checkType((array)$args, $allow)) {
+                $result = false;
+            }
         }
         return $result;
     }
@@ -107,7 +116,9 @@ class Upload extends MagicObject {
     public function checkSize($min = 10000000, $max = null) {
         $result = true;
         foreach ($this->_data as $item) {
-            $result = !$item->checkSize($min, $max) || $result;
+            if (!$item->checkSize($min, $max)) {
+                $result = false;
+            }
         }
         return $result;
     }
