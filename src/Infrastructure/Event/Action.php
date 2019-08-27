@@ -29,7 +29,7 @@ class Action {
 
     public function run($args = array()) {
         if (is_callable($this->class)) {
-            return $this->_callFunc($this->class, $args);
+            return self::callFunc($this->class, $args);
         }
         if (strpos($this->class, '::') === false &&
             !class_exists($this->class) && !function_exists($this->function)) {
