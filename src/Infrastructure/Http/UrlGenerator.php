@@ -227,6 +227,9 @@ class UrlGenerator {
     }
 
     protected function getPath($path): string {
+        if ($path === false) {
+            return $this->current();
+        }
         if (empty($path) || $path === '0') {
             return $this->full();
         }
