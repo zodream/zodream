@@ -210,7 +210,10 @@ class Response {
      * @throws \Exception
      */
     public function send() {
-        if ($this->parameter instanceof IPreResponse) {
+        if (is_object($this->parameter) &&
+            ($this->parameter instanceof IPreResponse
+                || method_exists($this->parameter, 'ready'))
+        ) {
             $this->parameter->ready($this);
         }
         if (empty($this->parameter)) {
