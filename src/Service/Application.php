@@ -71,6 +71,7 @@ class Application implements ArrayAccess, ContainerInterface {
      * @throws Exception
      */
     public function __construct(string $base_path = '', string $module = 'Home') {
+        require_once 'helpers.php';
         if (!empty($base_path)) {
             $this->setBasePath($base_path);
         }
