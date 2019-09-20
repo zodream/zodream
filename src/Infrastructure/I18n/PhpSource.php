@@ -36,6 +36,20 @@ class PhpSource extends I18n {
         if (!is_array($args)) {
             return;
         }
-        $this->set($this->fileName, $args);
+        $this->set($this->fileName, $this->formatArr($args));
+    }
+
+    protected function formatArr(array $data, $prefix = '') {
+        $args = [];
+        foreach ($data as $key => $item) {
+            $key = $prefix.$key;
+            if (!is_array($item)) {
+                $args[$key] = $item;
+                continue;
+            }
+            $item = $this->formatArr($item, $key.'.');
+            $args = array_merge($args, $item);
+        }
+        return $args;
     }
 }
