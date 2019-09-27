@@ -55,8 +55,9 @@ trait UrlRewrite {
             ];
         }
         if (empty($ext) || empty($args) || count($args) > 2) {
+            $path = trim($path, '/');
             return [
-                trim($path, '/').$ext,
+                !Str::endWith($path, '.php') ? $path.$ext : $path,
                 $args
             ];
         }

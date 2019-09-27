@@ -139,11 +139,11 @@ $configs = [
         'asset_directory' => 'assets',
         'cache' => 'data/views',
         'assets' => [   //资源切换，正式环境自动使用cdn资源
-            '@font-awesome.min.css' => 'https://use.fontawesome.com/releases/v5.5.0/css/all.css',
-            '@animate.min.css' => 'https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css',
-            '@bootstrap.min.css' => 'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css',
-            '@jquery.min.js' => 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js',
-            '@bootstrap.min.js' => 'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js'
+            '@font-awesome.min.css' => 'https://use.fontawesome.com/releases/v5.11.2/css/all.css',
+            '@animate.min.css' => 'https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css',
+            '@bootstrap.min.css' => 'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css',
+            '@jquery.min.js' => 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js',
+            '@bootstrap.min.js' => 'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js'
         ]
     ],
 
