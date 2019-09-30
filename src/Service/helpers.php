@@ -1,4 +1,6 @@
 <?php
+
+use Zodream\Infrastructure\I18n\I18n;
 use Zodream\Service\Factory;
 use Zodream\Service\Config;
 use Zodream\Infrastructure\Http\Request;
@@ -165,11 +167,11 @@ if (! function_exists('request')) {
      *
      * @param  array|string $key
      * @param  mixed $default
-     * @return array|string|\Zodream\Infrastructure\Http\Input\Request
+     * @return array|string|Request
      * @throws Exception
      */
     function request($key = null, $default = null) {
-        return app('request')->request($key, $default);
+        return app('request')->get($key, $default);
     }
 }
 
@@ -192,7 +194,7 @@ if (! function_exists('trans')) {
      * @param  string  $key
      * @param  array   $replace
      * @param  string  $locale
-     * @return string|\Zodream\Infrastructure\I18n\I18n
+     * @return string|I18n
      * @throws Exception
      */
     function trans($key = null, $replace = [], $locale = null) {
