@@ -177,6 +177,10 @@ class Response {
             $this->parameter->close();
             return $this;
         }
+        if ($this->parameter instanceof File) {
+            readfile((string)$this->parameter);
+            return $this;
+        }
         if ($this->parameter instanceof ExpertObject) {
             $this->parameter->send();
             return $this;
