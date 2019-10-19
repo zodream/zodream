@@ -52,4 +52,8 @@ class PhpSource extends I18n {
         }
         return $args;
     }
+
+    public function existLanguage($lang) {
+        return $this->directory->hasDirectory($this->language);
+    }
 }

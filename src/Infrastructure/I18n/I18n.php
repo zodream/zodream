@@ -14,9 +14,11 @@ use Zodream\Service\Factory;
 
 abstract class I18n extends MagicObject {
 
+    const DEFAULT_LANGUAGE = 'zh-cn';
+
     protected $fileName = 'zodream';
 
-    protected $language = 'zh-cn';
+    protected $language = self::DEFAULT_LANGUAGE;
 
     /**
      * @var Directory
@@ -65,15 +67,21 @@ abstract class I18n extends MagicObject {
             $arg = $this->getBrowserLanguage();
         }
         $this->language = strtolower($arg);
+        if (!$this->existLanguage($this->language)) {
+            $this->language = self::DEFAULT_LANGUAGE;
+        }
         return $this;
     }
 
     protected function getBrowserLanguage() {
         $language = app('request')->server('HTTP_ACCEPT_LANGUAGE', 'ZH-CN');
-        if (!empty($language) && preg_match('/[\w-]+/', $language, $match)) {
-            return $match[0];
+        if (empty($language) || !preg_match('/[\w-]+/', $language, $match)) {
+            return self::DEFAULT_LANGUAGE;
         }
-        return 'ZH-CN';
+        if (strpos($match[0], '-Hans') > 0) {
+            return self::DEFAULT_LANGUAGE;
+        }
+        return $match[0];
     }
 
     /**
@@ -108,4 +116,8 @@ abstract class I18n extends MagicObject {
      * 修改源
      */
     abstract public function reset();
+
+    public function existLanguage($lang) {
+        return true;
+    }
 }
