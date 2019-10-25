@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace Zodream\Infrastructure\Http;
 
+use PhpParser\Node\Expr\Empty_;
 use Zodream\Helpers\Str;
 use Zodream\Http\Uri;
 use Zodream\Infrastructure\Http\Input\UrlRewrite;
@@ -24,6 +25,8 @@ class UrlGenerator {
      */
     protected $modulePath = '';
 
+    protected $modulePrefix = '';
+
     /**
      * @var Request
      */
@@ -37,6 +40,7 @@ class UrlGenerator {
         //$host = config('app.host');
         $this->setHost($uri->getHost());
         $this->setSchema($uri->getScheme());
+        $this->modulePrefix = Str::unStudly(app('app.module'));
     }
 
     /**
@@ -257,7 +261,24 @@ class UrlGenerator {
         if (empty($this->modulePath)) {
             return $path;
         }
-        return $this->modulePath .'/'.$path;
+        return $this->modulePath .'/'.$this->addModulePrefix($path);
+    }
+
+    protected function addModulePrefix(string $path) {
+        if (empty($path) || substr($path, 0, 1) !== '@') {
+            return $path;
+        }
+        if (empty($this->modulePrefix)) {
+            return substr($path, 1);
+        }
+        $prefix = '@'.$this->modulePrefix;
+        if ($prefix === $path) {
+            return '';
+        }
+        if (strpos($path, $prefix.'/') === 0) {
+            return substr($path, strlen($prefix) + 1);
+        }
+        return substr($path, 1);
     }
 
     protected function getCurrentScript() {
