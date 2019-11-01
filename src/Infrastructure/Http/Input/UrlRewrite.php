@@ -146,7 +146,7 @@ trait UrlRewrite {
             if (!is_numeric($routes[$i])) {
                 continue;
             }
-            if (($len - $i) % 2 == 0) {
+            if ($i < $len - 1 && ($len - $i) % 2 === 1) {
                 // 数字作为分割符,无意义
                 $values = array_splice($routes, $i + 1);
                 unset($routes[$i]);
