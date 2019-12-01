@@ -86,18 +86,12 @@ trait UrlRewrite {
                     $args
                 ];
             }
-            if ($spilt === '0' && is_numeric($arg)) {
+            if ($spilt === '0' && is_numeric($arg) && count($args) < 2) {
                 $spilt = sprintf('%s/%s', $key, $arg);
                 continue;
             }
             $data[] = $key;
             $data[] = $arg;
-        }
-        if ($spilt === '0' && substr_count($path, '/') % 2 == 0) {
-            return [
-                $path . $ext,
-                $args
-            ];
         }
         if (!empty($data)) {
             $spilt = sprintf('%s/%s', $spilt, implode('/', $data));
