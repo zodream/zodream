@@ -291,7 +291,7 @@ class Request implements ServerRequestInterface {
     }
 
     public function referrer(): string {
-        return $this->server('HTTP_REFERER');
+        return $this->server('HTTP_REFERER', '');
     }
 
     public function script(): string {
