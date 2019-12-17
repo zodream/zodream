@@ -125,6 +125,7 @@ class EventManger {
         foreach ((array) $events as $event) {
             $this->add($event, $listener);
         }
+        return $this;
     }
 
     /**

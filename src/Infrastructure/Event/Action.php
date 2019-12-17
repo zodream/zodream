@@ -55,7 +55,7 @@ class Action {
 
     private function _runWithClass($args) {
         $class = $this->class;
-        return new $class($args);
+        return new $class(...$args);
     }
 
     private function _runWithFunction($args) {
