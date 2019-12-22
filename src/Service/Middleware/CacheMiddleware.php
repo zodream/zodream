@@ -11,12 +11,31 @@ class CacheMiddleware implements MiddlewareInterface {
         if (empty($urls) || !array_key_exists($payload, $urls)) {
             return $next($payload);
         }
-        $key = self::class.$payload.$this->getPath($urls[$payload]);
+        $cache = $urls[$payload];
+        if (isset($cache['before']) && is_callable($cache['before'])) {
+            $res = call_user_func($cache['before'], $cache);
+            if ($res === false) {
+                return $next($payload);
+            }
+            if (is_array($res)) {
+                $cache = $res;
+            }
+        }
+        $key = self::class.$payload.$this->getPath($cache);
         if (($page = cache($key)) !== false) {
             return $this->formatPage($page, $urls[$payload]);
         }
         $page = $next($payload);
-        cache()->set($key, $page, $urls[$payload]['time']);
+        if (isset($cache['after']) && is_callable($cache['after'])) {
+            $res = call_user_func($cache['after'], $page, $cache);
+            if ($res === false) {
+                return $page;
+            }
+            if (is_array($res)) {
+                $cache = $res;
+            }
+        }
+        cache()->set($key, $page, $cache['time']);
         return $page;
     }
 
@@ -28,7 +47,7 @@ class CacheMiddleware implements MiddlewareInterface {
         return empty($arg) ? $page : $arg;
     }
 
-    private function formatUri($uris) {
+    private function formatUri($uris): array {
         if (empty($uris)) {
             return [];
         }
@@ -48,13 +67,14 @@ class CacheMiddleware implements MiddlewareInterface {
         return $data;
     }
 
-    private function getPath(array $args) {
+    private function getPath(array $args): string {
         if (!isset($args['params']) || empty($args['params'])) {
             return '';
         }
         if (is_callable($args['params'])) {
             return call_user_func($args['params']);
         }
+        $data = [];
         foreach ((array)$args['params'] as $item) {
             if (empty($item)) {
                 continue;
@@ -67,6 +87,9 @@ class CacheMiddleware implements MiddlewareInterface {
     private function getPathParam($item) {
         if ($item === '@language') {
             return trans()->getLanguage();
+        }
+        if ($item === '@user') {
+            return auth()->id();
         }
         return app('request')->get($item);
     }

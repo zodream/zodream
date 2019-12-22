@@ -120,6 +120,13 @@ class Response {
         return $this;
     }
 
+    /**
+     * @return array|string|File|Image|ExpertObject
+     */
+    public function getParameter() {
+        return $this->parameter;
+    }
+
     public function setStatusCode($statusCode, $text = null) {
         $this->statusCode = (int) $statusCode;
         if ($this->statusCode > 600 || $this->statusCode < 100) {
