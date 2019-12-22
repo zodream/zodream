@@ -7,7 +7,7 @@ namespace Zodream\Service\Middleware;
 class CacheMiddleware implements MiddlewareInterface {
 
     public function handle($payload, callable $next) {
-        $urls = $this->formatUri(config('cache.uris'));
+        $urls = $this->formatUri(config()->getConfigByFile('cache'));
         if (empty($urls) || !array_key_exists($payload, $urls)) {
             return $next($payload);
         }
