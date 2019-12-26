@@ -143,7 +143,21 @@ class Application implements ArrayAccess, ContainerInterface {
             }
             $this->register($key, $item['driver']);
         }
+        $this->registerEventListeners();
+    }
 
+    protected function registerEventListeners() {
+        $events = config()->getConfigByFile('event');
+        if (empty($events)) {
+            return;
+        }
+        /** @var EventManger $event */
+        $event = $this['events'];
+        foreach ($events as $event => $listeners) {
+            foreach ((array)$listeners as $listener) {
+                $event->listen($event, $listener);
+            }
+        }
     }
 
     public function registerCoreAliases() {
