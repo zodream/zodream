@@ -21,7 +21,7 @@ class CacheMiddleware implements MiddlewareInterface {
                 $cache = $res;
             }
         }
-        $key = self::class.url()->getSchema().$payload.$this->getPath($cache);
+        $key = self::class.url()->getSchema().url()->getHost().$payload.$this->getPath($cache);
         if (($page = cache($key)) !== false) {
             return $this->formatPage($page, $urls[$payload]);
         }

@@ -45,9 +45,10 @@ interface UserObject {
 
     /**
      * 登录
+     * @param bool $remember
      * @return mixed
      */
-    public function login();
+    public function login($remember = false);
 
     /**
      * 注销

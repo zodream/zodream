@@ -151,11 +151,11 @@ class Application implements ArrayAccess, ContainerInterface {
         if (empty($events)) {
             return;
         }
-        /** @var EventManger $event */
-        $event = $this['events'];
+        /** @var EventManger $driver */
+        $driver = $this['events'];
         foreach ($events as $event => $listeners) {
             foreach ((array)$listeners as $listener) {
-                $event->listen($event, $listener);
+                $driver->listen($event, $listener);
             }
         }
     }
