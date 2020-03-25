@@ -103,6 +103,7 @@ class JWTAuth extends Token {
      * 生成一个token
      * @param UserModel $user
      * @return string
+     * @throws Exception
      */
     public function createToken(UserModel $user): string {
         $configs = $this->getConfigs();
