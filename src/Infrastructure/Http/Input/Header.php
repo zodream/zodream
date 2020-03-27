@@ -14,8 +14,12 @@ trait Header {
         $data = [];
         foreach ($_SERVER as $key => $value) {
             if (Str::startsWith($key, 'HTTP_')) {
-                $data[Str::firstReplace($key, 'HTTP_')] = $value;
+                $data[substr($key, 5)] = $value;
             }
+        }
+        // 未知原因
+        if (isset($_SERVER['CONTENT_TYPE']) && !isset($data['CONTENT_TYPE'])) {
+            $data['CONTENT_TYPE'] = $_SERVER['CONTENT_TYPE'];
         }
         return $data;
     }
