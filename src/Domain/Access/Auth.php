@@ -93,6 +93,13 @@ class Auth implements AuthObject {
     }
 
     /**
+     * 取消永久登录
+     */
+    protected function cancelRememberToken() {
+        Cookie::forget($this->getRememberName());
+    }
+
+    /**
      * 设置用户
      * @param UserObject $user
      */

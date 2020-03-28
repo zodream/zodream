@@ -60,6 +60,29 @@ trait Other {
         return [null, null];
     }
 
+    /**
+     * @return array
+     */
+    protected function createBasicToken() {
+        $header = $this->header('Authorization');
+        if (empty($header)) {
+            return [null, null];
+        }
+        if (is_array($header)) {
+            $header = current($header);
+        }
+        if (strpos($header, 'Basic ') !== 0) {
+            return [null, null];
+        }
+        if (!($decoded = base64_decode(substr($header, 6)))) {
+            return [null, null];
+        }
+        if (strpos($decoded, ':') === false) {
+            return [null, null]; // HTTP Basic header without colon isn't valid
+        }
+        return explode(':', $decoded, 2);
+    }
+
     protected function http_digest_parse($txt) {
         // protect against missing data
         $needed_parts = array(

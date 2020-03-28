@@ -102,10 +102,11 @@ class JWTAuth extends Token {
     /**
      * 生成一个token
      * @param UserModel $user
+     * @param int $refreshTTL 刷新时间
      * @return string
      * @throws Exception
      */
-    public function createToken(UserModel $user): string {
+    public function createToken(UserModel $user, $refreshTTL = 0): string {
         $configs = $this->getConfigs();
         $time = time();
         $payload = [
@@ -115,9 +116,7 @@ class JWTAuth extends Token {
             'nbf' => $time,
             'jti' => Str::random(60)
         ];
-        if ($configs['refreshTTL'] > 0) {
-            $payload['exp'] = $time + $configs['refreshTTL'];
-        }
+        $payload['exp'] = $time + $configs['refreshTTL'] + $refreshTTL;
         cache()->set($payload['jti'], $payload, $configs['refreshTTL']);
         return JWT::encode($payload, isset($configs['privateKey']) ? $configs['privateKey']
             : $configs['key'], $configs['alg']);

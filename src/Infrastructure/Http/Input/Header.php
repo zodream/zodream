@@ -11,15 +11,26 @@ use Zodream\Helpers\Str;
 
 trait Header {
     protected function createHeader() {
+        if (function_exists('getallheaders')) {
+            return $this->getUpperHeaders();
+        }
         $data = [];
         foreach ($_SERVER as $key => $value) {
             if (Str::startsWith($key, 'HTTP_')) {
                 $data[substr($key, 5)] = $value;
             }
         }
-        // 未知原因
-        if (isset($_SERVER['CONTENT_TYPE']) && !isset($data['CONTENT_TYPE'])) {
-            $data['CONTENT_TYPE'] = $_SERVER['CONTENT_TYPE'];
+        return $data;
+    }
+
+    /**
+     * 获取大写key 处理 - 为 _
+     * @return array
+     */
+    private function getUpperHeaders() {
+        $data = [];
+        foreach (getallheaders() as $key => $val) {
+            $data[strtoupper(str_replace('-', '_', $key))] = $val;
         }
         return $data;
     }

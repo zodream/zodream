@@ -319,6 +319,14 @@ class Request implements ServerRequestInterface {
     }
 
     /**
+     * Authorization: Basic
+     * @return array
+     */
+    public function basicToken(): array {
+        return $this->getCacheData('basic_token');
+    }
+
+    /**
      * @param $name
      * @return string|array|bool|integer|mixed|null
      */
