@@ -7,7 +7,7 @@ namespace Zodream\Infrastructure\Caching;
 * @author Jason
 */
 use Zodream\Database\Command;
-use Zodream\Database\Query\Query;
+use Zodream\Database\Query\Builder;
 
 class DatabaseCache extends Cache {
 	
@@ -34,6 +34,7 @@ class DatabaseCache extends Cache {
 
     /**
      * @return Command
+     * @throws \Exception
      */
 	public function command() {
 	    return Command::getInstance()
@@ -41,7 +42,7 @@ class DatabaseCache extends Cache {
     }
 
 	protected function query() {
-		$query = new Query();
+		$query = new Builder();
 		$query->from($this->configs['table']);
 		return $query;
 	}

@@ -255,8 +255,7 @@ class Response {
      * @return Response
      */
     public function json($data) {
-        $this->header->setContentType('json');
-        return $this->setParameter(is_array($data) ? Json::encode($data) : $data);
+        return $this->custom(is_array($data) ? Json::encode($data) : $data, 'json');
     }
 
     /**
@@ -278,8 +277,7 @@ class Response {
      * @return Response
      */
     public function xml($data) {
-        $this->header->setContentType('xml');
-        return $this->setParameter(is_array($data) ? Xml::encode($data) : $data);
+        return $this->custom(is_array($data) ? Xml::encode($data) : $data, 'xml');
     }
 
     /**
@@ -288,7 +286,17 @@ class Response {
      * @return Response
      */
     public function html($data) {
-        $this->header->setContentType('html');
+        return $this->custom($data, 'html');
+    }
+
+    /**
+     * 自定义内容输出
+     * @param $data
+     * @param $type
+     * @return $this
+     */
+    public function custom($data, $type) {
+        $this->header->setContentType($type);
         return $this->setParameter(Str::value($data));
     }
 
@@ -306,8 +314,7 @@ class Response {
     }
 
     public function rss($data) {
-        $this->header->setContentType('rss');
-        return $this->setParameter(Str::value($data));
+        return $this->custom($data, 'rss');
     }
 
     /**
