@@ -25,13 +25,46 @@ class JWTAuth extends Token {
 
     protected $payload = false;
 
-    protected function getConfigs(): array {
-        return Factory::config('auth', [
-            'key' => 'uZXUa9ssSS5nr1lWvjTSwYhVxBxNsAyj',
-            'alg' => 'HS256',
-            'refreshTTL' => 20160,
-            'gracePeriod' => 0,
-        ]);
+    /**
+     * @var array
+     */
+    private $configs = [];
+
+    /**
+     * 获取配置
+     * @param null $key
+     * @param null $default
+     * @return array|mixed|string
+     */
+    public function getConfigs($key = null, $default = null) {
+        if (empty($this->configs)) {
+            $this->configs = Factory::config('auth', [
+                'key' => 'uZXUa9ssSS5nr1lWvjTSwYhVxBxNsAyj',
+                'alg' => 'HS256',
+                'refreshTTL' => 20160,
+                'gracePeriod' => 0,
+            ]);
+        }
+        if (empty($key)) {
+            return $this->configs;
+        }
+        return isset($this->configs[$key]) ? $this->configs[$key] : $default;
+    }
+
+    /**
+     * 设置配置
+     * @param $key
+     * @param $value
+     * @return JWTAuth
+     */
+    public function setConfigs($key, $value = null) {
+        $configs = $this->getConfigs();
+        if (is_array($key)) {
+            $this->configs = array_merge($configs, $value);
+            return $this;
+        }
+        $this->configs[$key] = $value;
+        return $this;
     }
 
 

@@ -50,6 +50,9 @@ class Request implements ServerRequestInterface {
 
     public function __construct() {
         $data = $this->getTypeParser();
+        if (!is_array($data)) {
+            $data = null;
+        }
         $this->data = $this->cleanData(empty($data)
             ? $_REQUEST : array_merge($_REQUEST, $data));
     }
