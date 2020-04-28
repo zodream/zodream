@@ -7,11 +7,18 @@ namespace Zodream\Service\Middleware;
 class CacheMiddleware implements MiddlewareInterface {
 
     public function handle($payload, callable $next) {
-        $urls = $this->formatUri(config()->getConfigByFile('cache'));
-        if (empty($urls) || !array_key_exists($payload, $urls)) {
+        $cache = $this->getCacheOption($payload);
+        if (empty($cache)) {
             return $next($payload);
         }
-        $cache = $urls[$payload];
+        if (isset($cache['method'])) {
+            $method = app('request')->method();
+            if (
+            (is_array($cache['method']) && !in_array($method, $cache['method'])) ||
+            (!is_array($cache['method']) && $method !== $cache['method'])) {
+                return $next($payload);
+            }
+        }
         if (isset($cache['before']) && is_callable($cache['before'])) {
             $res = call_user_func($cache['before'], $cache);
             if ($res === false) {
@@ -23,7 +30,7 @@ class CacheMiddleware implements MiddlewareInterface {
         }
         $key = self::class.url()->getSchema().url()->getHost().$payload.$this->getPath($cache);
         if (($page = cache($key)) !== false) {
-            return $this->formatPage($page, $urls[$payload]);
+            return $this->formatPage($page, $cache);
         }
         $page = $next($payload);
         if (isset($cache['after']) && is_callable($cache['after'])) {
@@ -45,26 +52,6 @@ class CacheMiddleware implements MiddlewareInterface {
         }
         $arg = call_user_func($args['callback'], $page);
         return empty($arg) ? $page : $arg;
-    }
-
-    private function formatUri($uris): array {
-        if (empty($uris)) {
-            return [];
-        }
-        $data = [];
-        foreach ((array)$uris as $uri => $time) {
-            if (is_integer($uri)) {
-                list($uri, $time) = [$time, 0];
-            }
-            if (!is_array($time)) {
-                $time = compact('time');
-            }
-            if (!isset($time['params'])) {
-                $time['params'] = [];
-            }
-            $data[trim($uri, '/')] = $time;
-        }
-        return $data;
     }
 
     private function getPath(array $args): string {
@@ -92,5 +79,34 @@ class CacheMiddleware implements MiddlewareInterface {
             return auth()->id();
         }
         return app('request')->get($item);
+    }
+
+    private function getCacheOption(string $path) {
+        $uris = config()->getConfigByFile('cache');
+        if (empty($uris)) {
+            return false;
+        }
+        foreach ((array)$uris as $uri => $time) {
+            if (is_integer($uri)) {
+                list($uri, $time) = [$time, 0];
+            }
+            if (!is_array($time)) {
+                $time = compact('time');
+            }
+            if (!isset($time['params'])) {
+                $time['params'] = [];
+            }
+            $uri = trim($uri, '/');
+            if ($path === $uri) {
+                return $time;
+            }
+            if (substr($uri, 0, 1) !== '~') {
+                continue;
+            }
+            if (preg_match(sprintf('#%s#i', substr($uri, 1)), $path, $match)) {
+                return $time;
+            }
+        }
+        return false;
     }
 }
