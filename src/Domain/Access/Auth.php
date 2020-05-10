@@ -49,6 +49,24 @@ class Auth implements AuthObject {
     }
 
     /**
+     * 获取用户记住我的token
+     * @param UserObject $user
+     * @return string
+     */
+    protected function getRememberTokenFromUser(UserObject $user) {
+        return $user->getRememberToken();
+    }
+
+    /**
+     * 设置用户的永久token
+     * @param UserObject $user
+     * @param $token
+     */
+    protected function setRememberTokenFromUser(UserObject $user, $token) {
+        $user->setRememberToken($token);
+    }
+
+    /**
      * @return UserObject
      * @throws \Exception
      */
@@ -86,8 +104,8 @@ class Auth implements AuthObject {
      * @param UserObject $user
      */
     protected function setRememberToken(UserObject $user) {
-        if (empty($user->getRememberToken())) {
-            $user->setRememberToken(Str::random(60));
+        if (empty($this->getRememberTokenFromUser($user))) {
+            $this->setRememberTokenFromUser($user, Str::random(60));
         }
         Cookie::forever($this->getRememberName(), $user->getIdentity().'|'. $user->getRememberToken());
     }
@@ -173,8 +191,7 @@ class Auth implements AuthObject {
         if (empty($this->user())) {
             return;
         }
-        $this->user()
-            ->setRememberToken(Str::random(60));
+        $this->setRememberTokenFromUser($this->user(), Str::random(60));
         Factory::session()->destroy();
         //throw new AuthenticationException();
     }

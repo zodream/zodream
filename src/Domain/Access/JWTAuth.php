@@ -155,6 +155,10 @@ class JWTAuth extends Token {
             : $configs['key'], $configs['alg']);
     }
 
+    protected function setRememberToken(UserObject $user) {}
+
+    protected function setRememberTokenFromUser(UserObject $user, $token) {}
+
     /**
      * @throws \Exception
      */
