@@ -6,6 +6,7 @@ namespace Zodream\Domain\Access;
 use Firebase\JWT\JWT;
 use Zodream\Database\Model\UserModel;
 use Zodream\Helpers\Str;
+use Zodream\Infrastructure\Caching\Cache;
 use Zodream\Infrastructure\Interfaces\UserObject;
 use Zodream\Service\Factory;
 use Exception;
@@ -30,6 +31,8 @@ class JWTAuth extends Token {
      */
     private $configs = [];
 
+    private $cacheDriver = null;
+
     /**
      * 获取配置
      * @param null $key
@@ -43,12 +46,24 @@ class JWTAuth extends Token {
                 'alg' => 'HS256',
                 'refreshTTL' => 20160,
                 'gracePeriod' => 0,
+                'cacheStore' => 'auth'
             ]);
         }
         if (empty($key)) {
             return $this->configs;
         }
         return isset($this->configs[$key]) ? $this->configs[$key] : $default;
+    }
+
+    /**
+     * @return Cache
+     * @throws Exception
+     */
+    public function cacheDriver() {
+        if (empty($this->cacheDriver)) {
+            $this->cacheDriver = cache()->store($this->getConfigs('cacheStore'));
+        }
+        return $this->cacheDriver;
     }
 
     /**
@@ -121,7 +136,7 @@ class JWTAuth extends Token {
             return null;
         }
         $jti = static::getPayload('jti');
-        if (empty($jti) || !cache()->has($jti)) {
+        if (empty($jti) || !$this->cacheDriver()->has($jti)) {
             return null;
         }
         $time = time();
@@ -150,7 +165,8 @@ class JWTAuth extends Token {
             'jti' => Str::random(60)
         ];
         $payload['exp'] = $time + $configs['refreshTTL'] + $refreshTTL;
-        cache()->set($payload['jti'], $payload, $configs['refreshTTL']);
+        $this->cacheDriver()
+            ->set($payload['jti'], $payload, $configs['refreshTTL']);
         return JWT::encode($payload, isset($configs['privateKey']) ? $configs['privateKey']
             : $configs['key'], $configs['alg']);
     }
@@ -163,7 +179,7 @@ class JWTAuth extends Token {
      * @throws \Exception
      */
     public function logout() {
-        cache()->delete($this->getPayload('jti'));
+        $this->cacheDriver()->delete($this->getPayload('jti'));
         return parent::logout();
     }
 

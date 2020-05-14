@@ -26,6 +26,19 @@ abstract class Cache extends ConfigObject implements \ArrayAccess {
     protected function getGC() {
         return $this->configs['gc'];
     }
+
+    /**
+     * 子缓存区
+     * @param $store
+     * @return Cache
+     */
+    public function store($store) {
+        $newCache = clone $this;
+        $newCache->setConfigs([
+            'keyPrefix' => $store
+        ]);
+        return $newCache;
+    }
 	
 	public function filterKey($key) {
 		if (is_string($key)) {

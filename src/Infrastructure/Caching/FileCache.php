@@ -30,11 +30,27 @@ class FileCache extends Cache {
         $this->setDirectory($this->configs['directory']);
     }
 
+    /**
+     * 切换到子缓存区
+     * @param $store
+     * @return FileCache
+     */
+    public function store($store) {
+        $newCache = clone $this;
+        if (!empty($store)) {
+            $newCache->setDirectory($this->directory->childDirectory($store));
+        }
+        return $newCache;
+    }
+
     public function setDirectory($directory) {
         if (!$directory instanceof Directory) {
             $directory = Factory::root()->childDirectory($directory);
         }
         $this->directory = $directory;
+        if (!$directory->exist()) {
+            $directory->create();
+        }
         return $this;
     }
 

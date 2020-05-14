@@ -29,7 +29,8 @@ class CacheMiddleware implements MiddlewareInterface {
             }
         }
         $key = self::class.url()->getSchema().url()->getHost().$payload.$this->getPath($cache);
-        if (($page = cache($key)) !== false) {
+        $cacheDriver = cache()->store('pages');
+        if (($page = $cacheDriver->get($key)) !== false) {
             return $this->formatPage($page, $cache);
         }
         $page = $next($payload);
@@ -42,7 +43,7 @@ class CacheMiddleware implements MiddlewareInterface {
                 $cache = $res;
             }
         }
-        cache()->set($key, $page, $cache['time']);
+        $cacheDriver->set($key, $page, $cache['time']);
         return $page;
     }
 
