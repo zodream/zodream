@@ -166,7 +166,7 @@ class JWTAuth extends Token {
         ];
         $payload['exp'] = $time + $configs['refreshTTL'] + $refreshTTL;
         $this->cacheDriver()
-            ->set($payload['jti'], $payload, $configs['refreshTTL']);
+            ->set($payload['jti'], $payload, $configs['refreshTTL'] + $refreshTTL);
         return JWT::encode($payload, isset($configs['privateKey']) ? $configs['privateKey']
             : $configs['key'], $configs['alg']);
     }
