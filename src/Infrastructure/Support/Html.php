@@ -118,6 +118,26 @@ class Html {
     }
 
     /**
+     * select 生成
+     * @param array $items
+     * @param null|array|string|int $value
+     * @param array $options
+     * @return string
+     */
+    public static function select(array $items, $value = null, $options = []) {
+        $html =  '';
+        foreach ($items as $key => $item) {
+            $html .= Html::tag('option', $item, array(
+                'value' => $key,
+                'selected' => (is_array($value) && in_array($key, $value))
+                    || (!is_array($value) && $key == $value)
+            ));
+        }
+        return Html::tag(
+            'select', $html, $options);
+    }
+
+    /**
      * DIV
      * @param string $content
      * @param array $option
