@@ -147,7 +147,6 @@ trait Attributes {
      * @param   string  $attribute  attribute name
      * @param   mixed   $value      attribute value
      *
-     * @return  $this->set()
      */
     public function __set($attribute, $value) {
         $this->setAttribute($attribute, $value);
