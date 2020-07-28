@@ -1,6 +1,12 @@
 <?php
+declare(strict_types = 1);
 
+use Psr\Log\LoggerInterface;
+use Zodream\Disk\FileException;
+use Zodream\Infrastructure\Caching\Cache;
 use Zodream\Infrastructure\I18n\I18n;
+use Zodream\Infrastructure\Session\Session;
+use Zodream\Route\Router;
 use Zodream\Service\Factory;
 use Zodream\Service\Config;
 use Zodream\Infrastructure\Http\Request;
@@ -15,12 +21,13 @@ use Zodream\Infrastructure\Http\UrlGenerator;
 use Zodream\Debugger\Domain\Timer;
 use Zodream\Disk\FileObject;
 use Zodream\Infrastructure\Event\EventManger;
+use Zodream\Template\ViewFactory;
 
 
 if (! function_exists('app')) {
     /**
      * @param string|null $abstract
-     * @return Application|Response|Request|UrlGenerator|mixed
+     * @return Application|Response|Request|UrlGenerator|Router|mixed
      * @throws Exception
      */
     function app(string $abstract = null) {
@@ -46,10 +53,11 @@ if (! function_exists('abort')) {
     /**
      * Throw an HttpException with the given data.
      *
-     * @param  int     $code
-     * @param  string  $message
-     * @param  array   $headers
+     * @param int $code
+     * @param string $message
+     * @param array $headers
      * @return void
+     * @throws HttpException
      */
     function abort($code, $message = '', array $headers = []) {
         if ($code == 404) {
@@ -64,10 +72,11 @@ if (! function_exists('app_path')) {
     /**
      * Get the path to the application folder.
      *
-     * @param  string  $path
+     * @param string $path
      * @return string
+     * @throws Exception
      */
-    function app_path($path = '') {
+    function app_path(string $path = '') {
         if (empty($path)) {
             return Factory::root();
         }
@@ -81,7 +90,7 @@ if (! function_exists('cache')) {
      *
      * If an array is passed, we'll assume you want to put to the cache.
      * @throws Exception
-     * @return \Zodream\Infrastructure\Caching\Cache|mixed
+     * @return Cache|mixed
      */
     function cache() {
         return Factory::cache(...func_get_args());
@@ -109,7 +118,7 @@ if (! function_exists('csrf_token')) {
      *
      * @return string
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     function csrf_token() {
         return VerifyCsrfToken::get();
@@ -121,9 +130,10 @@ if (! function_exists('info')) {
     /**
      * Write some information to the log.
      *
-     * @param  string  $message
-     * @param  array   $context
+     * @param string $message
+     * @param array $context
      * @return void
+     * @throws Exception
      */
     function info($message, $context = []) {
         Factory::log()->info($message, $context);
@@ -134,9 +144,10 @@ if (! function_exists('logger')) {
     /**
      * Log a debug message to the logs.
      *
-     * @param  string  $message
-     * @param  array  $context
-     * @return \Psr\Log\LoggerInterface|void
+     * @param string $message
+     * @param array $context
+     * @return LoggerInterface|void
+     * @throws Exception
      */
     function logger($message = null, array $context = []) {
         if (is_null($message)) {
@@ -150,8 +161,9 @@ if (! function_exists('public_path')) {
     /**
      * Get the path to the public folder.
      *
-     * @param  string  $path
+     * @param string $path
      * @return FileObject
+     * @throws Exception
      */
     function public_path($path = '') {
         if (!$path) {
@@ -179,7 +191,7 @@ if (! function_exists('session')) {
     /**
      * @param null $key
      * @param null $default
-     * @return mixed|\Zodream\Infrastructure\Session\Session
+     * @return mixed|Session
      * @throws Exception
      */
     function session($key = null, $default = null) {
@@ -240,6 +252,14 @@ if (! function_exists('url')) {
 }
 
 if (! function_exists('view')) {
+    /**
+     * 显示页面
+     * @param null $path
+     * @param array $data
+     * @return string|ViewFactory
+     * @throws FileException
+     * @throws Exception
+     */
     function view($path = null, array $data = []) {
         if (empty($path)) {
             return Factory::view();
@@ -266,9 +286,7 @@ if (! function_exists('event')) {
     /**
      * Dispatch an event and call the listeners.
      *
-     * @param  string|object $event
-     * @param  mixed $payload
-     * @param  bool $halt
+     * @param array $args
      * @return EventManger|null
      * @throws Exception
      */

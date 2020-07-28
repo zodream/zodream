@@ -8,6 +8,8 @@ namespace Zodream\Service;
  *
  * @author Jason
  */
+
+use Exception;
 use Zodream\Disk\File;
 use Zodream\Infrastructure\Base\Config as BaseConfig;
 use Zodream\Infrastructure\Traits\SingletonPattern;
@@ -22,12 +24,16 @@ class Config extends BaseConfig {
 
     private function __construct() {
         self::$instance = $this;
-        $this->reset();
+        try {
+            $this->reset();
+        } catch (Exception $e) {
+        }
     }
 
     /**
      * 当前配置文件
      * @return File
+     * @throws Exception
      */
     public function getCurrentFile() {
         return $this->getDirectory()->file(app('app.module').'.php');
@@ -40,7 +46,7 @@ class Config extends BaseConfig {
     /**
      * 重新加载配置
      * @return $this
-     * @throws \Exception
+     * @throws Exception
      */
     public function reset() {
         $this->__attributes = $this->moduleConfigs();
@@ -50,7 +56,7 @@ class Config extends BaseConfig {
     /**
      * @param string $module
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function moduleConfigs($module = null) {
         if (empty($module)) {

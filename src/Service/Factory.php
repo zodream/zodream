@@ -1,4 +1,6 @@
 <?php
+declare(strict_types = 1);
+
 namespace Zodream\Service;
 /**
  * FACTORY!
@@ -8,6 +10,8 @@ namespace Zodream\Service;
  * Date: 2016/6/24
  * Time: 22:57
  */
+
+use Exception;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
@@ -16,18 +20,18 @@ use Zodream\Database\Model\UserModel;
 use Zodream\Infrastructure\Event\EventManger;
 use Zodream\Template\ViewFactory;
 use Zodream\Infrastructure\Caching\Cache;
-use Zodream\Infrastructure\Caching\FileCache;
 use Zodream\Disk\Directory;
-use Zodream\Infrastructure\Exceptions\Handler;
 use Zodream\Http\Header;
 use Zodream\Infrastructure\Http\Response;
 use Zodream\Infrastructure\I18n\I18n;
-use Zodream\Infrastructure\I18n\PhpSource;
 use Zodream\Infrastructure\Interfaces\ExceptionHandler;
 use Zodream\Infrastructure\Session\Session;
 use Zodream\Route\Router;
 
-defined('APP_DIR') || define('APP_DIR', app('request')->server('DOCUMENT_ROOT'));
+try {
+    defined('APP_DIR') || define('APP_DIR', app('request')->server('DOCUMENT_ROOT'));
+} catch (Exception $e) {
+}
 
 class Factory {
     
@@ -39,9 +43,9 @@ class Factory {
      * @param string $key CONFIG'S KEY
      * @param string $default
      * @return object
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function getInstance($key, $default = null) {
+    public static function getInstance(string $key, $default = null) {
         if (!array_key_exists($key, static::$_instance)) {
             $class = static::config($key, $default);
             if (is_array($class)) {
@@ -54,11 +58,12 @@ class Factory {
 
     /**
      * 新增加单利类
-     * @param $key
-     * @param $class
+     * @param string $key
+     * @param mixed $class
      * @return mixed
+     * @throws Exception
      */
-    public static function addInstance($key, $class) {
+    public static function addInstance(string $key, $class) {
         if (is_object($class)) {
             return static::$_instance[$key] = $class;
         }
@@ -66,7 +71,7 @@ class Factory {
             return static::$_instance[$key] = call_user_func($class.'::getInstance');
         }
         if (!class_exists($class)) {
-            throw new \InvalidArgumentException(
+            throw new Exception(
                 __('{class} class is not register!', [
                     'class' => $class
                 ])
@@ -80,7 +85,7 @@ class Factory {
      * @param null $key
      * @param null $default
      * @return Session|mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public static function session($key = null, $default = null) {
         /** @var Session $session */
@@ -98,7 +103,7 @@ class Factory {
     /**
      * DO YO WANT TO CACHE MODEL? HERE!
      * @return Cache|mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public static function cache() {
         /** @var Cache $cache */
@@ -140,7 +145,7 @@ class Factory {
      * @param array $param
      * @param null $name
      * @return I18n|string
-     * @throws \Exception
+     * @throws Exception
      */
     public static function i18n($message = null, $param = [], $name = null) {
         /** @var I18n $i18n */
@@ -155,7 +160,7 @@ class Factory {
      * O! IF YOU NEED ROUTE, HERE.
      *          IT GO TO DO SOME THING LIKE GO TO CONTROLLER
      * @return Router
-     * @throws \Exception
+     * @throws Exception
      */
     public static function router() {
         return app('router');
@@ -166,7 +171,7 @@ class Factory {
      *      BUT NOW IT'S NOT FINISH!
      *          WOW! PLEASE WAIT A LITTLE TIME.
      * @return Header
-     * @throws \Exception
+     * @throws Exception
      */
     public static function header() {
         return static::response()->header;
@@ -174,7 +179,7 @@ class Factory {
 
     /**
      * @return Response
-     * @throws \Exception
+     * @throws Exception
      */
     public static function response() {
         return app('response');
@@ -182,8 +187,8 @@ class Factory {
 
     /**
      * GET USER BY SESSION
-     * @return UserModel
-     * @throws \Exception
+     * @return UserModel| bool
+     * @throws Exception
      */
     public static function user() {
         return auth()->user();
@@ -192,7 +197,7 @@ class Factory {
     /**
      * IT IS MAKE VIEW OR HTML FROM ANT FILES,
      * @return ViewFactory
-     * @throws \Exception
+     * @throws Exception
      */
     public static function view() {
         return app('view');
@@ -201,7 +206,7 @@ class Factory {
     /**
      * TIMER , LOG ALL TIME
      * @return Timer
-     * @throws \Exception
+     * @throws Exception
      */
     public static function timer() {
         return app('timer');
@@ -210,7 +215,7 @@ class Factory {
     /**
      * 错误处理
      * @return ExceptionHandler
-     * @throws \Exception
+     * @throws Exception
      */
     public static function handler() {
         return app('exception');
@@ -219,21 +224,22 @@ class Factory {
     /**
      * @param null|string|object  $event
      * @param array $payload
-     * @param bool $halt
      * @return void|EventManger
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function event($event = null, $payload = [], $halt = false) {
+    public static function event($event = null, $payload = []) {
         /** @var EventManger $instance */
         $instance = self::getInstance('eventManger', EventManger::class);
         if (is_null($event)) {
             return $instance;
         }
-        return $instance->dispatch($event, $payload, $halt);
+        $instance->dispatch($event, $payload);
     }
 
     /**
+     * 获取项目根目录
      * @return Directory
+     * @throws Exception
      */
     public static function root() {
         if (!array_key_exists(__FUNCTION__, static::$_instance)) {
@@ -245,6 +251,7 @@ class Factory {
     /**
      * 公共资源目录
      * @return Directory
+     * @throws Exception
      */
     public static function public_path() {
         if (!array_key_exists(__FUNCTION__, static::$_instance)) {
@@ -258,6 +265,7 @@ class Factory {
 
     /**
      * @return LoggerInterface
+     * @throws Exception
      */
     public static function log() {
         if (!array_key_exists('log', static::$_instance)) {
@@ -276,6 +284,12 @@ class Factory {
         return static::$_instance['log'];
     }
 
+    /**
+     * @param $name
+     * @param $arguments
+     * @return object
+     * @throws Exception
+     */
     public static function __callStatic($name, $arguments) {
         return static::getInstance($name);
     }
