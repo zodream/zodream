@@ -202,7 +202,7 @@ class Session extends ConfigObject implements \ArrayAccess {
     }
 
     protected function updateFlashCounters() {
-        $counters = $this->get($this->flashParam, []);
+        $counters = $this->get($this->configs['flashParam'], []);
         if (is_array($counters)) {
             foreach ($counters as $key => $count) {
                 if ($count > 0) {
@@ -211,15 +211,15 @@ class Session extends ConfigObject implements \ArrayAccess {
                     $counters[$key]++;
                 }
             }
-            $_SESSION[$this->flashParam] = $counters;
+            $_SESSION[$this->configs['flashParam']] = $counters;
         } else {
             // fix the unexpected problem that flashParam doesn't return an array
-            unset($_SESSION[$this->flashParam]);
+            unset($_SESSION[$this->configs['flashParam']]);
         }
     }
 
     public function getFlash($key, $defaultValue = null, $delete = false) {
-        $counters = $this->get($this->flashParam, []);
+        $counters = $this->get($this->configs['flashParam'], []);
         if (isset($counters[$key])) {
             $value = $this->get($key, $defaultValue);
             if ($delete) {
@@ -227,7 +227,7 @@ class Session extends ConfigObject implements \ArrayAccess {
             } elseif ($counters[$key] < 0) {
                 // mark for deletion in the next request
                 $counters[$key] = 1;
-                $_SESSION[$this->flashParam] = $counters;
+                $_SESSION[$this->configs['flashParam']] = $counters;
             }
 
             return $value;
@@ -237,7 +237,7 @@ class Session extends ConfigObject implements \ArrayAccess {
     }
 
     public function getAllFlashes($delete = false) {
-        $counters = $this->get($this->flashParam, []);
+        $counters = $this->get($this->configs['flashParam'], []);
         $flashes = [];
         foreach (array_keys($counters) as $key) {
             if (array_key_exists($key, $_SESSION)) {
@@ -253,16 +253,16 @@ class Session extends ConfigObject implements \ArrayAccess {
             }
         }
 
-        $_SESSION[$this->flashParam] = $counters;
+        $_SESSION[$this->configs['flashParam']] = $counters;
 
         return $flashes;
     }
 
     public function setFlash($key, $value = true, $removeAfterAccess = true) {
-        $counters = $this->get($this->flashParam, []);
+        $counters = $this->get($this->configs['flashParam'], []);
         $counters[$key] = $removeAfterAccess ? -1 : 0;
         $_SESSION[$key] = $value;
-        $_SESSION[$this->flashParam] = $counters;
+        $_SESSION[$this->configs['flashParam']] = $counters;
     }
 
     public function delete($key = null) {
@@ -282,9 +282,9 @@ class Session extends ConfigObject implements \ArrayAccess {
     }
 
     public function addFlash($key, $value = true, $removeAfterAccess = true) {
-        $counters = $this->get($this->flashParam, []);
+        $counters = $this->get($this->configs['flashParam'], []);
         $counters[$key] = $removeAfterAccess ? -1 : 0;
-        $_SESSION[$this->flashParam] = $counters;
+        $_SESSION[$this->configs['flashParam']] = $counters;
         if (empty($_SESSION[$key])) {
             $_SESSION[$key] = [$value];
         } else {
@@ -297,20 +297,20 @@ class Session extends ConfigObject implements \ArrayAccess {
     }
 
     public function removeFlash($key) {
-        $counters = $this->get($this->flashParam, []);
+        $counters = $this->get($this->configs['flashParam'], []);
         $value = isset($_SESSION[$key], $counters[$key]) ? $_SESSION[$key] : null;
         unset($counters[$key], $_SESSION[$key]);
-        $_SESSION[$this->flashParam] = $counters;
+        $_SESSION[$this->configs['flashParam']] = $counters;
 
         return $value;
     }
 
     public function removeAllFlashes() {
-        $counters = $this->get($this->flashParam, []);
+        $counters = $this->get($this->configs['flashParam'], []);
         foreach (array_keys($counters) as $key) {
             unset($_SESSION[$key]);
         }
-        unset($_SESSION[$this->flashParam]);
+        unset($_SESSION[$this->configs['flashParam']]);
     }
 
     public function hasFlash($key) {

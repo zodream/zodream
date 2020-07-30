@@ -6,8 +6,7 @@ namespace Zodream\Infrastructure\Session;
  * Date: 2016/3/6
  * Time: 9:56
  */
-use Zodream\Infrastructure\Database\Command;
-use Zodream\Infrastructure\Error\Error;
+use Zodream\Database\Command;
 use Zodream\Helpers\Str;
 
 class DatabaseSession extends Session {
@@ -34,24 +33,32 @@ class DatabaseSession extends Session {
             return;
         }
         $newID = session_id();
-        $data = $this->command()->select('WHERE id = ? LIMIT 1', '*', [$newID]);
+        $command = $this->command();
+        $sql = sprintf('SELECT * FROM %s WHERE id = ? LIMIT 1', $command->getTable());
+        $data = $command->select($sql, [$newID]);
         if (!empty($data)) {
             if ($deleteOldSession) {
-                $this->command()->update('id = ?', 'id = ?', [$newID, $oldID]);
+                $sql = sprintf('UPDATE %s SET id = ? WHERE id = ?', $command->getTable());
+                $command->update($sql, [$newID, $oldID]);
             } else {
                 $row = current($data);
                 $row['id'] = $newID;
-                $this->command()->insert('`'.implode('`,`', array_keys($row)).'`',
-                    Str::repeat('?', count($row)), array_values($row));
+                $sql = sprintf('INSERT INTO %s(`%s`) VALUES (%s)', $command->getTable(),
+                    implode('`,`', array_keys($row)), Str::repeat('?', count($row)));
+                $command->insert(
+                    $sql,
+                    array_values($row));
             }
         } else {
-            $this->command()->insert('id', '?', [$newID]);
+            $sql = sprintf('INSERT INTO %s (`id`) VALUES (?)', $command->getTable());
+            $command->insert($sql, [$newID]);
         }
     }
 
     public function readSession($id) {
-        $data = $this->command()
-            ->select('WHERE id = ? AND expire > '.time().' LIMIT 1', 'data', [$id]);
+        $command = $this->command();
+        $sql = sprintf('SELECT `data` FROM %s WHERE id = ? AND expire > ? LIMIT 1', $command->getTable());
+        $data = $command->select($sql, [$id, time()]);
         if (empty($data)) {
             return '';
         }
@@ -60,25 +67,33 @@ class DatabaseSession extends Session {
 
     public function writeSession($id, $data) {
         try {
-            $exists = $this->command()->select('WHERE id = ? LIMIT 1', '*', [$id]);
+            $command = $this->command();
+            $sql = sprintf('SELECT * FROM %s WHERE id = ? LIMIT 1', $command->getTable());
+            $exists = $command->select($sql, [$id]);
             if (empty($exists)) {
-                $this->command()->insert('id, data', '?, ?', [$id, $data]);
+                $sql = sprintf('INSERT INTO %s (`id`, `data`) VALUES (?, ?)', $command->getTable());
+                $command->insert($sql, [$id, $data]);
             } else {
-                $this->command()->update('data = ?', 'id = ?', [$data, $id]);
+                $sql = sprintf('UPDATE %s SET `data` = ? WHERE id = ?', $command->getTable());
+                $command->update($sql, [$data, $id]);
             }
         } catch (\Exception $e) {
-            Error::out('WRITESESSION FAIL', __FILE__, __LINE__);
+            logger('WRITESESSION FAIL:'.$e->getMessage());
         }
         return true;
     }
 
     public function destroySession($id) {
-        $this->command()->delete('id = ?', [$id]);
+        $command = $this->command();
+        $sql = sprintf('DELETE FROM %s WHERE id = ?', $command->getTable());
+        $this->command()->delete($sql, [$id]);
         return true;
     }
 
     public function gcSession($maxLifetime) {
-        $this->command()->delete('expire < '.time());
+        $command = $this->command();
+        $sql = sprintf('DELETE FROM %s WHERE expire < ?', $command->getTable());
+        $this->command()->delete($sql, [time()]);
         return true;
     }
 }

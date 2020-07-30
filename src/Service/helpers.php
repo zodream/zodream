@@ -22,6 +22,7 @@ use Zodream\Debugger\Domain\Timer;
 use Zodream\Disk\FileObject;
 use Zodream\Infrastructure\Event\EventManger;
 use Zodream\Template\ViewFactory;
+use Zodream\Infrastructure\Error\HttpException;
 
 
 if (! function_exists('app')) {

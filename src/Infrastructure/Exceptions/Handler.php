@@ -2,12 +2,11 @@
 namespace Zodream\Infrastructure\Exceptions;
 
 use Exception;
-use HttpException;
 use Zodream\Database\Model\ModelNotFoundException;
 use Zodream\Domain\Access\AuthorizationException;
+use Zodream\Infrastructure\Error\HttpException;
 use Zodream\Infrastructure\Http\HttpResponseException;
 use Zodream\Infrastructure\Interfaces\Responsable;
-use Zodream\Route\Router;
 use Zodream\Service\Config;
 use Zodream\Validate\ValidationException;
 use Zodream\Domain\Access\AuthenticationException;

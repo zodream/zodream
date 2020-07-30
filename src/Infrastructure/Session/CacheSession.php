@@ -38,6 +38,6 @@ class CacheSession extends Session {
     }
 
     protected function calculateKey($id) {
-        return [__CLASS__, $id];
+        return json_encode([__CLASS__, $id]);
     }
 }
