@@ -4,6 +4,7 @@ namespace Zodream\Infrastructure\Exceptions;
 use Exception;
 use Zodream\Database\Model\ModelNotFoundException;
 use Zodream\Domain\Access\AuthorizationException;
+use Zodream\Helpers\Str;
 use Zodream\Infrastructure\Error\HttpException;
 use Zodream\Infrastructure\Http\HttpResponseException;
 use Zodream\Infrastructure\Interfaces\Responsable;
@@ -128,14 +129,7 @@ class Handler implements ExceptionHandler {
     }
 
     protected function notFound(NotFoundHttpException $e) {
-        $route = config('route.not-found');
-        if (empty($route)) {
-            return false;
-        }
-        if (is_callable($route)) {
-            return call_user_func($route, $e);
-        }
-        return false;
+        return Str::call(config('route.not-found'), [$e], false);
     }
 
     /**
