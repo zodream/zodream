@@ -44,7 +44,8 @@ class JWTAuth extends Token {
             $this->configs = Factory::config('auth', [
                 'key' => 'uZXUa9ssSS5nr1lWvjTSwYhVxBxNsAyj',
                 'alg' => 'HS256',
-                'refreshTTL' => 20160,
+                'refreshTTL' => 20160,  // 以秒为时间
+                'TTL' => 20160,
                 'gracePeriod' => 0,
                 'cacheStore' => 'auth'
             ]);
@@ -135,7 +136,7 @@ class JWTAuth extends Token {
         if (empty($token)) {
             return null;
         }
-        $jti = static::getPayload('jti');
+        $jti = $this->getPayload('jti');
         if (empty($jti) || !$this->cacheDriver()->has($jti)) {
             return null;
         }
@@ -148,6 +149,39 @@ class JWTAuth extends Token {
     }
 
     /**
+     * 刷新一个过期的token生成新的token
+     * @param int $refreshTTL
+     * @return string
+     * @throws Exception
+     */
+    public function refreshToken($refreshTTL = 0): string {
+        $token = $this->getToken();
+        if (empty($token)) {
+            return '';
+        }
+        $jti = $this->getPayload('jti');
+        if (empty($jti) || !$this->cacheDriver()->has($jti)) {
+            return '';
+        }
+        $this->cacheDriver()->delete($this->getPayload('jti'));
+        $time = time();
+        if ($time < $this->getPayload('nbf')) {
+            return '';
+        }
+        $exp = intval($this->getPayload('exp')) + $this->getConfigs('refreshTTL');
+        if ($exp < $time) {
+            return '';
+        }
+        return $this->createPayloadToken([
+            'sub' => $this->getPayload('sub'),
+            'iss' => $this->getPayload('iss'),
+            'iat' => $time,
+            'nbf' => $time,
+            'jti' => Str::random(60),
+        ], $refreshTTL);
+    }
+
+    /**
      * 生成一个token
      * @param UserModel $user
      * @param int $refreshTTL 刷新时间
@@ -155,7 +189,6 @@ class JWTAuth extends Token {
      * @throws Exception
      */
     public function createToken(UserModel $user, $refreshTTL = 0): string {
-        $configs = $this->getConfigs();
         $time = time();
         $payload = [
             'sub' => $user->getIdentity(),
@@ -164,9 +197,15 @@ class JWTAuth extends Token {
             'nbf' => $time,
             'jti' => Str::random(60)
         ];
-        $payload['exp'] = $time + $configs['refreshTTL'] + $refreshTTL;
+        return $this->createPayloadToken($payload, $refreshTTL);
+    }
+
+    protected function createPayloadToken(array $payload, $refreshTTL = 0): string {
+        $configs = $this->getConfigs();
+        $time = time();
+        $payload['exp'] = $time + $configs['TTL'] + $refreshTTL;
         $this->cacheDriver()
-            ->set($payload['jti'], $payload, $configs['refreshTTL'] + $refreshTTL);
+            ->set($payload['jti'], $payload, $configs['TTL'] + $refreshTTL + $configs['refreshTTL']);
         return JWT::encode($payload, isset($configs['privateKey']) ? $configs['privateKey']
             : $configs['key'], $configs['alg']);
     }
