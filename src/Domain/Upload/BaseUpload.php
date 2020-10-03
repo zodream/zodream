@@ -10,8 +10,8 @@ namespace Zodream\Domain\Upload;
 
 use Exception;
 use Zodream\Disk\FileSystem;
- use Zodream\Infrastructure\Base\ConfigObject;
- use Zodream\Disk\File;
+use Zodream\Infrastructure\Base\ConfigObject;
+use Zodream\Disk\File;
  
 abstract class BaseUpload extends ConfigObject {
 
@@ -160,7 +160,7 @@ abstract class BaseUpload extends ConfigObject {
         return $this->size <= $max && $this->size >= $min;
     }
 
-    public function validateDimensions(callable $cb) {
+    public function validateDimensions(callable $cb = null) {
         return true;
     }
 

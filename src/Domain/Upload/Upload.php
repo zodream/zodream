@@ -11,7 +11,7 @@ use Zodream\Infrastructure\Base\MagicObject;
 
 class Upload extends MagicObject {
     /** @var BaseUpload[] */
-    protected $_data = [];
+    protected $__attributes = [];
 
     /**
      * @var Directory
@@ -33,10 +33,10 @@ class Upload extends MagicObject {
      * @return BaseUpload
      */
     public function get($key = 0, $default = null) {
-        if (!array_key_exists($key, $this->_data)) {
+        if (!array_key_exists($key, $this->__attributes)) {
             return $default;
         }
-        return $this->_data[$key];
+        return $this->__attributes[$key];
     }
 
     public function upload($key) {
@@ -63,16 +63,16 @@ class Upload extends MagicObject {
         if (func_num_args() == 4) {
             $upload = new UploadFile();
             call_user_func_array([$upload, 'load'], func_get_args());
-            $this->_data[] = $upload;
+            $this->__attributes[] = $upload;
             return $upload;
         }
         if ($file instanceof BaseUpload) {
-            $this->_data[] = $file;
+            $this->__attributes[] = $file;
             return $file;
         }
         if (is_array($file)) {
             $upload = new UploadFile($file);
-            $this->_data[] = $upload;
+            $this->__attributes[] = $upload;
             return $upload;
         }
         if (!is_string($file)) {
@@ -82,7 +82,7 @@ class Upload extends MagicObject {
     }
 
     public function each(callable $callback) {
-        foreach ($this->_data as $item) {
+        foreach ($this->__attributes as $item) {
             call_user_func($callback, $item);
         }
         return $this;
@@ -90,7 +90,7 @@ class Upload extends MagicObject {
     
     public function save() {
         $result = true;
-        foreach ($this->_data as $item) {
+        foreach ($this->__attributes as $item) {
             $item->setFile($this->directory->childFile($item->getRandomName()));
             if (!$item->save()) {
                 $result = false;
@@ -106,7 +106,7 @@ class Upload extends MagicObject {
      */
     public function checkType($args, $allow = true) {
         $result = true;
-        foreach ($this->_data as $item) {
+        foreach ($this->__attributes as $item) {
             if (!$item->checkType((array)$args, $allow)) {
                 $result = false;
             }
@@ -116,7 +116,7 @@ class Upload extends MagicObject {
 
     public function checkSize($min = 10000000, $max = null) {
         $result = true;
-        foreach ($this->_data as $item) {
+        foreach ($this->__attributes as $item) {
             if (!$item->checkSize($min, $max)) {
                 $result = false;
             }
@@ -124,9 +124,9 @@ class Upload extends MagicObject {
         return $result;
     }
 
-    public function validateDimensions(callable $cb) {
+    public function validateDimensions(callable $cb = null) {
         $result = true;
-        foreach ($this->_data as $item) {
+        foreach ($this->__attributes as $item) {
             if (!$item->validateDimensions($cb)) {
                 $result = false;
             }
@@ -135,18 +135,21 @@ class Upload extends MagicObject {
     }
     
     public function saveOne($file, $index = 0) {
-        return $this->_data[$index]
+        return $this->__attributes[$index]
             ->setFile($file)
             ->save();
     }
 
     public function getError($index = null) {
         if (!is_null($index)) {
-            return $this->_data[$index]->getError();
+            return $this->__attributes[$index]->getError();
         }
         $args = [];
-        foreach ($this->_data as $item) {
-            $args[] = $item->getError();
+        foreach ($this->__attributes as $item) {
+            $error = $item->getError();
+            if (!empty($error)) {
+                $args[] = $error;
+            }
         }
         return $args;
     }

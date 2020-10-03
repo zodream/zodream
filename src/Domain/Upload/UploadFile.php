@@ -52,15 +52,18 @@ class UploadFile extends BaseUpload {
 
     /**
      * 验证尺寸
-     * @param callable $cb
+     * @param callable|null $cb
      * @return bool
      */
-    public function validateDimensions(callable $cb) {
+    public function validateDimensions(callable $cb = null) {
         if (in_array($this->mineType, ['image/svg+xml', 'image/svg'])) {
             return true;
         }
         if (! $sizeDetails = @getimagesize($this->tempName)) {
             return false;
+        }
+        if (empty($cb)) {
+            return true;
         }
         [$width, $height] = $sizeDetails;
         // TODO 验证图片的最小宽高
