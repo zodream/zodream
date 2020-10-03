@@ -51,7 +51,8 @@ class Upload extends MagicObject {
             $this->addFile(
                 $files['name'][$i], 
                 $files['tmp_name'][$i], 
-                $files['size'][$i], 
+                $files['size'][$i],
+                $files['type'][$i],
                 $files['error'][$i]
             );
         }
@@ -117,6 +118,16 @@ class Upload extends MagicObject {
         $result = true;
         foreach ($this->_data as $item) {
             if (!$item->checkSize($min, $max)) {
+                $result = false;
+            }
+        }
+        return $result;
+    }
+
+    public function validateDimensions(callable $cb) {
+        $result = true;
+        foreach ($this->_data as $item) {
+            if (!$item->validateDimensions($cb)) {
                 $result = false;
             }
         }

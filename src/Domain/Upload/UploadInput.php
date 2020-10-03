@@ -6,7 +6,6 @@ namespace Zodream\Domain\Upload;
  * Date: 2016/6/28
  * Time: 18:48
  */
-use Zodream\Infrastructure\Http\Request;
 
 class UploadInput extends BaseUpload {
 

@@ -7,7 +7,9 @@ namespace Zodream\Domain\Upload;
  * Date: 2016/6/28
  * Time: 14:17
  */
- use Zodream\Disk\FileSystem;
+
+use Exception;
+use Zodream\Disk\FileSystem;
  use Zodream\Infrastructure\Base\ConfigObject;
  use Zodream\Disk\File;
  
@@ -71,7 +73,7 @@ abstract class BaseUpload extends ConfigObject {
         return $this->name;
     }
     
-    public function setType($type = null) {
+    public function setType($type = '') {
         if (empty($type)) {
             $type = FileSystem::getExtension($this->name);
         }
@@ -102,7 +104,7 @@ abstract class BaseUpload extends ConfigObject {
         return $this->checkDirectory();
     }
 
-    public function getRandomName($template = null) {
+    public function getRandomName($template = '') {
         $randNum = rand(1, 1000000000) .''. rand(1, 1000000000); //如果是32位PHP ，PHP_INT_MAX 有限制报错 int 变为 float
         if (empty($template)) {
             return date('YmdHis').'_'.$randNum.'.'.$this->type;
@@ -144,7 +146,7 @@ abstract class BaseUpload extends ConfigObject {
     /**
      * 验证大小
      * @param int $min
-     * @param int $max
+     * @param null|int $max
      * @return bool
      */
     public function checkSize($min = 10000000, $max = null) {
@@ -158,9 +160,14 @@ abstract class BaseUpload extends ConfigObject {
         return $this->size <= $max && $this->size >= $min;
     }
 
+    public function validateDimensions(callable $cb) {
+        return true;
+    }
+
     /**
      * 验证文件夹
      * @return bool
+     * @throws Exception
      */
     public function checkDirectory() {
         $directory = $this->file->getDirectory();

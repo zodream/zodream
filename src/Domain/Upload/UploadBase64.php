@@ -25,7 +25,7 @@ class UploadBase64 extends BaseUpload {
         $this->size = strlen($this->name);
     }
 
-    public function setType($type) {
+    public function setType($type = '') {
         $this->type = ltrim($type, '.');
     }
 

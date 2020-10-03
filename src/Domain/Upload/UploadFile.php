@@ -11,6 +11,8 @@ class UploadFile extends BaseUpload {
 
     protected $tempName;
 
+    protected $mineType;
+
     protected $errorMap = [
         null,
         'UPLOAD_ERR_INI_SIZE',
@@ -29,7 +31,7 @@ class UploadFile extends BaseUpload {
         }
     }
 
-    public function load($name, $tempName = null, $size = 0, $error = 0) {
+    public function load($name, $tempName = null, $size = 0, $type = '', $error = 0) {
         if (empty($name)) {
             return;
         }
@@ -37,13 +39,32 @@ class UploadFile extends BaseUpload {
             $size = $name['size'];
             $tempName = $name['tmp_name'];
             $error = $name['error'];
+            $type = $name['type'];
             $name = $name['name'];
         }
         $this->name = $name;
         $this->tempName = $tempName;
         $this->size = $size;
+        $this->mineType = $type;
         $this->error = $error;
         $this->setType();
+    }
+
+    /**
+     * 验证尺寸
+     * @param callable $cb
+     * @return bool
+     */
+    public function validateDimensions(callable $cb) {
+        if (in_array($this->mineType, ['image/svg+xml', 'image/svg'])) {
+            return true;
+        }
+        if (! $sizeDetails = @getimagesize($this->tempName)) {
+            return false;
+        }
+        [$width, $height] = $sizeDetails;
+        // TODO 验证图片的最小宽高
+        return call_user_func($cb, $width, $height);
     }
 
 
