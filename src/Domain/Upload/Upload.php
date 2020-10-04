@@ -60,7 +60,7 @@ class Upload extends MagicObject {
     }
 
     public function addFile($file) {
-        if (func_num_args() == 4) {
+        if (func_num_args() > 3) {
             $upload = new UploadFile();
             call_user_func_array([$upload, 'load'], func_get_args());
             $this->__attributes[] = $upload;
