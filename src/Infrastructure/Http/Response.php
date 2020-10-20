@@ -181,7 +181,6 @@ class Response {
     public function sendContent() {
         if ($this->parameter instanceof Image) {
             $this->parameter->saveAs();
-            $this->parameter->close();
             return $this;
         }
         if ($this->parameter instanceof File) {
