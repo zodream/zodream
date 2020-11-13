@@ -25,6 +25,9 @@
     "require-dev": {
         "phpunit/phpunit": "~9.0"
     },
+    "suggest": {
+        "ext-json": "*"
+    },
     "autoload": {
         "psr-4": {
             "Zodream\\": "src/"

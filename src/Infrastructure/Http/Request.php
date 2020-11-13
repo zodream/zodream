@@ -12,13 +12,14 @@ use Zodream\Http\Uri;
 use Zodream\Infrastructure\Http\Input\Argv;
 use Zodream\Infrastructure\Http\Input\Header;
 use Zodream\Infrastructure\Http\Input\Other;
+use Zodream\Infrastructure\Traits\Macroable;
 use Zodream\Validate\ValidationException;
 use Zodream\Validate\Validator;
 use Exception;
 
 class Request implements ServerRequestInterface {
 
-    use Argv, Header, Other;
+    use Argv, Header, Other, Macroable;
 
     /**
      * Protocol version
@@ -157,6 +158,9 @@ class Request implements ServerRequestInterface {
         foreach ($rules as $key => $rule) {
             $rule = $validator->converterRule($rule);
             $value = $this->get($key);
+            if (is_null($value) && !isset($item['rules']['required'])) {
+                continue;
+            }
             if ($validator->validateRule($key, $value, $rule['rules'], $rule['message'])) {
                 $data[$key] = $value;
                 continue;
@@ -956,5 +960,17 @@ class Request implements ServerRequestInterface {
     public function withoutAttribute($name)
     {
         // TODO: Implement withoutAttribute() method.
+    }
+
+    public static function createFromGlobals() {
+        return self::createRequestFromFactory($_GET, $_POST, [], $_COOKIE, $_FILES, $_SERVER);
+    }
+
+
+    private static function createRequestFromFactory(
+        array $query = [], array $request = [],
+        array $attributes = [], array $cookies = [],
+        array $files = [], array $server = [], $content = null) {
+        return new static();
     }
 }

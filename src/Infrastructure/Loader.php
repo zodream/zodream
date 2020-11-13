@@ -16,7 +16,7 @@ class Loader extends MagicObject {
 	 * @param string $action
 	 */
 	public function model($models, $action = null) {
-		$this->_add($models, $action, 'Domain\\Model\\', config('app.model'));
+		$this->addLoader($models, $action, 'Domain\\Model\\', config('app.model'));
 	}
 	
 	/**
@@ -41,7 +41,7 @@ class Loader extends MagicObject {
 	 * @param string $action
 	 */
 	public function library($library, $action = null) {
-		$this->_add($library, $action, 'Domain\\');
+		$this->addLoader($library, $action, 'Domain\\');
 	}
 
 	/**
@@ -52,7 +52,7 @@ class Loader extends MagicObject {
 	 * @param string $after 后缀
 	 * @param bool|string $up 是否大写首字母 默认 true
 	 */
-	private function _add($names, $action = null, $pre = '', $after = '', $up = true) {
+	private function addLoader($names, $action = null, $pre = '', $after = '', $up = true) {
 		if (is_string($names)) {
 			$names = explode(',', $names);
 		}

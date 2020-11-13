@@ -11,7 +11,10 @@ class RequestHandled {
      */
     public $response;
 
-    public function __construct($response) {
+    public $request;
+
+    public function __construct($request, $response) {
         $this->response = $response;
+        $this->request = $request;
     }
 }
