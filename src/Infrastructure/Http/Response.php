@@ -242,7 +242,7 @@ class Response {
             $callback = 'ob_gzhandler';
         }
         ob_start($callback);
-        ob_implicit_flush(0);
+        ob_implicit_flush(false);
         $this->sendHeaders()->sendContent();
         ob_end_flush();
         return true;

@@ -297,10 +297,15 @@ class Application implements ArrayAccess, ContainerInterface {
         return $reflector->newInstanceArgs($instances);
     }
 
+    /**
+     * @param ReflectionParameter[] $dependencies
+     * @return array
+     * @throws Exception
+     */
     protected function resolveDependencies(array $dependencies) {
         $results = [];
         foreach ($dependencies as $dependency) {
-            $results[] = is_null($class = $dependency->getClass())
+            $results[] = is_null($class = $dependency->getType())
                 ? $this->resolvePrimitive($dependency)
                 : $this->resolveClass($dependency);
         }
