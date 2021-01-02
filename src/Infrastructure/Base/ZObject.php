@@ -7,7 +7,7 @@ namespace Zodream\Infrastructure\Base;
  * Date: 2016/8/20
  * Time: 12:36
  */
-use Zodream\Infrastructure\Interfaces\ArrayAble;
+use Zodream\Infrastructure\Contracts\ArrayAble;
 
 abstract class ZObject implements ArrayAble {
     /**

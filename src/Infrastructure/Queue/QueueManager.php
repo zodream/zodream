@@ -5,7 +5,7 @@ namespace Zodream\Infrastructure\Queue;
 use Zodream\Database\Manager;
 use Zodream\Infrastructure\Queue\Events\JobFailed;
 use Zodream\Infrastructure\Queue\Failed\FailedJobProviderInterface;
-use Zodream\Infrastructure\Traits\SingletonPattern;
+use Zodream\Infrastructure\Concerns\SingletonPattern;
 
 class QueueManager extends Manager {
     use SingletonPattern;

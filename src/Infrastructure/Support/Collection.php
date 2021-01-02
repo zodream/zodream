@@ -10,11 +10,11 @@ use CachingIterator;
 use JsonSerializable;
 use IteratorAggregate;
 use InvalidArgumentException;
-use Zodream\Infrastructure\Interfaces\ArrayAble;
-use Zodream\Infrastructure\Interfaces\JsonAble;
+use Zodream\Infrastructure\Contracts\ArrayAble;
+use Zodream\Infrastructure\Contracts\JsonAble;
 use Zodream\Helpers\Arr;
 use Zodream\Helpers\Str;
-use Zodream\Infrastructure\Traits\MacroTrait;
+use Zodream\Infrastructure\Concerns\MacroTrait;
 
 class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate, JsonAble, JsonSerializable {
     use MacroTrait;

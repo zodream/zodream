@@ -7,8 +7,7 @@ use Firebase\JWT\JWT;
 use Zodream\Database\Model\UserModel;
 use Zodream\Helpers\Str;
 use Zodream\Infrastructure\Caching\Cache;
-use Zodream\Infrastructure\Interfaces\UserObject;
-use Zodream\Service\Factory;
+use Zodream\Infrastructure\Contracts\UserObject;
 use Exception;
 
 /**
@@ -41,7 +40,7 @@ class JWTAuth extends Token {
      */
     public function getConfigs($key = null, $default = null) {
         if (empty($this->configs)) {
-            $this->configs = Factory::config('auth', [
+            $this->configs = config('auth', [
                 'key' => 'uZXUa9ssSS5nr1lWvjTSwYhVxBxNsAyj',
                 'alg' => 'HS256',
                 'refreshTTL' => 20160,  // 以秒为时间
@@ -192,7 +191,7 @@ class JWTAuth extends Token {
         $time = time();
         $payload = [
             'sub' => $user->getIdentity(),
-            'iss' => url()->getHost(),
+            'iss' => $this->app->make('request')->host(),
             'iat' => $time,
             'nbf' => $time,
             'jti' => Str::random(60)

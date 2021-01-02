@@ -6,11 +6,8 @@ namespace Zodream\Infrastructure\I18n;
  * Date: 2016/6/25
  * Time: 17:15
  */
-use Zodream\Service\Config;
 use Zodream\Disk\Directory;
 use Zodream\Infrastructure\Base\MagicObject;
-use Zodream\Infrastructure\Http\Request;
-use Zodream\Service\Factory;
 
 abstract class I18n extends MagicObject {
 
@@ -26,7 +23,10 @@ abstract class I18n extends MagicObject {
     protected $directory;
 
     public function __construct() {
-        $configs = Config::i18n();
+        $configs = config('i18n', [
+            'directory' => 'data/languages',
+            'language' => 'zh-cn',
+        ]);
         $this->setDirectory($configs['directory']);
         $this->setLanguage(isset($configs['language']) ? $configs['language'] : null);
         $this->reset();
@@ -40,7 +40,7 @@ abstract class I18n extends MagicObject {
      */
     public function setDirectory($directory) {
         if (!$directory instanceof Directory) {
-            $directory = Factory::root()->childDirectory($directory);
+            $directory = app_path()->childDirectory($directory);
         }
         $this->directory = $directory;
         return $this;
@@ -98,6 +98,7 @@ abstract class I18n extends MagicObject {
             $this->fileName = $name;
             $this->reset();
         }
+        return null;
     }
 
     public function format($message, $param = []) {

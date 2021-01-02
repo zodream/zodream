@@ -1,4 +1,5 @@
-<?php 
+<?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Caching;
 /**
 * 缓存基类
@@ -8,8 +9,9 @@ namespace Zodream\Infrastructure\Caching;
 use Zodream\Infrastructure\Base\ConfigObject;
 use Zodream\Helpers\Str;
 use Exception;
+use Zodream\Infrastructure\Contracts\Cache as CacheInterface;
 
-abstract class Cache extends ConfigObject implements \ArrayAccess {
+abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAccess {
 
 	/**
 	 * gc自动执行的几率 0-1000000；
@@ -32,7 +34,7 @@ abstract class Cache extends ConfigObject implements \ArrayAccess {
      * @param $store
      * @return Cache
      */
-    public function store($store) {
+    public function store(string $store): CacheInterface {
         $newCache = clone $this;
         $newCache->setConfigs([
             'keyPrefix' => $store
@@ -148,18 +150,20 @@ abstract class Cache extends ConfigObject implements \ArrayAccess {
         return false;
     }
 	
-	public function has($key) {
+	public function has($key): bool {
 		return $this->hasValue($this->filterKey($key));
 	}
 	
-	public function delete($key = null) {
-		if (null === $key) {
-			return $this->clearValue();
-		}
+	public function delete($key) {
 		return $this->deleteValue($this->filterKey($key));
 	}
-	
-	abstract protected function getValue($key);
+
+	public function flush()
+    {
+        return $this->clearValue();
+    }
+
+    abstract protected function getValue($key);
 	
 	abstract protected function setValue($key, $value, $duration);
 	

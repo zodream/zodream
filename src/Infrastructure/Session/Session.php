@@ -10,9 +10,9 @@ namespace Zodream\Infrastructure\Session;
 use Zodream\Helpers\Str;
 use Zodream\Infrastructure\Base\ConfigObject;
 use Zodream\Disk\Directory;
-use Zodream\Service\Factory;
+use Zodream\Infrastructure\Contracts\Session as SessionInterface;
 
-class Session extends ConfigObject implements \ArrayAccess {
+class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
 
     protected $configKey = 'session';
 
@@ -37,7 +37,7 @@ class Session extends ConfigObject implements \ArrayAccess {
      * 判断session 是否启动
      * @return bool
      */
-    public function isActive() {
+    public function isActive(): bool {
         return isset($_SESSION) || session_status() === PHP_SESSION_ACTIVE;
     }
 
@@ -49,7 +49,7 @@ class Session extends ConfigObject implements \ArrayAccess {
         $this->_setCookieParamsInternal();
         $this->useCookie(true);
         $this->useTransparentSessionID(false);
-        if (is_string($this->configs['directory']) &&
+        if (isset($this->configs['directory']) && is_string($this->configs['directory']) &&
             is_dir($this->configs['directory'])) {
             $this->savePath($this->configs['directory']);
         }
@@ -138,7 +138,7 @@ class Session extends ConfigObject implements \ArrayAccess {
         }
     }
 
-    public function id($value = null) {
+    public function id(string $value = '') {
         if (empty($value)) {
             $this->open();
             return session_id();
@@ -152,7 +152,7 @@ class Session extends ConfigObject implements \ArrayAccess {
             return session_save_path();
         }
         if (!$path instanceof Directory) {
-            $path = Factory::root()->childDirectory($path);
+            $path = app_path()->childDirectory($path);
         }
         if ($path->exist()) {
             return session_save_path((string)$path);
@@ -177,12 +177,12 @@ class Session extends ConfigObject implements \ArrayAccess {
         ini_set('session.use_trans_sid', $value ? '1' : '0');
     }
 
-    public function count() {
+    public function count(): int {
         $this->open();
         return count($_SESSION);
     }
 
-    public function get($key = null, $defaultValue = null) {
+    public function get(string $key = '', $defaultValue = null) {
         $this->open();
         if (empty($key)) {
             return $_SESSION;
@@ -265,14 +265,8 @@ class Session extends ConfigObject implements \ArrayAccess {
         $_SESSION[$this->configs['flashParam']] = $counters;
     }
 
-    public function delete($key = null) {
+    public function delete($key) {
         $this->open();
-        if (null == $key) {
-            foreach (array_keys($_SESSION) as $key) {
-                unset($_SESSION[$key]);
-            }
-            return true;
-        }
         if (isset($_SESSION[$key])) {
             $value = $_SESSION[$key];
             unset($_SESSION[$key]);
@@ -324,11 +318,15 @@ class Session extends ConfigObject implements \ArrayAccess {
         }
     }
     
-    public function clear() {
-        $this->delete();
+    public function flush() {
+        $this->open();
+        foreach (array_keys($_SESSION) as $key) {
+            unset($_SESSION[$key]);
+        }
+        return true;
     }
 
-    public function has($key) {
+    public function has($key): bool {
         $this->open();
         return isset($_SESSION[$key]);
     }

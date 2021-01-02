@@ -7,7 +7,7 @@ namespace Zodream\Domain\Access;
  *
  * @author Jason
  */
-use Zodream\Infrastructure\Interfaces\UserObject;
+use Zodream\Infrastructure\Contracts\UserObject;
 
 class Token extends Auth {
 
@@ -57,15 +57,16 @@ class Token extends Auth {
      */
 	protected function getTokenForRequest() {
 	    $inputKey = config('auth.api_token', 'api_token');
-        $token = app('request')->get($inputKey);
+	    $request = $this->app->make('request');
+        $token = $request->get($inputKey);
         if (empty($token)) {
-            $token = app('request')->get($inputKey);
+            $token = $request->get($inputKey);
         }
         if (empty($token)) {
-            $token = app('request')->bearerToken();
+            $token = $request->bearerToken();
         }
         if (empty($token)) {
-            list(, $token) = app('request')->auth();
+            list(, $token) = $request->auth();
         }
         return $token;
     }

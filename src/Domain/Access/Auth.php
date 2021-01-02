@@ -7,11 +7,10 @@ namespace Zodream\Domain\Access;
  *
  * @author Jason
  */
-use Zodream\Infrastructure\Cookie;
-use Zodream\Infrastructure\Interfaces\AuthObject;
-use Zodream\Infrastructure\Interfaces\UserObject;
+use Zodream\Infrastructure\Contracts\AuthObject;
+use Zodream\Infrastructure\Contracts\HttpContext;
+use Zodream\Infrastructure\Contracts\UserObject;
 use Zodream\Helpers\Str;
-use Zodream\Service\Factory;
 
 class Auth implements AuthObject {
 
@@ -19,6 +18,15 @@ class Auth implements AuthObject {
 	 * @var bool|UserObject
 	 */
 	protected $identity = false;
+
+    /**
+     * @var HttpContext
+     */
+	protected $app;
+
+	public function __construct(HttpContext $context) {
+	    $this->app = $context;
+    }
 
     /**
      * @param bool $refresh
@@ -76,7 +84,7 @@ class Auth implements AuthObject {
 	        return null;
         }
         $key = $this->getName();
-	    $id = Factory::session()->get($key);
+	    $id = session()->get($key);
 	    if (!empty($id)) {
             return call_user_func($userClass.'::findByIdentity', $id);
         }
@@ -89,8 +97,9 @@ class Auth implements AuthObject {
     }
 
     protected function getRememberToken(): array {
-	    $token = Cookie::get($this->getRememberName());
-	    if (empty($token) || strpos($token, '|') === false) {
+	    $token = $this->app->make('request')
+            ->cookie($this->getRememberName());
+	    if (empty($token) || !str_contains($token, '|')) {
 	        return [0, null];
         }
         list($id, $token) = explode('|', $token, 2);
@@ -107,14 +116,14 @@ class Auth implements AuthObject {
         if (empty($this->getRememberTokenFromUser($user))) {
             $this->setRememberTokenFromUser($user, Str::random(60));
         }
-        Cookie::forever($this->getRememberName(), $user->getIdentity().'|'. $user->getRememberToken());
+        $this->app->make('response')->cookie($this->getRememberName(), $user->getIdentity().'|'. $user->getRememberToken(), 2628000 * 60);
     }
 
     /**
      * 取消永久登录
      */
     protected function cancelRememberToken() {
-        Cookie::forget($this->getRememberName());
+        $this->app->make('response')->cookie($this->getRememberName(), '', -2628000 * 60);
     }
 
     /**
@@ -180,7 +189,7 @@ class Auth implements AuthObject {
      * @throws \Exception
      */
     protected function updateSession($id) {
-        Factory::session()->set($this->getName(), $id);
+        session()->set($this->getName(), $id);
     }
 
     /**
@@ -192,7 +201,7 @@ class Auth implements AuthObject {
             return;
         }
         $this->setRememberTokenFromUser($this->user(), Str::random(60));
-        Factory::session()->destroy();
+        session()->destroy();
         //throw new AuthenticationException();
     }
 }

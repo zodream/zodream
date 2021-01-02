@@ -5,16 +5,14 @@ use Exception;
 use Zodream\Database\Model\ModelNotFoundException;
 use Zodream\Domain\Access\AuthorizationException;
 use Zodream\Helpers\Str;
+use Zodream\Infrastructure\Contracts\Http\Output;
+use Zodream\Infrastructure\Contracts\Response\Responsible;
 use Zodream\Infrastructure\Error\HttpException;
-use Zodream\Infrastructure\Http\HttpResponseException;
-use Zodream\Infrastructure\Interfaces\Responsable;
-use Zodream\Service\Config;
+use Zodream\Service\Http\HttpResponseException;
 use Zodream\Validate\ValidationException;
 use Zodream\Domain\Access\AuthenticationException;
 use Zodream\Infrastructure\Error\NotFoundHttpException;
-use Zodream\Infrastructure\Http\Response;
-use Zodream\Infrastructure\Interfaces\ExceptionHandler;
-use Zodream\Service\Factory;
+use Zodream\Infrastructure\Contracts\ExceptionHandler;
 use Throwable;
 
 class Handler implements ExceptionHandler {
@@ -38,12 +36,12 @@ class Handler implements ExceptionHandler {
     /**
      * Report or log an exception.
      *
-     * @param  \Exception  $e
+     * @param  \Throwable  $e
      * @return void
      *
      * @throws \Exception
      */
-    public function report(Exception $e) {
+    public function report(Throwable $e) {
         if ($this->shouldntReport($e)) {
             return;
         }
@@ -52,8 +50,7 @@ class Handler implements ExceptionHandler {
             return $e->report();
         }
 
-
-        Factory::log()->error(
+        logger()->error(
             $e->getMessage(),
             array_merge($this->context(), ['exception' => $e]
             ));
@@ -65,7 +62,7 @@ class Handler implements ExceptionHandler {
      * @param  \Exception  $e
      * @return bool
      */
-    public function shouldReport(Exception $e) {
+    public function shouldReport(Throwable $e) {
         return ! $this->shouldntReport($e);
     }
 
@@ -75,7 +72,7 @@ class Handler implements ExceptionHandler {
      * @param  \Exception  $e
      * @return bool
      */
-    protected function shouldntReport(Exception $e) {
+    protected function shouldntReport(Throwable $e) {
         $dontReport = array_merge($this->dontReport, $this->internalDontReport);
         foreach ($dontReport as $type) {
             if ($e instanceof $type) {
@@ -104,15 +101,15 @@ class Handler implements ExceptionHandler {
     /**
      * Render an exception into a response.
      *
-     * @param  \Exception $e
-     * @return Response
+     * @param  Throwable $e
+     * @return Output
      * @throws Exception
      */
-    public function render(Exception $e) {
+    public function render(Throwable $e) {
         if (method_exists($e, 'render') && $response = $e->render()) {
-            return $response instanceof Response ? $response
+            return $response instanceof Output ? $response
                 : app('response')->setParameter($response);
-        } elseif ($e instanceof Responsable) {
+        } elseif ($e instanceof Responsible) {
             return $e->toResponse();
         }
         $e = $this->prepareException($e);
@@ -135,10 +132,10 @@ class Handler implements ExceptionHandler {
     /**
      * Prepare exception for rendering.
      *
-     * @param  \Exception  $e
+     * @param  Throwable  $e
      * @return \Exception
      */
-    protected function prepareException(Exception $e) {
+    protected function prepareException(Throwable $e) {
         if ($e instanceof ModelNotFoundException) {
             $e = new NotFoundHttpException($e->getMessage(), $e);
         } elseif ($e instanceof AuthorizationException) {
@@ -151,14 +148,14 @@ class Handler implements ExceptionHandler {
      * Create a response object from the given validation exception.
      *
      * @param  ValidationException  $e
-     * @return Response
+     * @return Output
      */
     protected function convertValidationExceptionToResponse(ValidationException $e) {
-        if ($e->response) {
-            return $e->response;
-        }
+//        if ($e->response) {
+//            return $e->response;
+//        }
 
-        $errors = $e->validator->errors()->getMessages();
+        $errors = $e->validator->errors();
 
         if (app('request')->expectsJson()) {
             return app('response')->setStatusCode(422)
@@ -171,11 +168,11 @@ class Handler implements ExceptionHandler {
     /**
      * Prepare response containing exception render.
      *
-     * @param  \Exception $e
-     * @return Response
+     * @param  Throwable $e
+     * @return Output
      * @throws Exception
      */
-    protected function prepareResponse(Exception $e){
+    protected function prepareResponse(Throwable $e){
         if (!app('debugger')) {
             throw $e;
         }
@@ -187,7 +184,7 @@ class Handler implements ExceptionHandler {
      * Render the given HttpException.
      *
      * @param  HttpException  $e
-     * @return Response
+     * @return Output
      */
     protected function renderHttpException(HttpException $e) {
 
@@ -204,17 +201,19 @@ class Handler implements ExceptionHandler {
     }
 
     public function unauthenticated(AuthenticationException $e) {
-        return app('response')->redirect([Config::auth('home'), 'redirect_uri' => url()->current()]);
+        return app('response')->redirect([config('auth.home'), 'redirect_uri' => url()->current()]);
     }
 
     /**
      * Render an exception to the console.
      *
-     * @param $output
-     * @param  \Exception $e
+     * @param \Zodream\Service\Console\Output $output
+     * @param Throwable $e
      * @return void
      */
-    public function renderForConsole($output, Exception $e) {
-        // TODO: Implement renderForConsole() method.
+    public function renderForConsole($output, Throwable $e) {
+        do {
+            $output->writeln(sprintf('%s in %s: %d', $e->getMessage(), $e->getFile(), $e->getLine()));
+        } while ($e = $e->getPrevious());
     }
 }

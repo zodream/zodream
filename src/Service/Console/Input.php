@@ -1,0 +1,187 @@
+<?php
+declare(strict_types=1);
+namespace Zodream\Service\Console;
+
+use Zodream\Helpers\Arr;
+use Zodream\Helpers\Str;
+use Zodream\Infrastructure\Contracts\Http\Input as InputInterface;
+use Zodream\Service\Console\Concerns\Argv;
+
+class Input implements InputInterface {
+
+    use Argv;
+
+    protected $cacheItems = [];
+    protected $data = [];
+
+    public function __construct()
+    {
+        $data = $this->getCacheData('argv');
+        $this->data = $data['options'];
+    }
+
+    public function has(string $key): bool {
+
+        if (strlen($key) !== 1) {
+            return isset($this->data[$key]) || array_key_exists($key, $this->data);
+        }
+        $data = $this->getCacheData('argv');
+        return in_array($key, $data['flags'], true);
+    }
+
+    public function get(string $key = null, $default = null)
+    {
+        return $this->getValueWithDefault($this->data, $key, $default);
+    }
+
+    /**
+     * CLI 读取输入值
+     * @param string|null $key
+     * @param string|null $default
+     * @return string|null
+     */
+    public function post(string $key = null, $default = null)
+    {
+        if (!empty($key)) {
+            echo $key;
+        }
+        $input = trim(fgets(STDIN));
+        return $input === '' ? $default : $input;
+    }
+
+    public function cookie(string $key = null, $default = null)
+    {
+        return $this->getValueWithDefault([], $key, $default);
+    }
+
+    public function header(string $key = null, $default = null)
+    {
+        return $this->getValueWithDefault([], $key, $default);
+    }
+
+    public function server(string $key = null, $default = null)
+    {
+        return $this->getValueWithDefault($_SERVER, $key, $default);
+    }
+
+    public function file(string $key = null, $default = null)
+    {
+        return $this->getValueWithDefault([], $key, $default);
+    }
+
+    public function input(): string
+    {
+        return '';
+    }
+
+    public function all(): array
+    {
+        return $this->data;
+    }
+
+    public function append(array $data): Input {
+        $this->data = array_merge($this->data, $data);
+        return $this;
+    }
+
+    public function method(): string
+    {
+        return 'GET';
+    }
+
+    public function url(): string
+    {
+        return sprintf('http://%s/%s', $this->host(), $this->getCacheData('path'));
+    }
+
+    public function host(): string
+    {
+        return '127.0.0.1';
+    }
+
+    public function ip(): string
+    {
+        return '127.0.0.1';
+    }
+
+    public function referrer(): string
+    {
+        return '';
+    }
+
+    public function isAjax(): bool {
+        return true;
+    }
+
+    public function isCli(): bool {
+        return true;
+    }
+
+    public function isMobile(): bool {
+        return false;
+    }
+
+    public function script(): string {
+        return '';
+    }
+
+    /**
+     * @param $name
+     * @return string|array|bool|integer|mixed|null
+     */
+    protected function getCacheData($name) {
+        if (isset($this->cacheItems[$name])) {
+            return $this->cacheItems[$name];
+        }
+        $method = sprintf('create%s', Str::studly($name));
+        if (!method_exists($this, $method)) {
+            return null;
+        }
+        return $this->cacheItems[$name]
+            = call_user_func([$this, $method]);
+    }
+
+    protected function getValueWithDefault(array $data, string $key = null, $default = null) {
+        if (empty($key)) {
+            return $data;
+        }
+        if (isset($data[$key]) || array_key_exists($key, $data)) {
+            return $data[$key];
+        }
+        if (strpos($key, ',') !== false) {
+            $result = Arr::getValues($key, $data, $default);
+        } else {
+            $result = Arr::getChild($key, $data, is_object($default) ? null : $default);
+        }
+        if (is_callable($default)) {
+            return $default($result);
+        }
+        return $result;
+    }
+
+    public function offsetExists($offset)
+    {
+        return $this->has($offset);
+    }
+
+    public function offsetGet($offset)
+    {
+        return $this->get($offset);
+    }
+
+    public function offsetSet($offset, $value)
+    {
+        $this->append([
+            $offset => $value
+        ]);
+    }
+
+    public function offsetUnset($offset)
+    {
+        unset($this->data[$offset]);
+    }
+
+    public static function createFromGlobals() {
+        return new static();
+    }
+}

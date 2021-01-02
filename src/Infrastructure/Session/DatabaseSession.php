@@ -6,19 +6,23 @@ namespace Zodream\Infrastructure\Session;
  * Date: 2016/3/6
  * Time: 9:56
  */
-use Zodream\Database\Command;
 use Zodream\Helpers\Str;
+use Zodream\Infrastructure\Contracts\Database;
 
 class DatabaseSession extends Session {
 
     protected $configs = [
         'table' => 'session'
     ];
+
     /**
-     * @return Command
+     * @var Database
      */
-    protected function command() {
-        return Command::getInstance()->setTable('session');
+    protected $db;
+
+    public function __construct(Database $db) {
+        parent::__construct();
+        $this->db = $db;
     }
 
     public function useCustomStorage() {
@@ -33,49 +37,46 @@ class DatabaseSession extends Session {
             return;
         }
         $newID = session_id();
-        $command = $this->command();
-        $sql = sprintf('SELECT * FROM %s WHERE id = ? LIMIT 1', $command->getTable());
-        $data = $command->select($sql, [$newID]);
+        $sql = sprintf('SELECT * FROM %s WHERE id = ? LIMIT 1', $this->tableName());
+        $data = $this->db->first($sql, [$newID]);
         if (!empty($data)) {
             if ($deleteOldSession) {
-                $sql = sprintf('UPDATE %s SET id = ? WHERE id = ?', $command->getTable());
-                $command->update($sql, [$newID, $oldID]);
+                $sql = sprintf('UPDATE %s SET id = ? WHERE id = ?', $this->tableName());
+                $this->db->update($sql, [$newID, $oldID]);
             } else {
                 $row = current($data);
                 $row['id'] = $newID;
-                $sql = sprintf('INSERT INTO %s(`%s`) VALUES (%s)', $command->getTable(),
+                $sql = sprintf('INSERT INTO %s(`%s`) VALUES (%s)', $this->tableName(),
                     implode('`,`', array_keys($row)), Str::repeat('?', count($row)));
-                $command->insert(
+                $this->db->insert(
                     $sql,
                     array_values($row));
             }
         } else {
-            $sql = sprintf('INSERT INTO %s (`id`) VALUES (?)', $command->getTable());
-            $command->insert($sql, [$newID]);
+            $sql = sprintf('INSERT INTO %s (`id`) VALUES (?)', $this->tableName());
+            $this->db->insert($sql, [$newID]);
         }
     }
 
     public function readSession($id) {
-        $command = $this->command();
-        $sql = sprintf('SELECT `data` FROM %s WHERE id = ? AND expire > ? LIMIT 1', $command->getTable());
-        $data = $command->select($sql, [$id, time()]);
+        $sql = sprintf('SELECT `data` FROM %s WHERE id = ? AND expire > ? LIMIT 1', $this->tableName());
+        $data = $this->db->executeScalar($sql, [$id, time()]);
         if (empty($data)) {
             return '';
         }
-        return current($data)['data'];
+        return $data;
     }
 
     public function writeSession($id, $data) {
         try {
-            $command = $this->command();
-            $sql = sprintf('SELECT * FROM %s WHERE id = ? LIMIT 1', $command->getTable());
-            $exists = $command->select($sql, [$id]);
+            $sql = sprintf('SELECT * FROM %s WHERE id = ? LIMIT 1', $this->tableName());
+            $exists = $this->db->first($sql, [$id]);
             if (empty($exists)) {
-                $sql = sprintf('INSERT INTO %s (`id`, `data`) VALUES (?, ?)', $command->getTable());
-                $command->insert($sql, [$id, $data]);
+                $sql = sprintf('INSERT INTO %s (`id`, `data`) VALUES (?, ?)', $this->tableName());
+                $this->db->insert($sql, [$id, $data]);
             } else {
-                $sql = sprintf('UPDATE %s SET `data` = ? WHERE id = ?', $command->getTable());
-                $command->update($sql, [$data, $id]);
+                $sql = sprintf('UPDATE %s SET `data` = ? WHERE id = ?', $this->tableName());
+                $this->db->update($sql, [$data, $id]);
             }
         } catch (\Exception $e) {
             logger('WRITESESSION FAIL:'.$e->getMessage());
@@ -84,16 +85,18 @@ class DatabaseSession extends Session {
     }
 
     public function destroySession($id) {
-        $command = $this->command();
-        $sql = sprintf('DELETE FROM %s WHERE id = ?', $command->getTable());
-        $this->command()->delete($sql, [$id]);
+        $sql = sprintf('DELETE FROM %s WHERE id = ?', $this->tableName());
+        $this->db->delete($sql, [$id]);
         return true;
     }
 
     public function gcSession($maxLifetime) {
-        $command = $this->command();
-        $sql = sprintf('DELETE FROM %s WHERE expire < ?', $command->getTable());
-        $this->command()->delete($sql, [time()]);
+        $sql = sprintf('DELETE FROM %s WHERE expire < ?', $this->tableName());
+        $this->db->delete($sql, [time()]);
         return true;
+    }
+
+    protected function tableName() {
+        return $this->db->addPrefix($this->configs['table']);
     }
 }

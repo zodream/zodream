@@ -1,18 +1,19 @@
 <?php
 declare(strict_types=1);
-
 namespace Zodream\Service\Middleware;
 
-
-use Zodream\Route\Router;
+use Zodream\Infrastructure\Contracts\HttpContext;
+use Zodream\Infrastructure\Contracts\Router;
 
 class MatchRouteMiddle implements MiddlewareInterface {
 
-    public function handle($payload, callable $next) {
-        $route = app(Router::class)->getRoute($payload['method'], $payload['uri']);
+    public function handle(HttpContext $context, callable $next) {
+        /** @var Router $router */
+        $router = $context[Router::class];
+        $route = $router->getRoute($context['request']->method(), $context->path());
         if ($route !== false) {
             return $route;
         }
-        return $next($payload);
+        return $next($context);
     }
 }

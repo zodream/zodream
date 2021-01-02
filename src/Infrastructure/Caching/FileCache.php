@@ -7,7 +7,7 @@ namespace Zodream\Infrastructure\Caching;
 */
 use Zodream\Disk\Directory;
 use Zodream\Disk\File;
-use Zodream\Service\Factory;
+use Zodream\Infrastructure\Contracts\Cache as CacheInterface;
 
 class FileCache extends Cache {
 
@@ -35,7 +35,7 @@ class FileCache extends Cache {
      * @param $store
      * @return FileCache
      */
-    public function store($store) {
+    public function store(string $store): CacheInterface {
         $newCache = clone $this;
         if (!empty($store)) {
             $newCache->setDirectory($this->directory->childDirectory($store));
@@ -45,7 +45,7 @@ class FileCache extends Cache {
 
     public function setDirectory($directory) {
         if (!$directory instanceof Directory) {
-            $directory = Factory::root()->childDirectory($directory);
+            $directory = app_path()->childDirectory($directory);
         }
         $this->directory = $directory;
         if (!$directory->exist()) {

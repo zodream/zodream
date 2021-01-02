@@ -8,7 +8,7 @@ namespace Zodream\Infrastructure\Base;
  * Date: 2016/9/1
  * Time: 14:13
  */
-use Zodream\Infrastructure\Traits\ConfigTrait;
+use Zodream\Infrastructure\Concerns\ConfigTrait;
 
 abstract class ConfigObject {
 

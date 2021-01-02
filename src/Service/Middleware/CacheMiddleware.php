@@ -4,36 +4,47 @@ declare(strict_types=1);
 namespace Zodream\Service\Middleware;
 
 
+use Zodream\Infrastructure\Contracts\Application;
+use Zodream\Infrastructure\Contracts\HttpContext;
+
 class CacheMiddleware implements MiddlewareInterface {
 
-    public function handle($payload, callable $next) {
-        $cache = $this->getCacheOption($payload);
+    protected $app;
+
+    public function __construct(Application $app)
+    {
+        $this->app = $app;
+    }
+
+    public function handle(HttpContext $context, callable $next) {
+        $path = $context->path();
+        $cache = $this->getCacheOption($path);
         if (empty($cache)) {
-            return $next($payload);
+            return $next($context);
         }
         if (isset($cache['method'])) {
             $method = app('request')->method();
             if (
             (is_array($cache['method']) && !in_array($method, $cache['method'])) ||
             (!is_array($cache['method']) && $method !== $cache['method'])) {
-                return $next($payload);
+                return $next($context);
             }
         }
         if (isset($cache['before']) && is_callable($cache['before'])) {
             $res = call_user_func($cache['before'], $cache);
             if ($res === false) {
-                return $next($payload);
+                return $next($context);
             }
             if (is_array($res)) {
                 $cache = $res;
             }
         }
-        $key = self::class.url()->getSchema().url()->getHost().$payload.$this->getPath($cache);
+        $key = self::class.url()->getSchema().url()->getHost().$path.$this->getPath($cache);
         $cacheDriver = cache()->store('pages');
         if (($page = $cacheDriver->get($key)) !== false) {
             return $this->formatPage($page, $cache);
         }
-        $page = $next($payload);
+        $page = $next($context);
         if (isset($cache['after']) && is_callable($cache['after'])) {
             $res = call_user_func($cache['after'], $page, $cache);
             if ($res === false) {
@@ -83,7 +94,7 @@ class CacheMiddleware implements MiddlewareInterface {
     }
 
     private function getCacheOption(string $path) {
-        $uris = config()->getConfigByFile('cache');
+        $uris = config('cache');
         if (empty($uris)) {
             return false;
         }

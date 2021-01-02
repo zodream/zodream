@@ -7,7 +7,6 @@ namespace Zodream\Infrastructure\Session;
  * Date: 2016/3/6
  * Time: 9:56
  */
-use Zodream\Service\Factory;
 
 class CacheSession extends Session {
 
@@ -16,17 +15,17 @@ class CacheSession extends Session {
     }
 
     public function readSession($id) {
-        $data = Factory::cache()->get($this->calculateKey($id));
+        $data = cache()->get($this->calculateKey($id));
         return $data === false ? '' : $data;
     }
 
 
     public function writeSession($id, $data) {
-        Factory::cache()->set($this->calculateKey($id), $data, $this->getTimeout());
+        cache()->set($this->calculateKey($id), $data, $this->getTimeout());
     }
 
     public function destroySession($id) {
-        return Factory::cache()->delete($this->calculateKey($id));
+        return cache()->delete($this->calculateKey($id));
     }
 
     /**

@@ -2,22 +2,24 @@
 declare(strict_types = 1);
 
 use Psr\Log\LoggerInterface;
+use Zodream\Disk\Directory;
+use Zodream\Disk\File;
 use Zodream\Disk\FileException;
 use Zodream\Infrastructure\Caching\Cache;
+use Zodream\Infrastructure\Contracts\Config\Repository;
+use Zodream\Infrastructure\Contracts\Database;
+use Zodream\Infrastructure\Contracts\Http\Input;
+use Zodream\Infrastructure\Contracts\Http\Output;
+use Zodream\Infrastructure\Contracts\HttpContext;
+use Zodream\Infrastructure\Contracts\UrlGenerator;
 use Zodream\Infrastructure\I18n\I18n;
 use Zodream\Infrastructure\Session\Session;
-use Zodream\Route\Router;
-use Zodream\Service\Factory;
-use Zodream\Service\Config;
-use Zodream\Infrastructure\Http\Request;
 use Zodream\Infrastructure\Error\NotFoundHttpException;
 use Zodream\Html\VerifyCsrfToken;
 use Zodream\Service\Application;
-use Zodream\Infrastructure\Http\Response;
 use Zodream\Domain\Access\Auth;
 use Zodream\Domain\Access\Token;
 use Zodream\Domain\Access\JWTAuth;
-use Zodream\Infrastructure\Http\UrlGenerator;
 use Zodream\Debugger\Domain\Timer;
 use Zodream\Disk\FileObject;
 use Zodream\Infrastructure\Event\EventManger;
@@ -28,7 +30,7 @@ use Zodream\Infrastructure\Error\HttpException;
 if (! function_exists('app')) {
     /**
      * @param string|null $abstract
-     * @return Application|Response|Request|UrlGenerator|Router|mixed
+     * @return Application|mixed
      * @throws Exception
      */
     function app(string $abstract = null) {
@@ -36,6 +38,23 @@ if (! function_exists('app')) {
             return Application::getInstance();
         }
         return Application::getInstance()->make($abstract);
+    }
+}
+
+if (! function_exists('app_call')) {
+    /**
+     * @param string $abstract
+     * @param callable $cb
+     * @param mixed $default
+     * @return mixed
+     * @throws Exception
+     */
+    function app_call(string $abstract, callable $cb, $default = null) {
+        $instance = app($abstract);
+        if (empty($instance)) {
+            return $default;
+        }
+        return call_user_func($cb, $instance);
     }
 }
 
@@ -47,6 +66,17 @@ if (! function_exists('auth')) {
      */
     function auth() {
         return app('auth');
+    }
+}
+
+if (! function_exists('db')) {
+
+    /**
+     * @return Database
+     * @throws Exception
+     */
+    function db() {
+        return app('db');
     }
 }
 
@@ -74,14 +104,19 @@ if (! function_exists('app_path')) {
      * Get the path to the application folder.
      *
      * @param string $path
-     * @return string
+     * @return Directory|File
      * @throws Exception
      */
     function app_path(string $path = '') {
-        if (empty($path)) {
-            return Factory::root();
+        $app = app();
+        $key = 'root';
+        if (!$app->has($key)) {
+            $app->instance($key, new Directory($app->basePath()));
         }
-        return Factory::root()->file($path);
+        if (empty($path)) {
+            return $app->make($key);
+        }
+        return $app->make($key)->file($path);
     }
 }
 
@@ -90,11 +125,20 @@ if (! function_exists('cache')) {
      * Get / set the specified cache value.
      *
      * If an array is passed, we'll assume you want to put to the cache.
-     * @throws Exception
+     * @param mixed ...$args
      * @return Cache|mixed
+     * @throws Exception
      */
-    function cache() {
-        return Factory::cache(...func_get_args());
+    function cache(...$args) {
+        return app_call('cache', function (Cache $instance) use ($args) {
+            if (empty($args)) {
+                return $instance;
+            }
+            if (count($args) == 1) {
+                return $instance->get($args[0]);
+            }
+            return $instance->set($args[0], $args[1], isset($args[2]) ? $args[2] : 0);
+        });
     }
 }
 
@@ -106,10 +150,15 @@ if (! function_exists('config')) {
      *
      * @param  array|string  $key
      * @param  mixed  $default
-     * @return mixed|Config|string
+     * @return mixed|Repository|string
      */
-    function config($key = null, $default = null) {
-        return Factory::config($key, $default);
+    function config($key = '', $default = null) {
+        return app_call('config', function (Repository $repository) use ($key, $default) {
+            if (empty($key)) {
+                return $repository;
+            }
+            return $repository->get($key, $default);
+        });
     }
 }
 
@@ -137,7 +186,7 @@ if (! function_exists('info')) {
      * @throws Exception
      */
     function info($message, $context = []) {
-        Factory::log()->info($message, $context);
+        logger()->info($message, $context);
     }
 }
 
@@ -151,10 +200,12 @@ if (! function_exists('logger')) {
      * @throws Exception
      */
     function logger($message = null, array $context = []) {
-        if (is_null($message)) {
-            return Factory::log();
-        }
-        Factory::log()->debug($message, $context);
+        return app_call('log', function (LoggerInterface $logger) use ($message, $context) {
+            if (is_null($message)) {
+                return $logger;
+            }
+            $logger->debug($message, $context);
+        });
     }
 }
 
@@ -167,10 +218,19 @@ if (! function_exists('public_path')) {
      * @throws Exception
      */
     function public_path($path = '') {
-        if (!$path) {
-            return Factory::public_path();
+        $app = app();
+        $key = 'public_path';
+        if (!$app->has($key)) {
+            $folder = config('app.public');
+            $app->instance($key, empty($folder) ?
+                new Directory(app('request')
+                    ->server('DOCUMENT_ROOT'))
+                : app_path()->directory($folder));
         }
-        return Factory::public_path()->file($path);
+        if (empty($path)) {
+            return $app->make($key);
+        }
+        return $app->make($key)->file($path);
     }
 }
 
@@ -180,11 +240,30 @@ if (! function_exists('request')) {
      *
      * @param  array|string $key
      * @param  mixed $default
-     * @return array|string|Request
+     * @return array|string|Input
      * @throws Exception
      */
     function request($key = null, $default = null) {
-        return app('request')->get($key, $default);
+        return app_call('request', function (Input $input) use ($key, $default) {
+            if (empty($key)) {
+                return $input;
+            }
+            return $input->get($key, $default);
+        });
+    }
+}
+
+if (! function_exists('response')) {
+    /**
+     * Get an instance of the current request or an input item from the request.
+     *
+     * @return Output
+     * @throws Exception
+     */
+    function response() {
+        return app_call(HttpContext::class, function (HttpContext $context) {
+            return $context['response'];
+        });
     }
 }
 
@@ -196,7 +275,15 @@ if (! function_exists('session')) {
      * @throws Exception
      */
     function session($key = null, $default = null) {
-        return Factory::session($key, $default);
+        return app_call('session', function (Session $session) use ($key, $default) {
+            if (empty($key)) {
+                return $session;
+            }
+            if (is_array($key)) {
+                return $session->set($key);
+            }
+            return $session->get($key, $default);
+        });
     }
 }
 
@@ -211,7 +298,12 @@ if (! function_exists('trans')) {
      * @throws Exception
      */
     function trans($key = null, $replace = [], $locale = null) {
-        return Factory::i18n($key, $replace, $locale);
+        return app_call('i18n', function (I18n $i18n) use ($key, $replace, $locale) {
+            if (empty($key)) {
+                return $i18n;
+            }
+            return $i18n->translate($key, $replace, $locale);
+        });
     }
 }
 
@@ -226,10 +318,7 @@ if (! function_exists('__')) {
      * @throws Exception
      */
     function __($key, $replace = [], $locale = null) {
-        if (empty(Factory::i18n())) {
-            return $key;
-        }
-        return Factory::i18n()->translate($key, $replace, $locale);
+        return trans($key, $replace, $locale);
     }
 }
 
@@ -240,15 +329,17 @@ if (! function_exists('url')) {
      * @param  string $path
      * @param  mixed $parameters
      * @param  bool $secure
-     * @param bool $rewrite
      * @return string| UrlGenerator
      * @throws Exception
      */
-    function url($path = null, $parameters = [], $secure = true, $rewrite = true) {
-        if (is_null($path) && empty($parameters) && $secure === true) {
-            return app('url');
-        }
-        return app('url')->to($path, $parameters, $secure, $rewrite);
+    function url($path = null, $parameters = [], $secure = null) {
+        $args = func_get_args();
+        return app_call(UrlGenerator::class, function (UrlGenerator $generator) use ($args) {
+            if (empty($args)) {
+                return $generator;
+            }
+            return $generator->to(...$args);
+        });
     }
 }
 
@@ -262,10 +353,12 @@ if (! function_exists('view')) {
      * @throws Exception
      */
     function view($path = null, array $data = []) {
-        if (empty($path)) {
-            return Factory::view();
-        }
-        return Factory::view()->render($path, $data);
+        return app_call('view', function (ViewFactory $factory) use ($path, $data) {
+            if (empty($path)) {
+                return $factory;
+            }
+            return $factory->render($path, $data);
+        });
     }
 }
 
@@ -276,10 +369,12 @@ if (! function_exists('timer')) {
      * @throws Exception
      */
     function timer($name = null) {
-        if (is_null($name)) {
-            return app('timer');
-        }
-        return app('timer')->record($name);
+        return app_call('timer', function (Timer $timer) use ($name) {
+            if (empty($name)) {
+                return $timer;
+            }
+            return $timer->record($name);
+        });
     }
 }
 
@@ -293,10 +388,12 @@ if (! function_exists('event')) {
      */
     function event(...$args)
     {
-        if (count($args) === 0) {
-            return app('events');
-        }
-        return app('events')->dispatch(...$args);
+        return app_call('events', function (EventManger $manger) use ($args) {
+            if (empty($args)) {
+                return $manger;
+            }
+            return $manger->dispatch(...$args);
+        });
     }
 }
 

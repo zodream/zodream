@@ -9,10 +9,10 @@ namespace Zodream\Infrastructure\Base;
 use ArrayIterator;
 use ArrayAccess;
 use IteratorAggregate;
-use Zodream\Infrastructure\Interfaces\ArrayAble;
-use Zodream\Infrastructure\Interfaces\JsonAble;
+use Zodream\Infrastructure\Contracts\ArrayAble;
+use Zodream\Infrastructure\Contracts\JsonAble;
 use Zodream\Helpers\Json;
-use Zodream\Infrastructure\Traits\Attributes;
+use Zodream\Infrastructure\Concerns\Attributes;
 use JsonSerializable;
 
 class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggregate, JsonSerializable {

@@ -1,7 +1,9 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Service\Bootstrap;
 
-use Zodream\Service\Application;
+use Zodream\Domain\Composer\PackageManifest;
+use Zodream\Infrastructure\Contracts\Application;
 
 class RegisterProviders {
 
@@ -12,8 +14,15 @@ class RegisterProviders {
 
     private function registerConfiguredProviders(Application $app)
     {
-        $providers = config('app.providers');
-
+        $providers = config('app.providers', []);
+        $data = [[], $app->make(PackageManifest::class)->providers(), []];
+        foreach ($providers as $provider) {
+            $data[str_starts_with($provider, 'Zodream\\') ? 0 : 2][] = $provider;
+        }
+        $providers = array_merge(...$data);
+        foreach ($providers as $provider) {
+            $app->register($provider);
+        }
     }
 
 

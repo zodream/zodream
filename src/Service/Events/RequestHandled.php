@@ -1,16 +1,20 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Service\Events;
 
-
-use Zodream\Infrastructure\Http\Response;
+use Zodream\Infrastructure\Contracts\Http\Input;
+use Zodream\Infrastructure\Contracts\Http\Output;
 
 class RequestHandled {
 
     /**
-     * @var Response
+     * @var Output
      */
     public $response;
 
+    /**
+     * @var Input
+     */
     public $request;
 
     public function __construct($request, $response) {
