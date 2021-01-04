@@ -21,7 +21,6 @@ class Input implements InputInterface {
     }
 
     public function has(string $key): bool {
-
         if (strlen($key) !== 1) {
             return isset($this->data[$key]) || array_key_exists($key, $this->data);
         }
@@ -47,6 +46,11 @@ class Input implements InputInterface {
         }
         $input = trim(fgets(STDIN));
         return $input === '' ? $default : $input;
+    }
+
+    public function request(string $key = '', $default = null)
+    {
+        return $this->getValueWithDefault($this->getCacheData('argv'), $key, $default);
     }
 
     public function cookie(string $key = null, $default = null)

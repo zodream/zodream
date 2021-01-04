@@ -57,6 +57,11 @@ class Request implements Input {
         return $this->getValueWithDefault($_POST, $key, $default);
     }
 
+    public function request(string $key = '', $default = null)
+    {
+        return $this->getValueWithDefault($_REQUEST, $key, $default);
+    }
+
     public function cookie(string $key = '', $default = null)
     {
         return $this->getValueWithDefault($_COOKIE, $key, $default);
