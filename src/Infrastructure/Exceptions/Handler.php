@@ -157,8 +157,8 @@ class Handler implements ExceptionHandler {
 
         $errors = $e->validator->errors();
 
-        if (app('request')->expectsJson()) {
-            return app('response')->setStatusCode(422)
+        if (request()->expectsJson()) {
+            return response()->statusCode(422)
                 ->json($errors);
         }
 

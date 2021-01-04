@@ -11,8 +11,8 @@ class DomainMiddleware implements MiddlewareInterface {
         if (!app()->isDebug() && !app()->isAllowDomain()) {
             throw new DomainException(__(
                 '{domain} Domain Is Disallow, IP: {ip}', [
-                    'domain' => app('request')->uri()->getHost(),
-                    'ip' => app('request')->ip(),
+                    'domain' => request()->host(),
+                    'ip' => request()->ip(),
                 ]
             ));
         }

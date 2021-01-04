@@ -10,7 +10,7 @@ namespace Zodream\Domain\Upload;
 class UploadInput extends BaseUpload {
 
     public function __construct() {
-        $this->setName(app('request')->server('HTTP_X_FILENAME'));
+        $this->setName(request()->server('HTTP_X_FILENAME'));
     }
 
     public function setName($name) {

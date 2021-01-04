@@ -67,7 +67,7 @@ class Broker {
         $this->secret = $secret;
         $this->cookie_lifetime = $cookie_lifetime;
 
-        $this->token = app('request')->cookie($this->getCookieName());
+        $this->token = request()->cookie($this->getCookieName());
     }
 
     /**

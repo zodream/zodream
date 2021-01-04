@@ -67,7 +67,7 @@ class HandleExceptions {
             //
         }
 
-        if (false && app('request')->isCli()) {
+        if (false && request()->isCli()) {
             $this->renderForConsole($e);
         } else {
             $this->renderHttpResponse($e);

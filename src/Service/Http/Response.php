@@ -139,7 +139,7 @@ class Response implements HttpOutput {
         if ((!defined('DEBUG') || !DEBUG) &&
             (!defined('APP_GZIP') || APP_GZIP) &&
             extension_loaded('zlib')
-            && strpos(app('request')->server('HTTP_ACCEPT_ENCODING', ''), 'gzip') !== FALSE) {
+            && str_contains(request()->server('HTTP_ACCEPT_ENCODING', ''), 'gzip')) {
             $callback = 'ob_gzhandler';
         }
         ob_start($callback);

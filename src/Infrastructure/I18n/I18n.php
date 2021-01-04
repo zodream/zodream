@@ -74,7 +74,7 @@ abstract class I18n extends MagicObject {
     }
 
     protected function getBrowserLanguage() {
-        $language = app('request')->server('HTTP_ACCEPT_LANGUAGE', 'ZH-CN');
+        $language = request()->server('HTTP_ACCEPT_LANGUAGE', 'ZH-CN');
         if (empty($language) || !preg_match('/[\w-]+/', $language, $match)) {
             return self::DEFAULT_LANGUAGE;
         }

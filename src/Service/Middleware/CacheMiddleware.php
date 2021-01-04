@@ -23,7 +23,7 @@ class CacheMiddleware implements MiddlewareInterface {
             return $next($context);
         }
         if (isset($cache['method'])) {
-            $method = app('request')->method();
+            $method = request()->method();
             if (
             (is_array($cache['method']) && !in_array($method, $cache['method'])) ||
             (!is_array($cache['method']) && $method !== $cache['method'])) {
@@ -90,7 +90,7 @@ class CacheMiddleware implements MiddlewareInterface {
         if ($item === '@user') {
             return auth()->id();
         }
-        return app('request')->get($item);
+        return request()->get($item);
     }
 
     private function getCacheOption(string $path) {

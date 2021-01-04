@@ -9,9 +9,9 @@ use Zodream\Infrastructure\Contracts\HttpContext;
 class CORSMiddleware implements MiddlewareInterface {
 
     public function handle(HttpContext $context, callable $next) {
-        if (!app('request')->isPreFlight()) {
+        if (!request()->isPreFlight()) {
             return $next($context);
         }
-        return app('response')->allowCors();
+        return response()->allowCors();
     }
 }

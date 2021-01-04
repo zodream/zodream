@@ -223,7 +223,7 @@ if (! function_exists('public_path')) {
         if (!$app->has($key)) {
             $folder = config('app.public');
             $app->instance($key, empty($folder) ?
-                new Directory(app('request')
+                new Directory(request()
                     ->server('DOCUMENT_ROOT'))
                 : app_path()->directory($folder));
         }
