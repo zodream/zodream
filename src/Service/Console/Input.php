@@ -6,13 +6,13 @@ use Zodream\Helpers\Arr;
 use Zodream\Helpers\Str;
 use Zodream\Infrastructure\Contracts\Http\Input as InputInterface;
 use Zodream\Service\Console\Concerns\Argv;
+use Zodream\Service\Http\BaseInput;
+use Zodream\Validate\ValidationException;
+use Zodream\Validate\Validator;
 
-class Input implements InputInterface {
+class Input extends BaseInput implements InputInterface {
 
     use Argv;
-
-    protected $cacheItems = [];
-    protected $data = [];
 
     public function __construct()
     {
@@ -26,11 +26,6 @@ class Input implements InputInterface {
         }
         $data = $this->getCacheData('argv');
         return in_array($key, $data['flags'], true);
-    }
-
-    public function get(string $key = null, $default = null)
-    {
-        return $this->getValueWithDefault($this->data, $key, $default);
     }
 
     /**
@@ -78,16 +73,6 @@ class Input implements InputInterface {
         return '';
     }
 
-    public function all(): array
-    {
-        return $this->data;
-    }
-
-    public function append(array $data): Input {
-        $this->data = array_merge($this->data, $data);
-        return $this;
-    }
-
     public function method(): string
     {
         return 'GET';
@@ -127,62 +112,6 @@ class Input implements InputInterface {
 
     public function script(): string {
         return '';
-    }
-
-    /**
-     * @param $name
-     * @return string|array|bool|integer|mixed|null
-     */
-    protected function getCacheData($name) {
-        if (isset($this->cacheItems[$name])) {
-            return $this->cacheItems[$name];
-        }
-        $method = sprintf('create%s', Str::studly($name));
-        if (!method_exists($this, $method)) {
-            return null;
-        }
-        return $this->cacheItems[$name]
-            = call_user_func([$this, $method]);
-    }
-
-    protected function getValueWithDefault(array $data, string $key = null, $default = null) {
-        if (empty($key)) {
-            return $data;
-        }
-        if (isset($data[$key]) || array_key_exists($key, $data)) {
-            return $data[$key];
-        }
-        if (strpos($key, ',') !== false) {
-            $result = Arr::getValues($key, $data, $default);
-        } else {
-            $result = Arr::getChild($key, $data, is_object($default) ? null : $default);
-        }
-        if (is_callable($default)) {
-            return $default($result);
-        }
-        return $result;
-    }
-
-    public function offsetExists($offset)
-    {
-        return $this->has($offset);
-    }
-
-    public function offsetGet($offset)
-    {
-        return $this->get($offset);
-    }
-
-    public function offsetSet($offset, $value)
-    {
-        $this->append([
-            $offset => $value
-        ]);
-    }
-
-    public function offsetUnset($offset)
-    {
-        unset($this->data[$offset]);
     }
 
     public static function createFromGlobals() {
