@@ -21,11 +21,11 @@ class BoundMethod {
      * 执行方法
      * @param $callback
      * @param Container $container
-     * @param array|ArrayAccess $parameters
+     * @param array $parameters
      * @param null $defaultMethod
      * @return mixed
      */
-    public static function call($callback, Container $container, $parameters = [], $defaultMethod = null) {
+    public static function call($callback, Container $container, array $parameters = [], $defaultMethod = null) {
         if (is_string($callback) && ! $defaultMethod && method_exists($callback, '__invoke')) {
             $defaultMethod = '__invoke';
         }
@@ -83,54 +83,38 @@ class BoundMethod {
      * @return array
      * @throws ReflectionException
      */
-    protected static function getMethodDependencies(array $dependencies, Container $container, $parameters)
+    protected static function getMethodDependencies(array $dependencies, Container $container, array $parameters)
     {
         $items = [];
         foreach ($dependencies as $dependency) {
-            $name = $dependency->getName();
-            if (static::arrHas($name, $parameters)) {
-                $items[] = $parameters[$name];
-                if (is_array($parameters)) {
-                    unset($parameters[$name]);
-                }
-                continue;
-            }
-            $className = static::getParameterClassName($dependency);
-            if (!empty($className)) {
-                if (static::arrHas($className, $parameters) && is_array($parameters)) {
-                    $items[] = $parameters[$className];
-                    unset($parameters[$className]);
-                    continue;
-                }
-                $items[] = $container->make($className);
-                continue;
-            }
-            if ($dependency->isDefaultValueAvailable()) {
-                $items[] = $dependency->getDefaultValue();
-                continue;
-            }
-            if (!$dependency->isOptional() && empty($parameters)) {
-                $message = "Unable to resolve dependency [{$dependency}] in class {$dependency->getDeclaringClass()->getName()}";
-                throw new Exception($message);
-            }
-        }
-        if (!is_array($parameters)) {
-            return $items;
+            $items[] = static::getParameterFromSource($dependency, $container, $parameters);
         }
         return array_merge($items, $parameters);
     }
 
-    protected static function arrHas($key, $parameters) {
-        if ($parameters instanceof Input) {
-            return $parameters->has($key);
+    protected static function getParameterFromSource(ReflectionParameter $dependency, Container $container, array &$parameters) {
+        $name = $dependency->getName();
+        if (array_key_exists($name, $parameters)) {
+            $res = $parameters[$name];
+            unset($parameters[$name]);
+            return $res;
         }
-        if ($parameters instanceof ArrayAccess) {
-            return $parameters->offsetExists($key);
+        $className = static::getParameterClassName($dependency);
+        if (!empty($className)) {
+            if (array_key_exists($className, $parameters)) {
+                $res = $parameters[$className];
+                unset($parameters[$className]);
+                return $res;
+            }
+            return $container->make($className);
         }
-        if (is_array($parameters)) {
-            return array_key_exists($key, $parameters);
+        if ($dependency->isDefaultValueAvailable()) {
+            return $dependency->getDefaultValue();
         }
-        return $parameters[$key];
+        if (!$dependency->isOptional() && empty($parameters)) {
+            $message = "Unable to resolve dependency [{$dependency}] in class {$dependency->getDeclaringClass()->getName()}";
+            throw new Exception($message);
+        }
     }
 
     public static function getParameterClassName(ReflectionParameter $parameter): string {
@@ -201,7 +185,7 @@ class BoundMethod {
 
     protected static function getCallReflector($callback)
     {
-        if (is_string($callback) && strpos($callback, '::') !== false) {
+        if (is_string($callback) && str_contains($callback, '::')) {
             $callback = explode('::', $callback);
         } elseif (is_object($callback) && ! $callback instanceof Closure) {
             $callback = [$callback, '__invoke'];
@@ -214,7 +198,7 @@ class BoundMethod {
 
     protected static function isCallableWithAtSign($callback)
     {
-        return is_string($callback) && strpos($callback, '@') !== false;
+        return is_string($callback) && str_contains($callback, '@');
     }
 
 
