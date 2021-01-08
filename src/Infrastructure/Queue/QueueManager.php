@@ -15,7 +15,7 @@ class QueueManager extends Manager {
     /**
      * @var Queue[]
      */
-    protected $engines = [];
+    protected array $engines = [];
 
     /**
      * @var FailedJobProviderInterface
