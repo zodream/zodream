@@ -4,7 +4,7 @@ namespace Zodream\Infrastructure\Contracts;
 
 interface Router {
 
-    public function group(array $filters, callable $cb): Router;
+    public function group(array $filters, $cb): Router;
     public function get($uri, $action = null): Route;
     public function post($uri, $action = null): Route;
     public function head($uri, $action = null): Route;
