@@ -214,6 +214,13 @@ class Response implements HttpOutput {
         return $this->custom($data, 'rss');
     }
 
+    /**
+     * 响应内容
+     * @param File $file
+     * @param int $speed
+     * @return Output
+     * @throws FileException
+     */
     public function file(File $file, int $speed = 512): Output
     {
         $args = [
@@ -241,7 +248,9 @@ class Response implements HttpOutput {
                 $this->header->setContentType($fileExtension);
                 break;
             default:
-                $this->header->setContentType('application/force-download');
+                if (!$this->header->has('Content-Type')) {
+                    $this->header->setContentType('application/force-download');
+                }
                 break;
         }
         $this->header->setContentDisposition($file->getName());
@@ -443,14 +452,14 @@ class Response implements HttpOutput {
             return $this;
         }
         if (is_array($this->parameter) && $this->parameter['file'] instanceof File) {
-            $stream = new Stream($this->parameter['file']);
+            $stream = new Stream($this->parameter['file']);;
             $stream->open('rb');
             $stream->move($this->parameter['offset']);
             //虚幻输出
             while(!$stream->isEnd()){
                 //设置文件最长执行时间
                 set_time_limit(0);
-                print ($stream->read(round($this->parameter['speed'] * 1024, 0)));//输出文件
+                print $stream->read(intval($this->parameter['speed'] * 1024));//输出文件
                 flush();//输出缓冲
                 ob_flush();
             }
