@@ -310,7 +310,7 @@ class Response implements HttpOutput {
      * @throws \Exception
      */
     public function export(ExpertObject $expert) {
-        $this->header->setContentType($expert->getName());
+        $this->header->setContentType($expert->getType());
         $this->header->setContentDisposition($expert->getName());
         $this->header->setCacheControl('must-revalidate,post-check=0,pre-check=0');
         $this->header->setExpires(0);

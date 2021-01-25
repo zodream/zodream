@@ -11,11 +11,13 @@ namespace Zodream\Infrastructure\Contracts\Response;
 interface ExpertObject {
 
     /**
+     * 响应的文件名
      * @return string
      */
     public function getName(): string;
 
     /**
+     * 响应文件类型
      * @return string
      */
     public function getType(): string;
