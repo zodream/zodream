@@ -214,7 +214,7 @@ if (! function_exists('public_path')) {
      * Get the path to the public folder.
      *
      * @param string $path
-     * @return FileObject
+     * @return FileObject|Directory|File
      * @throws Exception
      */
     function public_path($path = '') {
