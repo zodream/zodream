@@ -34,7 +34,8 @@ interface JsonResponse {
      * 返回失败数据
      * @param string|array $message
      * @param int $code
+     * @param int $statusCode
      * @return Output
      */
-    public function renderFailure(array|string $message, int $code = 400): Output;
+    public function renderFailure(array|string $message, int $code = 400, int $statusCode = 0): Output;
 }
