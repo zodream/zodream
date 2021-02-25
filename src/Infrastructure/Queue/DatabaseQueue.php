@@ -259,10 +259,10 @@ class DatabaseQueue extends Queue {
     }
 
     public static function createMigration(Table $table) {
-        $table->set('id')->pk()->ai();
-        $table->set('queue')->varchar(200)->index();
-        $table->set('payload')->longtext();
-        $table->set('attempts')->tinyint(2)->unsigned()->defaultVal(0);
+        $table->id();
+        $table->string('queue')->index();
+        $table->column('payload')->longtext();
+        $table->uint('attempts', 2)->default(0);
         $table->timestamp('reserved_at');
         $table->timestamp('available_at');
         $table->timestamp('created_at');

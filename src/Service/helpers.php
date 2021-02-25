@@ -8,6 +8,7 @@ use Zodream\Disk\FileException;
 use Zodream\Infrastructure\Caching\Cache;
 use Zodream\Infrastructure\Contracts\Config\Repository;
 use Zodream\Infrastructure\Contracts\Database;
+use Zodream\Infrastructure\Contracts\Http\HttpOutput;
 use Zodream\Infrastructure\Contracts\Http\Input;
 use Zodream\Infrastructure\Contracts\Http\Output;
 use Zodream\Infrastructure\Contracts\HttpContext;
@@ -257,7 +258,7 @@ if (! function_exists('response')) {
     /**
      * Get an instance of the current request or an input item from the request.
      *
-     * @return Output
+     * @return Output|HttpOutput
      * @throws Exception
      */
     function response() {

@@ -1,23 +1,22 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Support;
-
 
 use Countable;
 use ArrayAccess;
-use Traversable;
 use ArrayIterator;
 use CachingIterator;
 use JsonSerializable;
 use IteratorAggregate;
 use InvalidArgumentException;
+use Zodream\Infrastructure\Concerns\Macroable;
 use Zodream\Infrastructure\Contracts\ArrayAble;
 use Zodream\Infrastructure\Contracts\JsonAble;
 use Zodream\Helpers\Arr;
 use Zodream\Helpers\Str;
-use Zodream\Infrastructure\Concerns\MacroTrait;
 
 class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate, JsonAble, JsonSerializable {
-    use MacroTrait;
+    use Macroable;
     /**
      * The items contained in the collection.
      *

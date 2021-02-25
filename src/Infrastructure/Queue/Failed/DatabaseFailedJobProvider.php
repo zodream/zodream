@@ -98,11 +98,11 @@ class DatabaseFailedJobProvider implements FailedJobProviderInterface {
     }
 
     public static function createMigration(Table $table) {
-        $table->set('id')->pk()->ai();
-        $table->set('connection')->text();
-        $table->set('queue')->text();
-        $table->set('payload')->longtext();
-        $table->set('exception')->longtext();
+        $table->id();
+        $table->column('connection')->text();
+        $table->column('queue')->text();
+        $table->column('payload')->longtext();
+        $table->column('exception')->longtext();
         $table->timestamp('failed_at');
     }
 }

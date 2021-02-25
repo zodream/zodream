@@ -83,6 +83,10 @@ class Input extends BaseInput implements InputInterface {
         return sprintf('http://%s/%s', $this->host(), $this->getCacheData('path'));
     }
 
+    public function path(): string {
+        return $this->getCacheData('path');
+    }
+
     public function host(): string
     {
         return '127.0.0.1';

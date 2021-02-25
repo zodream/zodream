@@ -14,7 +14,11 @@ trait Other {
 
 
     protected function createUrl(): string {
-        return sprintf('%s://%s%s', $this->isSSL() ? 'https' : 'http', $this->host(), $this-> createUriPath());
+        return sprintf('%s://%s%s', $this->isSSL() ? 'https' : 'http', $this->host(), $this->createUriPath());
+    }
+
+    protected function createPath(): string {
+        return parse_url($this->url(), PHP_URL_PATH);
     }
 
     /**

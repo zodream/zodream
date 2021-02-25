@@ -21,6 +21,7 @@ interface Input extends ArrayAccess {
 
     public function method(): string;
     public function url(): string;
+    public function path(): string;
     public function host(): string;
     public function ip(): string;
     public function referrer(): string;
