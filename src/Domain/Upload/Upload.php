@@ -81,9 +81,22 @@ class Upload extends MagicObject {
         return $this->upload($file);
     }
 
-    public function each(callable $callback) {
-        foreach ($this->__attributes as $item) {
+    /**
+     * 循环遍历
+     * @param callable $callback
+     * @param int $count 限制遍历的数量
+     * @return $this
+     */
+    public function each(callable $callback, int $count = 0) {
+        $items = $this->__attributes;
+        $length = count($items);
+        $length = $count > 0 && $count > $length ? $count : $length;
+        foreach ($items as $item) {
+            $length --;
             call_user_func($callback, $item);
+            if ($length < 1) {
+                break;
+            }
         }
         return $this;
     }
