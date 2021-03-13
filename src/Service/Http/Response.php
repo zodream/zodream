@@ -82,11 +82,11 @@ class Response implements HttpOutput {
         511 => 'Network Authentication Required',                             // RFC6585
     ];
 
-    protected $statusCode = 200;
+    protected int $statusCode = 200;
 
-    protected $statusText = 'OK';
+    protected string $statusText = 'OK';
 
-    public $version = '1.1';
+    public string $version = '1.1';
 
     /**
      * @var Header
@@ -135,13 +135,11 @@ class Response implements HttpOutput {
             $this->sendHeaders()->sendContent();
             return true;
         }
-        $callback = null;
-        if ((!defined('DEBUG') || !DEBUG) &&
-            (!defined('APP_GZIP') || APP_GZIP) &&
-            extension_loaded('zlib')
-            && str_contains(request()->server('HTTP_ACCEPT_ENCODING', ''), 'gzip')) {
-            $callback = 'ob_gzhandler';
+        if (!$this->useGZIP()) {
+            $this->sendHeaders()->sendContent();
+            return true;
         }
+        $callback = 'ob_gzhandler';
         ob_start($callback);
         ob_implicit_flush(false);
         $this->sendHeaders()->sendContent();
@@ -367,6 +365,18 @@ class Response implements HttpOutput {
             Str::random(6),
             md5($name));
         return $this;
+    }
+
+    protected function useGZIP(): bool {
+        if ($this->container['app']->isDebug()) {
+            return false;
+        }
+        if (defined('APP_GZIP') && !APP_GZIP) {
+            return false;
+        }
+        return extension_loaded('zlib')
+            && str_contains($this->container['request']
+                ->server('HTTP_ACCEPT_ENCODING', ''), 'gzip');
     }
 
     /** 获取header range信息
