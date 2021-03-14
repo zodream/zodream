@@ -22,7 +22,7 @@ class QueueManager extends Manager {
      */
     protected $failedProvider;
 
-    protected $defaultDriver = NullQueue::class;
+    protected string $defaultDriver = NullQueue::class;
 
     /**
      * @return FailedJobProviderInterface|null

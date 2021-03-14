@@ -159,7 +159,7 @@ if (! function_exists('config')) {
                 return $repository;
             }
             return $repository->get($key, $default);
-        });
+        }, $default);
     }
 }
 
