@@ -18,4 +18,10 @@ interface Router {
 
     public function handle(HttpContext $context): Route;
 
+    /**
+     * 获取缓存的地址
+     * @return string
+     */
+    public function cachePath(): string;
+
 }
