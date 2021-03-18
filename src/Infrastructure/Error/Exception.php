@@ -1,13 +1,11 @@
 <?php
 namespace Zodream\Infrastructure\Error;
 
-use Zodream\Service\Factory;
-
 class Exception extends \Exception {
 
     public function __construct($message = "", $code = 0, \Exception $previous = null) {
         if (is_string($message)) {
-            $message = Factory::i18n()->translate($message);
+            $message = trans($message);
         }
         parent::__construct($message, $code, $previous);
     }

@@ -1,6 +1,7 @@
 <?php
 namespace Zodream\Domain\Access\SSO;
 
+use Exception;
 use Zodream\Infrastructure\Caching\Cache;
 use Zodream\Service\Factory;
 
@@ -311,7 +312,7 @@ abstract class Server {
     /**
      * Get session data
      *
-     * @param type $key
+     * @param string $key
      * @return null|string
      */
     protected function getSessionData($key) {
@@ -347,8 +348,8 @@ abstract class Server {
         }
 
         header('Content-type: application/json; charset=UTF-8');
-        Factory::response()
-            ->setStatusCode($http_status)
+        response()
+            ->statusCode($http_status)
             ->json(['error' => $message])->send();
     }
 

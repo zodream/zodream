@@ -114,7 +114,7 @@ class Kernel implements KernelInterface {
     protected function syncRoutesToRouter() {
         $this->router->get('package:discover', function (HttpContextInterface $context) {
             $context->make(PackageManifest::class)->build();
-            $context['response']->str('complete');
+            return $context['response']->str('complete');
         });
     }
 
