@@ -8,7 +8,7 @@ namespace Zodream\Infrastructure\Contracts\Response;
  * Date: 2016/7/16
  * Time: 18:21
  */
-interface ExpertObject {
+interface ExportObject {
 
     /**
      * 响应的文件名

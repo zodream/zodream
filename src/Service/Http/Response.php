@@ -14,7 +14,7 @@ use Zodream\Image\Image;
 use Zodream\Infrastructure\Contracts\Http\HttpOutput;
 use Zodream\Infrastructure\Contracts\HttpContext as HttpContextInterface;
 use Zodream\Infrastructure\Contracts\Http\Output;
-use Zodream\Infrastructure\Contracts\Response\ExpertObject;
+use Zodream\Infrastructure\Contracts\Response\ExportObject;
 use Zodream\Infrastructure\Contracts\Response\PreResponse;
 
 class Response implements HttpOutput {
@@ -94,7 +94,7 @@ class Response implements HttpOutput {
     public $header;
 
     /**
-     * @var File|ExpertObject|Image|array|string
+     * @var File|ExportObject|Image|array|string
      */
     protected $parameter;
 
@@ -113,7 +113,7 @@ class Response implements HttpOutput {
     }
 
     /**
-     * @return array|string|File|Image|ExpertObject
+     * @return array|string|File|Image|ExportObject
      */
     public function getParameter() {
         return $this->parameter;
@@ -303,11 +303,11 @@ class Response implements HttpOutput {
 
     /**
      * 响应导出
-     * @param ExpertObject $expert
+     * @param ExportObject $expert
      * @return Response
      * @throws \Exception
      */
-    public function export(ExpertObject $expert) {
+    public function export(ExportObject $expert) {
         $this->header->setContentType($expert->getType());
         $this->header->setContentDisposition($expert->getName());
         $this->header->setCacheControl('must-revalidate,post-check=0,pre-check=0');
@@ -453,7 +453,7 @@ class Response implements HttpOutput {
             readfile((string)$this->parameter);
             return $this;
         }
-        if ($this->parameter instanceof ExpertObject) {
+        if ($this->parameter instanceof ExportObject) {
             $this->parameter->send();
             return $this;
         }
