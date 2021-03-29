@@ -327,13 +327,14 @@ if (! function_exists('url')) {
     /**
      * Generate a url for the application.
      *
-     * @param  string $path
-     * @param  mixed $parameters
-     * @param  bool $secure
+     * @param null $path
+     * @param mixed $parameters
+     * @param null $secure
+     * @param bool $encode 是否允许对url进行编码
      * @return string| UrlGenerator
      * @throws Exception
      */
-    function url($path = null, $parameters = [], $secure = null) {
+    function url($path = null, $parameters = [], $secure = null, bool $encode = true) {
         $args = func_get_args();
         return app_call(UrlGenerator::class, function (UrlGenerator $generator) use ($args) {
             if (empty($args)) {

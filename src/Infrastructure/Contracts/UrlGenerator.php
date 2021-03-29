@@ -25,12 +25,13 @@ interface UrlGenerator {
     /**
      * Generate an absolute URL to the given path.
      *
-     * @param  string|array  $path
-     * @param  mixed  $extra
-     * @param  bool|null  $secure
+     * @param string|array $path
+     * @param mixed $extra
+     * @param null $secure
+     * @param bool $encode
      * @return string
      */
-    public function to($path, $extra = [], $secure = null): string;
+    public function to($path, $extra = [], $secure = null, bool $encode = true): string;
 
     /**
      * Generate a secure, absolute URL to the given path.
