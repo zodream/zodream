@@ -479,5 +479,15 @@ class Response implements HttpOutput {
         echo (string)$this->parameter;
         return $this;
     }
+
+    public function __sleep(): array
+    {
+        return ['statusCode', 'statusText', 'version', 'header', 'parameter'];
+    }
+
+    public function __wakeup(): void
+    {
+        $this->container = app(HttpContextInterface::class);
+    }
 }
 

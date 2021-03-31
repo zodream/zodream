@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Zodream\Service\Middleware;
 
 
+use Zodream\Http\Uri;
 use Zodream\Infrastructure\Contracts\Application;
 use Zodream\Infrastructure\Contracts\HttpContext;
 
@@ -39,7 +40,8 @@ class CacheMiddleware implements MiddlewareInterface {
                 $cache = $res;
             }
         }
-        $key = self::class.url()->getSchema().url()->getHost().$path.$this->getPath($cache);
+        $current = new Uri(url()->full());
+        $key = self::class.$current->getScheme().$current->getHost().$path.$this->getPath($cache);
         $cacheDriver = cache()->store('pages');
         if (($page = $cacheDriver->get($key)) !== false) {
             return $this->formatPage($page, $cache);
