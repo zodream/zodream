@@ -31,7 +31,7 @@ class BoundMethod {
         }
 
         if (static::isCallableWithAtSign($callback) || $defaultMethod) {
-            return static::callClass($container, $callback, $parameters, $defaultMethod);
+            return static::callClass($callback, $container, $parameters, $defaultMethod);
         }
 
         return static::callBoundMethod($container, $callback, function () use ($container, $callback, $parameters) {
