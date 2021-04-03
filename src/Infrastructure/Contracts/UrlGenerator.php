@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Zodream\Infrastructure\Contracts;
 
 use InvalidArgumentException;
+use Zodream\Http\Uri;
 
 interface UrlGenerator {
 
@@ -72,4 +73,23 @@ interface UrlGenerator {
      * @return string
      */
     public function action($action, $parameters = [], $absolute = true): string;
+
+    /**
+     * 解码url，对一些路由重写插件有用
+     * @param string $url 为空则获取当前路由
+     * @return Uri
+     */
+    public function decode(string $url = ''): Uri;
+
+    /**
+     * 进行编码
+     * @param Uri $url
+     * @return Uri
+     */
+    public function encode(Uri $url): Uri;
+
+    /**
+     * 需要更新一些数据
+     */
+    public function sync();
 }

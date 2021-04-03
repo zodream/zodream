@@ -18,8 +18,8 @@ class CacheMiddleware implements MiddlewareInterface {
     }
 
     public function handle(HttpContext $context, callable $next) {
-        $path = $context->path();
-        $cache = $this->getCacheOption($path);
+        $fullUri = url()->decode();
+        $cache = $this->getCacheOption($fullUri->getPath());
         if (empty($cache)) {
             return $next($context);
         }
@@ -40,8 +40,7 @@ class CacheMiddleware implements MiddlewareInterface {
                 $cache = $res;
             }
         }
-        $current = new Uri(url()->full());
-        $key = self::class.$current->getScheme().$current->getHost().$path.$this->getPath($cache);
+        $key = self::class.$fullUri->getScheme().$fullUri->getHost().$fullUri->getPath().$this->getPath($cache, $fullUri);
         $cacheDriver = cache()->store('pages');
         if (($page = $cacheDriver->get($key)) !== false) {
             return $this->formatPage($page, $cache);
@@ -68,29 +67,33 @@ class CacheMiddleware implements MiddlewareInterface {
         return empty($arg) ? $page : $arg;
     }
 
-    private function getPath(array $args): string {
+    private function getPath(array $args, Uri $current): string {
         if (!isset($args['params']) || empty($args['params'])) {
             return '';
         }
         if (is_callable($args['params'])) {
-            return call_user_func($args['params']);
+            return call_user_func($args['params'], $current);
         }
         $data = [];
         foreach ((array)$args['params'] as $item) {
             if (empty($item)) {
                 continue;
             }
-            $data[] = sprintf('%s=%s', $item, $this->getPathParam($item));
+            $data[] = sprintf('%s=%s', $item, $this->getPathParam($item, $current));
         }
         return implode('-', $data);
     }
 
-    private function getPathParam($item) {
+    private function getPathParam($item, Uri $current) {
         if ($item === '@language') {
             return trans()->getLanguage();
         }
         if ($item === '@user') {
             return auth()->id();
+        }
+        $value = $current->getData($item);
+        if ($value !== false) {
+            return $value;
         }
         return request()->get($item);
     }
