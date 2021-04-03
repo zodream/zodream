@@ -5,13 +5,14 @@ use Exception;
 use Zodream\Database\Model\ModelNotFoundException;
 use Zodream\Domain\Access\AuthorizationException;
 use Zodream\Helpers\Str;
+use Zodream\Infrastructure\Contracts\Debugger;
 use Zodream\Infrastructure\Contracts\Http\Output;
 use Zodream\Infrastructure\Contracts\Response\Responsible;
 use Zodream\Infrastructure\Error\HttpException;
+use Zodream\Route\Exception\NotFoundHttpException;
 use Zodream\Service\Http\HttpResponseException;
 use Zodream\Validate\ValidationException;
 use Zodream\Domain\Access\AuthenticationException;
-use Zodream\Infrastructure\Error\NotFoundHttpException;
 use Zodream\Infrastructure\Contracts\ExceptionHandler;
 use Throwable;
 
@@ -170,13 +171,15 @@ class Handler implements ExceptionHandler {
      *
      * @param  Throwable $e
      * @return Output
-     * @throws Exception
+     * @throws Exception|Throwable
      */
     protected function prepareResponse(Throwable $e){
-        if (!app('debugger')) {
+        /** @var Debugger $debugger */
+        $debugger = app('debugger');
+        if (!$debugger) {
             throw $e;
         }
-        app('debugger')->exceptionHandler($e, true);
+        $debugger->exceptionHandler($e, true);
         return app('response');
     }
 

@@ -15,7 +15,7 @@ use Zodream\Infrastructure\Contracts\HttpContext;
 use Zodream\Infrastructure\Contracts\UrlGenerator;
 use Zodream\Infrastructure\I18n\I18n;
 use Zodream\Infrastructure\Session\Session;
-use Zodream\Infrastructure\Error\NotFoundHttpException;
+use Zodream\Route\Exception\NotFoundHttpException;
 use Zodream\Html\VerifyCsrfToken;
 use Zodream\Service\Application;
 use Zodream\Domain\Access\Auth;
@@ -91,8 +91,8 @@ if (! function_exists('abort')) {
      * @return void
      * @throws HttpException
      */
-    function abort($code, $message = '', array $headers = []) {
-        if ($code == 404) {
+    function abort(int $code, string $message = '', array $headers = []) {
+        if ($code === 404) {
             throw new NotFoundHttpException($message);
         }
 
