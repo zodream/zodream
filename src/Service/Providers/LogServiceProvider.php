@@ -12,7 +12,7 @@ class LogServiceProvider extends ServiceProvider {
 
 
     public function register() {
-        $this->app->singleton(LoggerInterface::class, function ($app) {
+        $this->app->singleton(LoggerInterface::class, function () {
             $args = config('app.log', [
                 'name' => 'ZoDream',
                 'level' => 'debug',
