@@ -51,8 +51,7 @@ class BoundMethod {
      */
     public static function newClass($concrete, Container $container, $parameters = []) {
         if ($concrete instanceof Closure) {
-            $parameters[] = $container;
-            return $concrete(...$parameters);
+            return static::call($concrete, $container, $parameters);
         }
         if (!class_exists($concrete)) {
             throw new Exception(

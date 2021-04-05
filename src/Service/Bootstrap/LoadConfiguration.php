@@ -12,8 +12,6 @@ class LoadConfiguration {
     {
         $items = [];
 
-
-
         // First we will see if we have a cache configuration file. If we do, we'll load
         // the configuration items from that file so that it is very quick. Otherwise
         // we will need to spin through every configuration file and load them all.
@@ -33,6 +31,7 @@ class LoadConfiguration {
 
         date_default_timezone_set($config->get('app.timezone', 'PRC'));
         mb_internal_encoding('UTF-8');
+
     }
 
     protected function getCachedConfigPath()

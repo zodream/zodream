@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Event;
 
 use Zodream\Helpers\Str;
@@ -15,12 +16,14 @@ class EventManger {
     /**
      * @var Event[]
      */
-    protected $listeners = [];
+    protected array $listeners = [];
 
     /**
      * @var array [$name => $event]
      */
-    protected $actionNames = [];
+    protected array $actionNames = [];
+
+    protected array $handlers  = [];
 
     /**
      * 获取已经注册的事件名
@@ -37,7 +40,7 @@ class EventManger {
      * @param string $file
      * @param int $priority
      */
-    public function add($event, $class, $function = 10, $file = null, $priority = 10) {
+    public function add(string $event, $class, $function = 10, $file = null, $priority = 10) {
         if (!isset($this->listeners[$event]) || !($this->listeners[$event] instanceof Event)) {
             $this->listeners[$event] = new Event();
         }
@@ -121,7 +124,7 @@ class EventManger {
         return [$event, ! is_array($payload) ? [$payload] : $payload];
     }
 
-    public function listen($events, $listener) {
+    public function listen(array|string $events, $listener) {
         foreach ((array) $events as $event) {
             $this->add($event, $listener);
         }
