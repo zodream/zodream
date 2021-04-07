@@ -26,7 +26,8 @@ trait Other {
      *
      * @return string 真实显示的网址
      */
-    protected function createUriPath() {
+    protected function createUriPath(): string
+    {
         if ($uri = $this->server('REQUEST_URI')) {
             return $uri;
         }
@@ -42,7 +43,8 @@ trait Other {
      * 判断是否SSL协议
      * @return boolean
      */
-    protected function createIsSSL() {
+    protected function createIsSSL(): bool
+    {
         $https = $this->server('HTTPS');
         if ('1' == $https || 'on' == strtolower($https)) {
             return true;
@@ -84,7 +86,7 @@ trait Other {
         return explode(':', $decoded, 2);
     }
 
-    protected function http_digest_parse($txt) {
+    protected function httpDigestParse(string $txt) {
         // protect against missing data
         $needed_parts = array(
             'nonce' => 1,
@@ -110,7 +112,8 @@ trait Other {
      * 获取提交的方法
      * @return string
      */
-   protected function createMethod() {
+   protected function createMethod(): string
+   {
         if ($method = $this->server('HTTP_X_HTTP_METHOD_OVERRIDE')) {
             return strtoupper($method);
         }
@@ -121,7 +124,8 @@ trait Other {
      * 获取host 和port
      * @return string
      */
-   protected function createHost() {
+   protected function createHost(): string
+   {
         if ($host = $this->server('HTTP_X_FORWARDED_HOST')) {
             // 防止通过局域网代理取得ip值
             return $host;
@@ -144,7 +148,8 @@ trait Other {
      * 获取真实IP
      * @return string IP,
      */
-   protected function createIp() {
+   protected function createIp(): string
+   {
        $realIP = filter_var($this->getIpFromServer(), FILTER_VALIDATE_IP);
        return empty($realIP) ? 'unknown' : $realIP;
     }
@@ -172,7 +177,8 @@ trait Other {
         return '';
     }
 
-   protected function createIsMobile() {
+   protected function createIsMobile(): bool
+   {
         // 如果有HTTP_X_WAP_PROFILE则一定是移动设备
         if ($this->server('HTTP_X_WAP_PROFILE')) {
             return true;
@@ -195,19 +201,21 @@ trait Other {
         }
         // 如果只支持wml并且不支持html那一定是移动设备
         // 如果支持wml和html但是wml在html之前则是移动设备
-        if((strpos($accept, 'vnd.wap.wml') !== false) &&
-            (strpos($accept, 'text/html') === false ||
+        if((str_contains($accept, 'vnd.wap.wml')) &&
+            (!str_contains($accept, 'text/html') ||
                 (strpos($accept, 'vnd.wap.wml') < strpos($accept, 'text/html')))) {
             return true;
         }
         return false;
     }
 
-   protected function createOs() {
+   protected function createOs(): array
+   {
         return UserAgent::os($this->server('HTTP_USER_AGENT'));
     }
 
-   protected function createBrowser() {
+   protected function createBrowser(): array
+   {
         return UserAgent::browser($this->server('HTTP_USER_AGENT'));
     }
 

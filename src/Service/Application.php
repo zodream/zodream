@@ -18,40 +18,39 @@ use Zodream\Service\Providers\EventServiceProvider;
 use Zodream\Service\Providers\I18nServiceProvider;
 use Zodream\Service\Providers\LogServiceProvider;
 use Zodream\Service\Providers\SessionServiceProvider;
-use Zodream\Template\ViewServiceProvider;
 
 class Application implements ApplicationInterface, ArrayAccess {
 
     const VERSION = '5.0.0';
 
     /**
-     * @var Application
+     * @var Application|null
      */
-    protected static $instance;
-    protected $basePath;
+    protected static ?Application $instance;
+    protected string $basePath;
 
     /**
      * @var array
      */
-    protected $instances = [];
-    protected $booted = false;
-    protected $hasBeenBootstrapped = false;
+    protected array $instances = [];
+    protected bool $booted = false;
+    protected bool $hasBeenBootstrapped = false;
     /**
      * 对应的方法
      * @var array
      */
-    protected $aliases = [];
+    protected array $aliases = [];
 
     /**
      * 注册的类池，未初始化的类名
      * @var array
      */
-    protected $bindings = [];
+    protected array $bindings = [];
 
-    protected $middlewares = [];
+    protected array $middlewares = [];
 
-    protected $serviceProviders = [];
-    protected $loadedProviders = [];
+    protected array $serviceProviders = [];
+    protected array $loadedProviders = [];
 
     public function __construct(string $base_path = '')
     {
@@ -244,7 +243,7 @@ class Application implements ApplicationInterface, ArrayAccess {
         /** @var KernelInterface $kernel */
         $kernel = $this->make(KernelInterface::class);
         $request = $kernel->receive();
-        $response = $kernel->handle($request);
+        $response = $kernel->handle($request, $this->middlewares);
         $response->send();
         $kernel->terminate($request, $response);
     }

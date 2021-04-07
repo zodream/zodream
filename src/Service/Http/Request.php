@@ -146,7 +146,7 @@ class Request extends BaseInput implements Input {
     }
 
     public function isWeChat(): bool {
-        return strpos($this->server('HTTP_USER_AGENT'), 'MicroMessenger') !== false;
+        return str_contains($this->server('HTTP_USER_AGENT'), 'MicroMessenger');
     }
 
     public function isSSL(): bool {

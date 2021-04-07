@@ -45,11 +45,11 @@ class Kernel implements KernelInterface {
      *
      * @var array
      */
-    protected $middleware = [
+    protected array $middleware = [
         CacheMiddleware::class
     ];
 
-    protected $routeMiddleware = [
+    protected array $routeMiddleware = [
         MatchRouteMiddle::class
     ];
 
@@ -65,8 +65,11 @@ class Kernel implements KernelInterface {
         return $this->app;
     }
 
-    public function handle($request)
+    public function handle($request, array $middlewares = [])
     {
+        if (!empty($middlewares)) {
+            $this->middleware = array_merge($middlewares, $this->middleware);
+        }
         try {
             $response = $this->sendRequestThroughRouter($request);
         } catch (Throwable $e) {

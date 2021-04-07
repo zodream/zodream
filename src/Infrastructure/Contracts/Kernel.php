@@ -8,7 +8,7 @@ interface Kernel {
 
     public function getContainer(): Container;
 
-    public function handle($request);
+    public function handle($request, array $middlewares = []);
 
     public function bootstrap();
 

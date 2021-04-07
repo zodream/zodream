@@ -16,11 +16,9 @@ use Zodream\Service\Bootstrap\RegisterProviders;
 use Zodream\Service\Events\RequestHandled;
 use Zodream\Service\Middleware\CacheMiddleware;
 use Zodream\Service\Middleware\CORSMiddleware;
-use Zodream\Service\Middleware\DefaultRouteMiddle;
 use Zodream\Service\Middleware\DomainMiddleware;
 use Zodream\Service\Middleware\GZIPMiddleware;
 use Zodream\Service\Middleware\MatchRouteMiddle;
-use Zodream\Service\Middleware\ModuleMiddleware;
 use Zodream\Infrastructure\Contracts\HttpContext as HttpContextInterface;
 
 class Kernel implements KernelInterface {
@@ -35,7 +33,7 @@ class Kernel implements KernelInterface {
      */
     protected $router;
 
-    protected $bootstrapper = [
+    protected array $bootstrapper = [
         LoadConfiguration::class,
         HandleExceptions::class,
         RegisterProviders::class,
@@ -47,14 +45,14 @@ class Kernel implements KernelInterface {
      *
      * @var array
      */
-    protected $middleware = [
+    protected array $middleware = [
         GZIPMiddleware::class,
         DomainMiddleware::class,
         CORSMiddleware::class,
-        CacheMiddleware::class
+        CacheMiddleware::class,
     ];
 
-    protected $routeMiddleware = [
+    protected array $routeMiddleware = [
         MatchRouteMiddle::class,
     ];
 
@@ -69,8 +67,11 @@ class Kernel implements KernelInterface {
         return $this->app;
     }
 
-    public function handle($request)
+    public function handle($request, array $middlewares = [])
     {
+        if (!empty($middlewares)) {
+            $this->middleware = array_merge($middlewares, $this->middleware);
+        }
         try {
             $response = $this->sendRequestThroughRouter($request);
         } catch (Throwable $e) {
@@ -80,7 +81,6 @@ class Kernel implements KernelInterface {
         $this->app['events']->dispatch(
             new RequestHandled($request, $response)
         );
-
         return $response;
     }
 
