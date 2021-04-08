@@ -6,6 +6,7 @@ namespace Zodream\Service\Middleware;
 
 use Zodream\Http\Uri;
 use Zodream\Infrastructure\Contracts\Application;
+use Zodream\Infrastructure\Contracts\Http\Input;
 use Zodream\Infrastructure\Contracts\HttpContext;
 
 class CacheMiddleware implements MiddlewareInterface {
@@ -19,12 +20,14 @@ class CacheMiddleware implements MiddlewareInterface {
 
     public function handle(HttpContext $context, callable $next) {
         $fullUri = url()->decode();
-        $cache = $this->getCacheOption($fullUri->getPath());
+        /** @var Input $request */
+        $request = $context['request'];
+        $cache = $this->getCacheOption($fullUri, $request);
         if (empty($cache)) {
             return $next($context);
         }
         if (isset($cache['method'])) {
-            $method = request()->method();
+            $method = $request->method();
             if (
             (is_array($cache['method']) && !in_array($method, $cache['method'])) ||
             (!is_array($cache['method']) && $method !== $cache['method'])) {
@@ -40,7 +43,7 @@ class CacheMiddleware implements MiddlewareInterface {
                 $cache = $res;
             }
         }
-        $key = self::class.$fullUri->getScheme().$fullUri->getHost().$fullUri->getPath().$this->getPath($cache, $fullUri);
+        $key = self::class.$fullUri->getScheme().$fullUri->getHost().$fullUri->getPath().$this->getPath($cache, $fullUri, $request);
         $cacheDriver = cache()->store('pages');
         if (($page = $cacheDriver->get($key)) !== false) {
             return $this->formatPage($page, $cache);
@@ -67,7 +70,7 @@ class CacheMiddleware implements MiddlewareInterface {
         return empty($arg) ? $page : $arg;
     }
 
-    private function getPath(array $args, Uri $current): string {
+    private function getPath(array $args, Uri $current, Input $input): string {
         if (!isset($args['params']) || empty($args['params'])) {
             return '';
         }
@@ -79,31 +82,41 @@ class CacheMiddleware implements MiddlewareInterface {
             if (empty($item)) {
                 continue;
             }
-            $data[] = sprintf('%s=%s', $item, $this->getPathParam($item, $current));
+            $data[] = sprintf('%s=%s', $item, $this->getPathParam($item, $current, $input));
         }
         return implode('-', $data);
     }
 
-    private function getPathParam($item, Uri $current) {
+    private function getPathParam($item, Uri $current, Input $input) {
         if ($item === '@language') {
             return trans()->getLanguage();
         }
         if ($item === '@user') {
             return auth()->id();
         }
+        if (!is_string($item)) {
+            return $item;
+        }
         $value = $current->getData($item);
         if ($value !== false) {
             return $value;
         }
-        return request()->get($item);
+        return $input->get($item);
     }
 
-    private function getCacheOption(string $path) {
+    private function getCacheOption(Uri $current, Input $input) {
         $uris = config('cache');
         if (empty($uris)) {
             return false;
         }
+        $path = $current->getPath();
         foreach ((array)$uris as $uri => $time) {
+            if (is_array($time) &&
+                isset($time['match']) &&
+                is_callable($time['match']) &&
+                call_user_func($time['match'], $current, $input) === true) {
+                return $time;
+            }
             if (is_integer($uri)) {
                 list($uri, $time) = [$time, 0];
             }

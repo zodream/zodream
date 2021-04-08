@@ -77,8 +77,8 @@ class UserAgent {
                 'Internet Explorer',
                 '1.0'
             ];
-            $aresult = stristr($agent, '/');
-            if (preg_match('/308|425|426|474|0b1/i', $aresult)) {
+            $aResult = stristr($agent, '/');
+            if (preg_match('/308|425|426|474|0b1/i', $aResult)) {
                 $args[1] = '1.5';
             }
             return $args;
@@ -88,17 +88,17 @@ class UserAgent {
             ) {
                 // See if the browser is the odd MSN Explorer
                 if (stripos($agent, 'msnb') !== false) {
-                    $aresult = explode(' ', stristr(str_replace(';', '; ', $agent), 'MSN'));
+                    $aResult = explode(' ', stristr(str_replace(';', '; ', $agent), 'MSN'));
                     $args[0] = 'MSN Browser';
-                    if (isset($aresult[1])) {
-                        $args[1] = str_replace(array('(', ')', ';'), '', $aresult[1]);
+                    if (isset($aResult[1])) {
+                        $args[1] = str_replace(array('(', ')', ';'), '', $aResult[1]);
                     }
                     return $args;
                 }
-                $aresult = explode(' ', stristr(str_replace(';', '; ', $agent), 'msie'));
+                $aResult = explode(' ', stristr(str_replace(';', '; ', $agent), 'msie'));
                 $args[0] = 'Internet Explorer';
-                if (isset($aresult[1])) {
-                    $args[1] = str_replace(array('(', ')', ';'), '', $aresult[1]);
+                if (isset($aResult[1])) {
+                    $args[1] = str_replace(array('(', ')', ';'), '', $aResult[1]);
                 }
                 // See https://msdn.microsoft.com/en-us/library/ie/hh869301%28v=vs.85%29.aspx
                 // Might be 11, anyway !
@@ -151,12 +151,12 @@ class UserAgent {
                             'pocket'
                         ) !== false
                     ) {
-                        $aresult = explode(' ', stristr($agent, 'mspie'));
+                        $aResult = explode(' ', stristr($agent, 'mspie'));
                         $args[0] = 'Pocket Internet Explorer';
 
                         if (stripos($agent, 'mspie') !== false) {
-                            if (isset($aresult[1])) {
-                                $args[1] = $aresult[1];
+                            if (isset($aResult[1])) {
+                                $args[1] = $aResult[1];
                             }
                         } else {
                             $aversion = explode('/', $agent);
@@ -179,9 +179,9 @@ class UserAgent {
         if (stripos($agent, 'opera mini') !== false) {
             $resultant = stristr($agent, 'opera mini');
             if (preg_match('/\//', $resultant)) {
-                $aresult = explode('/', $resultant);
-                if (isset($aresult[1])) {
-                    $aversion = explode(' ', $aresult[1]);
+                $aResult = explode('/', $resultant);
+                if (isset($aResult[1])) {
+                    $aversion = explode(' ', $aResult[1]);
                     $args[1] = $aversion[0];
                 }
             } else {
@@ -193,9 +193,9 @@ class UserAgent {
             $args[0] = 'Opera Mini';
             return $args;
         } elseif (stripos($agent, 'OPiOS') !== false) {
-            $aresult = explode('/', stristr($agent, 'OPiOS'));
-            if (isset($aresult[1])) {
-                $aversion = explode(' ', $aresult[1]);
+            $aResult = explode('/', stristr($agent, 'OPiOS'));
+            if (isset($aResult[1])) {
+                $aversion = explode(' ', $aResult[1]);
                 $args[1] = $aversion[0];
             }
             $args[0] = 'Opera Mini';
@@ -207,9 +207,9 @@ class UserAgent {
                     $args[1] = $matches[1];
                 }
             } elseif (preg_match('/\//', $resultant)) {
-                $aresult = explode('/', str_replace('(', ' ', $resultant));
-                if (isset($aresult[1])) {
-                    $aversion = explode(' ', $aresult[1]);
+                $aResult = explode('/', str_replace('(', ' ', $resultant));
+                if (isset($aResult[1])) {
+                    $aversion = explode(' ', $aResult[1]);
                     $args[1] = $aversion[0];
                 }
             } else {
@@ -229,17 +229,17 @@ class UserAgent {
         }
 
         if (stripos($agent, 'Chrome') !== false) {
-            $aresult = explode('/', stristr($agent, 'Chrome'));
-            if (isset($aresult[1])) {
-                $aversion = explode(' ', $aresult[1]);
+            $aResult = explode('/', stristr($agent, 'Chrome'));
+            if (isset($aResult[1])) {
+                $aversion = explode(' ', $aResult[1]);
                 $args[1] = $aversion[0];
             }
             $args[0] = 'Chrome';
             return $args;
         } elseif (stripos($agent, 'CriOS') !== false) {
-            $aresult = explode('/', stristr($agent, 'CriOS'));
-            if (isset($aresult[1])) {
-                $aversion = explode(' ', $aresult[1]);
+            $aResult = explode('/', stristr($agent, 'CriOS'));
+            if (isset($aResult[1])) {
+                $aversion = explode(' ', $aResult[1]);
                 $args[1] = $aversion[0];
             }
             $args[0] = 'Chrome';
@@ -247,9 +247,9 @@ class UserAgent {
         }
 
         if (stripos($agent, 'Vivaldi') !== false) {
-            $aresult = explode('/', stristr($agent, 'Vivaldi'));
-            if (isset($aresult[1])) {
-                $aversion = explode(' ', $aresult[1]);
+            $aResult = explode('/', stristr($agent, 'Vivaldi'));
+            if (isset($aResult[1])) {
+                $aversion = explode(' ', $aResult[1]);
                 $args[1] = $aversion[0];
             }
             $args[0] = 'Vivaldi';
@@ -266,9 +266,9 @@ class UserAgent {
         }
 
         if (stripos($agent, 'GSA') !== false) {
-            $aresult = explode('/', stristr($agent, 'GSA'));
-            if (isset($aresult[1])) {
-                $aversion = explode(' ', $aresult[1]);
+            $aResult = explode('/', stristr($agent, 'GSA'));
+            if (isset($aResult[1])) {
+                $aversion = explode(' ', $aResult[1]);
                 $args[1] = $aversion[0];
             }
             $args[0] = 'GSA';
@@ -276,9 +276,9 @@ class UserAgent {
         }
 
         if (stripos($agent, 'webtv') !== false) {
-            $aresult = explode('/', stristr($agent, 'webtv'));
-            if (isset($aresult[1])) {
-                $aversion = explode(' ', $aresult[1]);
+            $aResult = explode('/', stristr($agent, 'webtv'));
+            if (isset($aResult[1])) {
+                $aversion = explode(' ', $aResult[1]);
                 $args[1] = $aversion[0];
             }
             $args[0] = 'WebTV';
@@ -286,9 +286,9 @@ class UserAgent {
         }
 
         if (stripos($agent, 'NetPositive') !== false) {
-            $aresult = explode('/', stristr($agent, 'NetPositive'));
-            if (isset($aresult[1])) {
-                $aversion = explode(' ', $aresult[1]);
+            $aResult = explode('/', stristr($agent, 'NetPositive'));
+            if (isset($aResult[1])) {
+                $aversion = explode(' ', $aResult[1]);
                 $args[1] = str_replace(array('(', ')', ';'), '', $aversion[0]);
             }
             $args[0] = 'NetPositive';
@@ -296,8 +296,8 @@ class UserAgent {
         }
 
         if (stripos($agent, 'galeon') !== false) {
-            $aresult = explode(' ', stristr($agent, 'galeon'));
-            $aversion = explode('/', $aresult[0]);
+            $aResult = explode(' ', stristr($agent, 'galeon'));
+            $aversion = explode('/', $aResult[0]);
             if (isset($aversion[1])) {
                 $args[1] = $aversion[1];
             }
@@ -306,8 +306,8 @@ class UserAgent {
         }
 
         if (stripos($agent, 'Konqueror') !== false) {
-            $aresult = explode(' ', stristr($agent, 'Konqueror'));
-            $aversion = explode('/', $aresult[0]);
+            $aResult = explode(' ', stristr($agent, 'Konqueror'));
+            $aversion = explode('/', $aResult[0]);
             if (isset($aversion[1])) {
                 $args[1] = $aversion[1];
             }
@@ -325,8 +325,8 @@ class UserAgent {
         }
 
         if (stripos($agent, 'omniweb') !== false) {
-            $aresult = explode('/', stristr($agent, 'omniweb'));
-            $aversion = explode(' ', isset($aresult[1]) ? $aresult[1] : '');
+            $aResult = explode('/', stristr($agent, 'omniweb'));
+            $aversion = explode(' ', isset($aResult[1]) ? $aResult[1] : '');
             return [
                 'OmniWeb',
                 $aversion[0]
@@ -392,7 +392,7 @@ class UserAgent {
         if (preg_match("/Nokia([^\/]+)\/([^ SP]+)/i", $agent, $matches)) {
             $args[1] = $matches[2];
             if (stripos($agent, 'Series60') !== false ||
-                strpos($agent, 'S60') !== false
+                str_contains($agent, 'S60')
             ) {
                 $args[0] = 'Nokia S60 OSS Browser';
             } else {
@@ -433,9 +433,9 @@ class UserAgent {
         }
 
         if (stripos($agent, 'Iceweasel') !== false) {
-            $aresult = explode('/', stristr($agent, 'Iceweasel'));
-            if (isset($aresult[1])) {
-                $aversion = explode(' ', $aresult[1]);
+            $aResult = explode('/', stristr($agent, 'Iceweasel'));
+            if (isset($aResult[1])) {
+                $aversion = explode(' ', $aResult[1]);
                 $args[1] = $aversion[0];
             }
             $args[0] = 'Iceweasel';
@@ -474,8 +474,8 @@ class UserAgent {
         }
 
         if (stripos($agent, 'lynx') !== false) {
-            $aresult = explode('/', stristr($agent, 'Lynx'));
-            $aversion = explode(' ', (isset($aresult[1]) ? $aresult[1] : ''));
+            $aResult = explode('/', stristr($agent, 'Lynx'));
+            $aversion = explode(' ', (isset($aResult[1]) ? $aResult[1] : ''));
             return [
                 'Lynx',
                 $aversion[0]
@@ -483,9 +483,9 @@ class UserAgent {
         }
 
         if (stripos($agent, 'amaya') !== false) {
-            $aresult = explode('/', stristr($agent, 'Amaya'));
-            if (isset($aresult[1])) {
-                $aversion = explode(' ', $aresult[1]);
+            $aResult = explode('/', stristr($agent, 'Amaya'));
+            if (isset($aResult[1])) {
+                $aversion = explode(' ', $aResult[1]);
                 $args[1] = $aversion[0];
             }
             $args[0] = 'Amaya';
@@ -493,9 +493,9 @@ class UserAgent {
         }
 
         if (stripos($agent, 'Safari') !== false) {
-            $aresult = explode('/', stristr($agent, 'Version'));
-            if (isset($aresult[1])) {
-                $aversion = explode(' ', $aresult[1]);
+            $aResult = explode('/', stristr($agent, 'Version'));
+            if (isset($aResult[1])) {
+                $aversion = explode(' ', $aResult[1]);
                 $args[1] = $aversion[0];
             }
             $args[0] = 'Safari';
@@ -503,9 +503,9 @@ class UserAgent {
         }
 
         if (stripos($agent, 'YaBrowser') !== false) {
-            $aresult = explode('/', stristr($agent, 'YaBrowser'));
-            if (isset($aresult[1])) {
-                $aversion = explode(' ', $aresult[1]);
+            $aResult = explode('/', stristr($agent, 'YaBrowser'));
+            if (isset($aResult[1])) {
+                $aversion = explode(' ', $aResult[1]);
                 $args[1] = $aversion[0];
             }
             $args[0] = 'Yandex';
