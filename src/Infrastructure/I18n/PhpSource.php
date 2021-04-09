@@ -47,6 +47,9 @@ class PhpSource extends I18n {
                 $args[$key] = $item;
                 continue;
             }
+            if ($prefix === '') {
+                $args[$key] = $item;
+            }
             $item = $this->formatArr($item, $key.'.');
             $args = array_merge($args, $item);
         }

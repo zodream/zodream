@@ -102,7 +102,7 @@ abstract class I18n extends MagicObject {
     }
 
     public function format($message, $param = []) {
-        if ($param == []) {
+        if ($param === []) {
             return $message;
         }
         $args = [];
