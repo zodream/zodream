@@ -5,6 +5,7 @@ namespace Zodream\Service\Http;
 use Zodream\Disk\File;
 use Zodream\Disk\FileException;
 use Zodream\Disk\Stream;
+use Zodream\Helpers\Arr;
 use Zodream\Helpers\Json;
 use Zodream\Helpers\Str;
 use Zodream\Helpers\Xml;
@@ -194,7 +195,7 @@ class Response implements HttpOutput {
 
     public function xml($data): Output
     {
-        return $this->custom(is_array($data) ? Xml::encode($data) : $data, 'xml');
+        return $this->custom( !is_string($data) ? Xml::encode(Arr::toArray($data)) : $data, 'xml');
     }
 
     public function html($data): Output
