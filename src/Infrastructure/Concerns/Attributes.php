@@ -60,7 +60,7 @@ trait Attributes {
         if ($this->has($key)) {
             return $this->__attributes[$key];
         }
-        if (strpos($key, ',') !== false) {
+        if (str_contains($key, ',')) {
             $result = Arr::getValues($key, $this->__attributes, $default);
         } else {
             $result = Arr::getChild($key, $this->__attributes, is_object($default) ? null : $default);
