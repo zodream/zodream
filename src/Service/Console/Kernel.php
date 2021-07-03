@@ -33,7 +33,7 @@ class Kernel implements KernelInterface {
      */
     protected $router;
 
-    protected $bootstrapper = [
+    protected array $bootstrapper = [
         LoadConfiguration::class,
         HandleExceptions::class,
         RegisterProviders::class,
@@ -79,7 +79,6 @@ class Kernel implements KernelInterface {
         $this->app['events']->dispatch(
             new RequestHandled($request, $response)
         );
-
         return $response;
     }
 

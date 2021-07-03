@@ -31,13 +31,18 @@ class HttpContext implements HttpContextInterface, ArrayAccess {
     }
 
     /**
-     * @param Request $request
+     * @param Input|string $request
      */
     public function input($request)
     {
-        $this->instance('request', $request);
-        $this->instance('path', trim($this->getVirtualUri($request), '/'));
-        return $this;
+        if ($request instanceof Input) {
+            $this->instance('request', $request);
+            $uri = url()->decode(trim($this->getVirtualUri($request), '/'));
+            $request->append($uri->getData());
+            $this->instance('path', $uri->getPath());
+            return $this;
+        }
+        return $this['request']->get($request);
     }
 
     public function instance(string $key, $instance)
@@ -50,9 +55,13 @@ class HttpContext implements HttpContextInterface, ArrayAccess {
         return $this->instance('response', $response);
     }
 
+    /**
+     * 返回已通过url::decode过的路径
+     * @return string
+     */
     public function path(): string
     {
-        return isset($this->instances['path']) ? $this->instances['path'] : '';
+        return $this->instances['path'] ?? '';
     }
 
     public function handle(Route $route)
@@ -135,13 +144,13 @@ class HttpContext implements HttpContextInterface, ArrayAccess {
         $script = $request->script().'';
         $scriptFile = basename($script);
         $path = parse_url($request->url(), PHP_URL_PATH);
-        if (strpos($scriptFile, $path) === 0) {
+        if (str_starts_with($scriptFile, $path)) {
             $path = rtrim($path, '/'). '/'. $scriptFile;
         } elseif (strpos($script, '.php') > 0) {
             $script = preg_replace('#/[^/]+\.php$#i', '', $script);
         }
         // 判断是否是二级文件默认入口
-        if (!empty($script) && strpos($path, $script) === 0) {
+        if (!empty($script) && str_starts_with($path, $script)) {
             return substr($path, strlen($script));
         }
         // 判断是否是根目录其他文件入口

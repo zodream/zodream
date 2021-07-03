@@ -1,10 +1,7 @@
 <?php
 declare(strict_types=1);
-
 namespace Zodream\Service\Middleware;
 
-
-use Zodream\Http\Uri;
 use Zodream\Infrastructure\Contracts\Application;
 use Zodream\Infrastructure\Contracts\Http\Input;
 use Zodream\Infrastructure\Contracts\HttpContext;
@@ -19,10 +16,10 @@ class CacheMiddleware implements MiddlewareInterface {
     }
 
     public function handle(HttpContext $context, callable $next) {
-        $fullUri = url()->decode();
+        $path = $context->path();
         /** @var Input $request */
         $request = $context['request'];
-        $cache = $this->getCacheOption($fullUri, $request);
+        $cache = $this->getCacheOption($path, $request);
         if (empty($cache)) {
             return $next($context);
         }
@@ -43,7 +40,8 @@ class CacheMiddleware implements MiddlewareInterface {
                 $cache = $res;
             }
         }
-        $key = self::class.$fullUri->getScheme().$fullUri->getHost().$fullUri->getPath().$this->getPath($cache, $fullUri, $request);
+        $key = self::class.$this->app['app.module'].$request->host().$path
+            .$this->getPath($cache, $path, $request);
         $cacheDriver = cache()->store('pages');
         if (($page = $cacheDriver->get($key)) !== false) {
             return $this->formatPage($page, $cache);
@@ -70,24 +68,24 @@ class CacheMiddleware implements MiddlewareInterface {
         return empty($arg) ? $page : $arg;
     }
 
-    private function getPath(array $args, Uri $current, Input $input): string {
+    private function getPath(array $args, string $path, Input $input): string {
         if (!isset($args['params']) || empty($args['params'])) {
             return '';
         }
         if (is_callable($args['params'])) {
-            return call_user_func($args['params'], $current);
+            return call_user_func($args['params'], $path, $input);
         }
         $data = [];
         foreach ((array)$args['params'] as $item) {
             if (empty($item)) {
                 continue;
             }
-            $data[] = sprintf('%s=%s', $item, $this->getPathParam($item, $current, $input));
+            $data[] = sprintf('%s=%s', $item, $this->getPathParam($item, $input));
         }
         return implode('-', $data);
     }
 
-    private function getPathParam($item, Uri $current, Input $input) {
+    private function getPathParam($item, Input $input) {
         if ($item === '@language') {
             return trans()->getLanguage();
         }
@@ -97,24 +95,19 @@ class CacheMiddleware implements MiddlewareInterface {
         if (!is_string($item)) {
             return $item;
         }
-        $value = $current->getData($item);
-        if ($value !== false) {
-            return $value;
-        }
         return $input->get($item);
     }
 
-    private function getCacheOption(Uri $current, Input $input) {
+    private function getCacheOption(string $path, Input $input) {
         $uris = config('cache');
         if (empty($uris)) {
             return false;
         }
-        $path = $current->getPath();
         foreach ((array)$uris as $uri => $time) {
             if (is_array($time) &&
                 isset($time['match']) &&
                 is_callable($time['match']) &&
-                call_user_func($time['match'], $current, $input) === true) {
+                call_user_func($time['match'], $path, $input) === true) {
                 return $time;
             }
             if (is_integer($uri)) {
