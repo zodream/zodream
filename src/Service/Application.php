@@ -316,6 +316,7 @@ class Application implements ApplicationInterface, ArrayAccess {
     protected function registerBaseBindings() {
         static::setInstance($this);
         $this->instance('app', $this);
+        $this->instance('app.module', 'Home');
         $this->instance('app::class', static::class);
         $this->instance(ApplicationInterface::class, $this);
         $this->instance(Container::class, $this);
