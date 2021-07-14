@@ -74,13 +74,13 @@ trait Other {
         if (is_array($header)) {
             $header = current($header);
         }
-        if (strpos($header, 'Basic ') !== 0) {
+        if (!str_starts_with($header, 'Basic ')) {
             return [null, null];
         }
         if (!($decoded = base64_decode(substr($header, 6)))) {
             return [null, null];
         }
-        if (strpos($decoded, ':') === false) {
+        if (!str_contains($decoded, ':')) {
             return [null, null]; // HTTP Basic header without colon isn't valid
         }
         return explode(':', $decoded, 2);

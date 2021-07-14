@@ -57,7 +57,7 @@ class Request extends BaseInput implements Input {
         if (isset($data[$key])) {
             return $data[$key];
         }
-        if (strpos($key, '-') !== false) {
+        if (str_contains($key, '-')) {
             $key = str_replace('-', '_', $key);
         }
         $key = strtoupper($key);
