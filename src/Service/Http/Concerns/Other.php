@@ -45,8 +45,8 @@ trait Other {
      */
     protected function createIsSSL(): bool
     {
-        $https = $this->server('HTTPS');
-        if ('1' == $https || 'on' == strtolower($https)) {
+        $https = $this->server('HTTPS', '');
+        if ('1' === $https || 'on' === strtolower($https)) {
             return true;
         }
         return $this->server('SERVER_PORT') == 443;

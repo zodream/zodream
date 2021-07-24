@@ -253,6 +253,11 @@ class Response implements HttpOutput {
                 break;
         }
         $this->header->setContentDisposition($file->getName());
+        if (empty($speed)) {
+            $this->statusCode(200);
+            $this->header->setContentLength($length);//输出总长
+            return $this->setParameter($file);
+        }
         $this->header->setAcceptRanges();
         $range = $this->getRange($length);
         //如果有$_SERVER['HTTP_RANGE']参数
@@ -270,7 +275,7 @@ class Response implements HttpOutput {
              　---------------------------*/
             // 断点后再次连接 $_SERVER['HTTP_RANGE'] 的值 bytes=4390912-
             $this->statusCode(206);
-            $this->header->setContentLength($range['end']-$range['start']);//输入剩余长度
+            $this->header->setContentLength($range['end'] - $range['start']);//输入剩余长度
             $this->header->setContentRange(
                 sprintf('%s-%s/%s', $range['start'], $range['end'], $length));
             //设置指针位置
@@ -465,7 +470,7 @@ class Response implements HttpOutput {
         if (is_array($this->parameter) && $this->parameter['file'] instanceof File) {
             $stream = new Stream($this->parameter['file']);;
             $stream->open('rb');
-            $stream->move($this->parameter['offset']);
+            $stream->move(intval($this->parameter['offset']));
             //虚幻输出
             while(!$stream->isEnd()){
                 //设置文件最长执行时间
