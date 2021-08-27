@@ -7,7 +7,7 @@ namespace Zodream\Infrastructure\Concerns;
  * Time: 11:43
  */
 trait ErrorTrait {
-    protected $errors = [];
+    protected array $errors = [];
 
     /**
      * HAS ERROR
@@ -27,7 +27,7 @@ trait ErrorTrait {
             return $this->errors;
         }
         if (!array_key_exists($key, $this->errors)) {
-            return array();
+            return [];
         }
         return $this->errors[$key];
     }
