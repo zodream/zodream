@@ -52,7 +52,7 @@ class JWTAuth extends Token {
         if (empty($key)) {
             return $this->configs;
         }
-        return isset($this->configs[$key]) ? $this->configs[$key] : $default;
+        return $this->configs[$key] ?? $default;
     }
 
     /**
@@ -94,8 +94,7 @@ class JWTAuth extends Token {
         try {
             $configs = $this->getConfigs();
             $this->setPayload(JWT::decode($this->getToken(),
-                isset($configs['publicKey']) ? $configs['publicKey']
-                    : $configs['key'], [$configs['alg']]));
+                $configs['publicKey'] ?? $configs['key'], [$configs['alg']]));
         } catch (Exception $ex) {
             $this->setPayload(null);
             logger(sprintf('jwt token error: %s', $ex->getMessage()));
