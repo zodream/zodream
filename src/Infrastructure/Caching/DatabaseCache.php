@@ -10,7 +10,7 @@ use Zodream\Infrastructure\Contracts\Database;
 
 class DatabaseCache extends Cache {
 	
-	protected $configs = [
+	protected array $configs = [
 	    'table' => 'cache',
         'gc' => 10,
         'serializer' => null,

@@ -16,12 +16,12 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
 
     protected $configKey = 'session';
 
-    protected $configs = [
+    protected array $configs = [
         'flashParam' => '__flash',
         'savePath' => false
     ];
 
-    private $_cookieParams = array(
+    private array $_cookieParams = array(
         'httponly' => true
     );
 
@@ -372,20 +372,20 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
         $this->set('_previous.url', $url);
     }
 
-    public function offsetExists($offset) {
+    public function offsetExists($offset): bool {
         return $this->has($offset);
     }
 
-    public function offsetGet($offset) {
+    public function offsetGet($offset): mixed {
         return $this->get($offset);
     }
 
-    public function offsetSet($offset, $value) {
+    public function offsetSet($offset, $value): void {
         $this->set($offset, $value);
     }
 
-    public function offsetUnset($offset) {
-        return $this->delete($offset);
+    public function offsetUnset($offset): void {
+        $this->delete($offset);
     }
 
 }

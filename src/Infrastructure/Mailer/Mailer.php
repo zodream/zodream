@@ -16,7 +16,7 @@ use PHPMailer\PHPMailer\Exception;
 
 class Mailer extends BaseMailer {
 
-    protected $configs = [
+    protected array $configs = [
         'secure' => PHPMailer::ENCRYPTION_STARTTLS
     ];
 	/**

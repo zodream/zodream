@@ -11,7 +11,7 @@ class ApcCache extends Cache {
     const APCU = 'apcu';
     const APC = 'apc';
 
-    protected $configs = ['extension' => self::APC];
+    protected array $configs = ['extension' => self::APC];
 
 	protected function isAPc() {
 	    return $this->configs['extension'] == self::APC;

@@ -11,7 +11,7 @@ use Zodream\Infrastructure\Contracts\Database;
 
 class DatabaseSession extends Session {
 
-    protected $configs = [
+    protected array $configs = [
         'table' => 'session'
     ];
 

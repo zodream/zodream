@@ -11,7 +11,7 @@ use Zodream\Database\RedisManager;
  */
 class Redis extends Cache {
 
-    protected $configs = [
+    protected array $configs = [
         'gc' => 10,
         'connection' => null,
         'serializer' => null,

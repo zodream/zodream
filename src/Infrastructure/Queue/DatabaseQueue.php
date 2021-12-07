@@ -9,7 +9,7 @@ use Zodream\Infrastructure\Queue\Jobs\DatabaseJobRecord;
 
 class DatabaseQueue extends Queue {
 
-    protected $configs = [
+    protected array $configs = [
         'table' => 'queue',
         'default' => 'default',
         'retryAfter' => 60

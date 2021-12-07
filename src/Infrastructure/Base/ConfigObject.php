@@ -14,6 +14,6 @@ abstract class ConfigObject {
 
     use ConfigTrait;
 
-    protected $configs = [];
+    protected array $configs = [];
 
 }

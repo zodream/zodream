@@ -350,7 +350,7 @@ class Application implements ApplicationInterface, ArrayAccess {
         }
     }
 
-    public function offsetExists($key) {
+    public function offsetExists($key): bool {
         return $this->has($key);
     }
 
@@ -361,7 +361,7 @@ class Application implements ApplicationInterface, ArrayAccess {
      * @return mixed
      * @throws Exception
      */
-    public function offsetGet($key) {
+    public function offsetGet($key): mixed {
         return $this->make($key);
     }
 
@@ -372,7 +372,7 @@ class Application implements ApplicationInterface, ArrayAccess {
      * @param  mixed   $value
      * @return void
      */
-    public function offsetSet($key, $value) {
+    public function offsetSet($key, $value): void {
         $this->instance($key, $value);
     }
 
@@ -382,7 +382,7 @@ class Application implements ApplicationInterface, ArrayAccess {
      * @param  string  $key
      * @return void
      */
-    public function offsetUnset($key) {
+    public function offsetUnset($key): void {
         unset($this->bindings[$key], $this->instances[$key]);
     }
 

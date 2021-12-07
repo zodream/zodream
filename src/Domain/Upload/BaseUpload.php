@@ -17,7 +17,7 @@ abstract class BaseUpload extends ConfigObject {
 
     protected $configKey = 'upload';
 
-    protected $configs = [
+    protected array $configs = [
         'allowType' => ['png', 'jpg', 'jpeg', 'bmp', 'gif'],
         'maxSize' => 2000000
     ];

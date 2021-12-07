@@ -10,7 +10,7 @@ use \Memcache as Mem;
  */
 class Memcache extends Cache {
 
-    protected $configs = [
+    protected array $configs = [
         'gc' => 10,
         'host' => '127.0.0.1',
         'port' => 11211,

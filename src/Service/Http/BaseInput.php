@@ -82,7 +82,7 @@ abstract class BaseInput {
         if (isset($data[$key]) || array_key_exists($key, $data)) {
             return $data[$key];
         }
-        if (strpos($key, ',') !== false) {
+        if (str_contains($key, ',')) {
             $result = Arr::getValues($key, $data, $default);
         } else {
             $result = Arr::getChild($key, $data, is_object($default) ? null : $default);
@@ -110,24 +110,24 @@ abstract class BaseInput {
         return $data;
     }
 
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return $this->has($offset);
     }
 
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         return $this->get($offset);
     }
 
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         $this->append([
             $offset => $value
         ]);
     }
 
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->data[$offset]);
     }

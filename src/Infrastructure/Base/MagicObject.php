@@ -50,19 +50,19 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
 		return null;
 	}
 
-	public function offsetExists($offset) {
+	public function offsetExists($offset): bool {
 		return $this->hasAttribute($offset);
 	}
 
-	public function offsetGet($offset) {
+	public function offsetGet($offset): mixed {
 		return $this->getAttribute($offset);
 	}
 
-	public function offsetSet($offset, $value) {
+	public function offsetSet($offset, $value): void {
 		$this->setAttribute($offset, $value);
 	}
 
-	public function offsetUnset($offset) {
+	public function offsetUnset($offset): void {
 		$this->deleteAttribute($offset);
 	}
 
@@ -77,7 +77,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
      *
      * @access public
      */
-    public function count() {
+    public function count(): int {
         return (int) count($this->__attributes);
     }
 
@@ -157,7 +157,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
 	/**
 	 * 允许使用 foreach 直接执行
 	 */
-	public function getIterator() {
+	public function getIterator(): \Traversable {
 		return new ArrayIterator($this->toArray());
 	}
 
@@ -169,7 +169,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
         return $this->getAttribute();
     }
 
-    public function jsonSerialize() {
+    public function jsonSerialize(): mixed {
         return array_map(function ($value) {
             if ($value instanceof JsonSerializable) {
                 return $value->jsonSerialize();

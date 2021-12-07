@@ -17,7 +17,7 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
 	 * gc自动执行的几率 0-1000000；
 	 * @var int
 	 */
-    protected $configs = [
+    protected array $configs = [
         'gc' => 10,
         'serializer' => null,
         'keyPrefix' => ''
@@ -177,7 +177,7 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
 	
 	abstract protected function clearValue();
 	
-	public function offsetExists($key) {
+	public function offsetExists($key): bool {
 		return $this->has($key);
 	}
 
@@ -185,7 +185,7 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
 	 * @param string $key
 	 * @return array|string
 	 */
-	public function offsetGet($key) {
+	public function offsetGet($key): mixed {
 		return $this->get($key);
 	}
 
@@ -193,7 +193,7 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
 	 * @param string $key
 	 * @param string|array $value
 	 */
-	public function offsetSet($key, $value) {
+	public function offsetSet($key, $value): void {
 		$this->set($key, $value);
 	}
 
@@ -201,7 +201,7 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
 	 * @param string $key
 	 * @internal param $offset
 	 */
-	public function offsetUnset($key) {
+	public function offsetUnset($key): void {
 		$this->delete($key);
 	}
 }
