@@ -143,7 +143,7 @@ class HttpContext implements HttpContextInterface, ArrayAccess {
         }
         $script = $request->script().'';
         $scriptFile = basename($script);
-        $path = parse_url($request->url(), PHP_URL_PATH);
+        $path = parse_url($request->url(), PHP_URL_PATH).'';
         if (str_starts_with($scriptFile, $path)) {
             $path = rtrim($path, '/'). '/'. $scriptFile;
         } elseif (strpos($script, '.php') > 0) {
