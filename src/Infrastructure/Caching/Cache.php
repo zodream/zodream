@@ -106,8 +106,8 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
 		if (is_array($key) && null === $value && null === $duration) {
 			foreach ($key as $k => $v) {
 				$this->set($k, $v[0],
-                    isset($v[1]) ? $v[1] : $duration,
-                    isset($v[2]) ? $v[2] : $dependency);
+                    $v[1] ?? $duration,
+                    $v[2] ?? $dependency);
 			}
 			return $this;
 		}
