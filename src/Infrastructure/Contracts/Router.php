@@ -5,14 +5,14 @@ namespace Zodream\Infrastructure\Contracts;
 interface Router {
 
     public function group(array $filters, $cb): Router;
-    public function get($uri, $action = null): Route;
-    public function post($uri, $action = null): Route;
-    public function head($uri, $action = null): Route;
-    public function options($uri, $action = null): Route;
-    public function delete($uri, $action = null): Route;
-    public function put($uri, $action = null): Route;
-    public function patch($uri, $action = null): Route;
-    public function any($uri, $action = null): Route;
+    public function get(string $uri, mixed $action = null): Route;
+    public function post(string $uri, mixed $action = null): Route;
+    public function head(string $uri, mixed $action = null): Route;
+    public function options(string $uri, mixed $action = null): Route;
+    public function delete(string $uri, mixed $action = null): Route;
+    public function put(string $uri, mixed $action = null): Route;
+    public function patch(string $uri, mixed $action = null): Route;
+    public function any(string $uri, mixed $action = null): Route;
 
     public function middleware(...$middlewares): Router;
 

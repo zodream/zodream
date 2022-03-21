@@ -177,7 +177,7 @@ class PackageManifest {
      */
     protected function write(array $manifest)
     {
-        if (!$this->manifestPath->canWrite()) {
+        if ($this->manifestPath->exist() && !$this->manifestPath->canWrite()) {
             throw new Exception("The {$this->manifestPath} file must be present and writable.");
         }
 

@@ -42,7 +42,7 @@ class HandleExceptions {
      *
      * @throws \ErrorException
      */
-    public function handleError($level, $message, $file = '', $line = 0, $context = [])
+    public function handleError(int $level, string $message, string $file = '', int $line = 0, array $context = [])
     {
         if (error_reporting() & $level) {
             throw new ErrorException($message, 0, $level, $file, $line);
@@ -114,7 +114,7 @@ class HandleExceptions {
      * @param  array  $error
      * @param  int|null  $traceOffset
      */
-    protected function fatalErrorFromPhpError(array $error, $traceOffset = null)
+    protected function fatalErrorFromPhpError(array $error, ?int $traceOffset = null)
     {
         return new FatalErrorException(
             $error['message'], $error['type'], 0, $error['file'], $error['line'], $traceOffset
@@ -127,7 +127,7 @@ class HandleExceptions {
      * @param  int  $type
      * @return bool
      */
-    protected function isFatal($type)
+    protected function isFatal(int $type)
     {
         return in_array($type, [E_COMPILE_ERROR, E_CORE_ERROR, E_ERROR, E_PARSE]);
     }

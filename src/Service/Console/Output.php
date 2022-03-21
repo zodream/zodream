@@ -10,18 +10,21 @@ use Zodream\Helpers\Xml;
 use Zodream\Image\Image;
 use Zodream\Infrastructure\Contracts\Http\Output as OutputInterface;
 use Zodream\Infrastructure\Contracts\HttpContext as HttpContextInterface;
-use Zodream\Infrastructure\Contracts\Response\ExpertObject;
+use Zodream\Infrastructure\Contracts\Response\ExportObject;
 
 class Output implements OutputInterface {
 
-    protected $stream;
-    protected $statusCode = 200;
     /**
-     * @var File|ExpertObject|Image|array|string
+     * @var Stream|mixed
      */
-    protected $parameter;
+    protected mixed $stream;
+    protected int $statusCode = 200;
+    /**
+     * @var File|ExportObject|Image|array|string
+     */
+    protected mixed $parameter;
 
-    protected $container;
+    protected HttpContextInterface $container;
 
     public function __construct(HttpContextInterface $container)
     {
@@ -29,9 +32,9 @@ class Output implements OutputInterface {
     }
 
     /**
-     * @param array|string|File|Image|ExpertObject $parameter
+     * @param array|string|File|Image|ExportObject $parameter
      */
-    public function setParameter($parameter): OutputInterface
+    public function setParameter(mixed $parameter): OutputInterface
     {
         $this->parameter = $parameter;
         return $this;
