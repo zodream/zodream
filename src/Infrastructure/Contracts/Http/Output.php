@@ -7,4 +7,6 @@ interface Output {
     public function send();
 
     public function statusCode(int $code, string $statusText = ''): Output;
+
+    public function allowCors();
 }

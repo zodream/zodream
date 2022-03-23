@@ -60,6 +60,11 @@ class Output implements OutputInterface {
         return $this;
     }
 
+    public function allowCors()
+    {
+        return $this;
+    }
+
     public function contentType(string $type = 'html', string $option = 'utf-8'): OutputInterface
     {
         return $this;

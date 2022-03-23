@@ -16,8 +16,8 @@ class Request extends BaseInput implements Input {
         if (!is_array($data)) {
             $data = null;
         }
-        $this->data = $this->cleanData(empty($data)
-            ? $_REQUEST : array_merge($_REQUEST, $data));
+        $this->replace($this->cleanData(empty($data)
+            ? $_REQUEST : array_merge($_REQUEST, $data)));
     }
 
     protected function getTypeParser() {

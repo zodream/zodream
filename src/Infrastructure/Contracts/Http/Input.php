@@ -17,6 +17,7 @@ interface Input extends ArrayAccess {
     public function input(): string;
     public function all(): array;
     public function append(array $data);
+    public function replace(array $data);
     public function validate(array $rules);
 
     public function method(): string;

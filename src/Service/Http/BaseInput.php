@@ -27,6 +27,11 @@ abstract class BaseInput {
         return $this;
     }
 
+    public function replace(array $data) {
+        $this->data = $data;
+        return $this;
+    }
+
     public function all(): array
     {
         return $this->data;

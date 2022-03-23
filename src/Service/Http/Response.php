@@ -92,14 +92,14 @@ class Response implements HttpOutput {
     /**
      * @var Header
      */
-    public $header;
+    public Header $header;
 
     /**
      * @var File|ExportObject|Image|array|string
      */
-    protected $parameter;
+    protected mixed $parameter = null;
 
-    protected $container;
+    protected HttpContextInterface $container;
 
     public function __construct(HttpContextInterface $container)
     {
@@ -108,7 +108,7 @@ class Response implements HttpOutput {
         $this->header('Content-Security-Policy', config('safe.csp'));
     }
 
-    public function setParameter($parameter) {
+    public function setParameter(mixed $parameter) {
         $this->parameter = $parameter;
         return $this;
     }
@@ -116,7 +116,7 @@ class Response implements HttpOutput {
     /**
      * @return array|string|File|Image|ExportObject
      */
-    public function getParameter() {
+    public function getParameter(): mixed {
         return $this->parameter;
     }
 
