@@ -44,7 +44,7 @@ abstract class BaseInput {
      * @throws ValidationException
      * @throws \Exception
      */
-    public function validate(array $rules) {
+    public function validate(array $rules): array {
         $data = [];
         $validator = new Validator();
         foreach ($rules as $key => $rule) {
