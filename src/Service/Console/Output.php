@@ -17,7 +17,7 @@ class Output implements OutputInterface {
     /**
      * @var Stream|mixed
      */
-    protected mixed $stream;
+    protected mixed $stream = null;
     protected int $statusCode = 200;
     /**
      * @var File|ExportObject|Image|array|string
