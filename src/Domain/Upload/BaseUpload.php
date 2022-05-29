@@ -104,7 +104,7 @@ abstract class BaseUpload extends ConfigObject {
         return $this->checkDirectory();
     }
 
-    public function getRandomName($template = '') {
+    public function getRandomName(string $template = '') {
         $randNum = rand(1, 1000000000) .''. rand(1, 1000000000); //如果是32位PHP ，PHP_INT_MAX 有限制报错 int 变为 float
         if (empty($template)) {
             return date('YmdHis').'_'.$randNum.'.'.$this->type;

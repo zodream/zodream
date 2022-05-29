@@ -218,7 +218,7 @@ if (! function_exists('public_path')) {
      * @return FileObject|Directory|File
      * @throws Exception
      */
-    function public_path($path = '') {
+    function public_path(string $path = '') {
         $app = app();
         $key = 'public_path';
         if (!$app->has($key)) {
