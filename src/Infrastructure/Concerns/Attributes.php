@@ -5,7 +5,7 @@ use Zodream\Helpers\Arr;
 
 trait Attributes {
 
-    protected $__attributes = [];
+    protected array $__attributes = [];
 
     /**
      * `has` determines if an attribute "has" been defined

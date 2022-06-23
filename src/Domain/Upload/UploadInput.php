@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Domain\Upload;
 /**
  * Created by PhpStorm.
@@ -13,7 +14,7 @@ class UploadInput extends BaseUpload {
         $this->setName(request()->server('HTTP_X_FILENAME'));
     }
 
-    public function setName($name) {
+    public function setName(string $name) {
         $this->name = $name;
         $this->setType();
         return $this;
@@ -23,7 +24,7 @@ class UploadInput extends BaseUpload {
      * 保存到指定路径
      * @return bool
      */
-    public function save() {
+    public function save(): bool {
         if (!parent::save()) {
             return false;
         }

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Domain\Upload;
 
 /**
@@ -15,29 +16,29 @@ use Zodream\Disk\File;
  
 abstract class BaseUpload extends ConfigObject {
 
-    protected $configKey = 'upload';
+    protected string $configKey = 'upload';
 
     protected array $configs = [
         'allowType' => ['png', 'jpg', 'jpeg', 'bmp', 'gif'],
         'maxSize' => 2000000
     ];
 
-    protected $name;
+    protected string $name = '';
 
-    protected $type;
+    protected string $type = '';
 
-    protected $size;
+    protected int $size = -1;
 
     /**
-     * @var File
+     * @var File|null
      */
-    protected $file;
+    protected ?File $file = null;
     
-    protected $error = null;
+    protected string|int $error = '';
     
-    protected $errorMap = [];
+    protected array $errorMap = [];
 
-    public function setError($error = 0) {
+    public function setError(string|int $error = 0) {
         if (empty($error)) {
             return $this;
         }
@@ -45,19 +46,19 @@ abstract class BaseUpload extends ConfigObject {
             $this->error = $error;
             return $this;
         }
-        $this->error = $this->errorMap[$error] || $error;
+        $this->error = $this->errorMap[$error] ?? $error;
         return $this;
     }
 
     /**
      * 获取保存后的路径
-     * @return File
+     * @return File|null
      */
     public function getFile() {
         return $this->file;
     }
 
-    public function setFile($file) {
+    public function setFile(string|File $file) {
         if ($file instanceof File) {
             $file = new File($file);
         }
@@ -73,7 +74,7 @@ abstract class BaseUpload extends ConfigObject {
         return $this->name;
     }
     
-    public function setType($type = '') {
+    public function setType(string $type = '') {
         if (empty($type)) {
             $type = FileSystem::getExtension($this->name);
         }
@@ -89,7 +90,7 @@ abstract class BaseUpload extends ConfigObject {
     }
     
     public function getSize() {
-        if (is_null($this->size)) {
+        if ($this->size < 0) {
             $this->size = $this->getFile()->size();
         }
         return $this->size;
@@ -100,11 +101,11 @@ abstract class BaseUpload extends ConfigObject {
      * 保存到指定路径
      * @return bool
      */
-    public function save() {
+    public function save(): bool {
         return $this->checkDirectory();
     }
 
-    public function getRandomName(string $template = '') {
+    public function getRandomName(string $template = ''): string {
         $randNum = rand(1, 1000000000) .''. rand(1, 1000000000); //如果是32位PHP ，PHP_INT_MAX 有限制报错 int 变为 float
         if (empty($template)) {
             return date('YmdHis').'_'.$randNum.'.'.$this->type;
@@ -139,18 +140,18 @@ abstract class BaseUpload extends ConfigObject {
      * @param bool $allow 是否是检测允许的类型
      * @return bool
      */
-    public function checkType(array $args = [], $allow = true) {
+    public function checkType(array $args = [], bool $allow = true): bool {
         return in_array($this->type, $args)  === $allow;
     }
 
     /**
      * 验证大小
      * @param int $min
-     * @param null|int $max
+     * @param int $max
      * @return bool
      */
-    public function checkSize($min = 10000000, $max = null) {
-        if (is_null($max)) {
+    public function checkSize(int $min = 10000000, int $max = -1): bool {
+        if ($max < 0) {
             $max = $min;
             $min = 0;
         }
@@ -160,7 +161,7 @@ abstract class BaseUpload extends ConfigObject {
         return $this->size <= $max && $this->size >= $min;
     }
 
-    public function validateDimensions(callable $cb = null) {
+    public function validateDimensions(callable $cb = null): bool {
         return true;
     }
 
@@ -169,7 +170,7 @@ abstract class BaseUpload extends ConfigObject {
      * @return bool
      * @throws Exception
      */
-    public function checkDirectory() {
+    public function checkDirectory(): bool {
         $directory = $this->file->getDirectory();
         if (!$directory->create()) {
             $this->setError(

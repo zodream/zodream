@@ -1,30 +1,25 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Domain\Upload;
 
-
-/**
- * Created by PhpStorm.
- * User: zx648
- * Date: 2016/6/28
- * Time: 14:16
- */
 class UploadBase64 extends BaseUpload {
 
-    public function __construct($key = null) {
-        $this->load($key);
+    protected string $content = '';
+
+    public function __construct(string $data = '') {
+        $this->load($data);
     }
 
-    public function load($key = null) {
-        $content = request()->get($key);
-        if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $content, $result)){
+    public function load(string $data = '') {
+        if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $data, $result)){
             $this->setType($result[2]);
-            $content = substr($content, strlen($result[1]));
+            $data = substr($data, strlen($result[1]));
         }
-        $this->name = base64_decode($content);
-        $this->size = strlen($this->name);
+        $this->content = base64_decode($data);
+        $this->size = strlen($this->content);
     }
 
-    public function setType($type = '') {
+    public function setType(string $type = '') {
         $this->type = ltrim($type, '.');
     }
 
@@ -32,11 +27,11 @@ class UploadBase64 extends BaseUpload {
      * 保存到指定路径
      * @return bool
      */
-    public function save() {
+    public function save(): bool {
         if (!parent::save()) {
             return false;
         }
-        if (!$this->file->write($this->name) ||
+        if (!$this->file->write($this->content) ||
             !$this->file->exist()) { //移动失败
             $this->setError(
                 __('ERROR_WRITE_CONTENT')

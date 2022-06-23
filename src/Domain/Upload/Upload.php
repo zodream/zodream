@@ -11,12 +11,12 @@ use Zodream\Infrastructure\Base\MagicObject;
 
 class Upload extends MagicObject {
     /** @var BaseUpload[] */
-    protected $__attributes = [];
+    protected array $__attributes = [];
 
     /**
-     * @var Directory
+     * @var Directory|null
      */
-    protected $directory;
+    protected ?Directory $directory = null;
 
     public function setDirectory($directory) {
         if (!$directory instanceof Directory) {
@@ -39,7 +39,7 @@ class Upload extends MagicObject {
         return $this->__attributes[$key];
     }
 
-    public function upload($key) {
+    public function upload(string $key) {
         if (!array_key_exists($key, $_FILES)) {
             return false;
         }
@@ -101,7 +101,7 @@ class Upload extends MagicObject {
         return $this;
     }
     
-    public function save() {
+    public function save(): bool {
         $result = true;
         foreach ($this->__attributes as $item) {
             $item->setFile($this->directory->childFile($item->getRandomName()));
@@ -117,7 +117,7 @@ class Upload extends MagicObject {
      * @param bool $allow 是否允许上传
      * @return bool
      */
-    public function checkType($args, $allow = true) {
+    public function checkType(array|string $args, bool $allow = true): bool {
         $result = true;
         foreach ($this->__attributes as $item) {
             if (!$item->checkType((array)$args, $allow)) {
@@ -127,7 +127,7 @@ class Upload extends MagicObject {
         return $result;
     }
 
-    public function checkSize($min = 10000000, $max = null) {
+    public function checkSize(int $min = 10000000, int $max = -1): bool {
         $result = true;
         foreach ($this->__attributes as $item) {
             if (!$item->checkSize($min, $max)) {
@@ -137,7 +137,7 @@ class Upload extends MagicObject {
         return $result;
     }
 
-    public function validateDimensions(callable $cb = null) {
+    public function validateDimensions(callable $cb = null): bool {
         $result = true;
         foreach ($this->__attributes as $item) {
             if (!$item->validateDimensions($cb)) {
@@ -147,13 +147,13 @@ class Upload extends MagicObject {
         return $result;
     }
     
-    public function saveOne($file, $index = 0) {
+    public function saveOne($file, int $index = 0) {
         return $this->__attributes[$index]
             ->setFile($file)
             ->save();
     }
 
-    public function getError($index = null) {
+    public function getError(int $index = null) {
         if (!is_null($index)) {
             return $this->__attributes[$index]->getError();
         }

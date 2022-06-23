@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Domain\Upload;
 
 /**
@@ -13,8 +14,8 @@ class UploadFile extends BaseUpload {
 
     protected $mineType;
 
-    protected $errorMap = [
-        null,
+    protected array $errorMap = [
+        '',
         'UPLOAD_ERR_INI_SIZE',
         'UPLOAD_ERR_FORM_SIZE',
         'UPLOAD_ERR_PARTIAL',
@@ -55,7 +56,7 @@ class UploadFile extends BaseUpload {
      * @param callable|null $cb
      * @return bool
      */
-    public function validateDimensions(callable $cb = null) {
+    public function validateDimensions(callable $cb = null): bool {
         if (in_array($this->mineType, ['image/svg+xml', 'image/svg'])) {
             return true;
         }
@@ -75,7 +76,7 @@ class UploadFile extends BaseUpload {
      * 保存到指定路径
      * @return bool
      */
-    public function save() {
+    public function save(): bool {
         if (!parent::save()) {
             return false;
         }
