@@ -129,7 +129,7 @@ abstract class BaseUpload extends ConfigObject {
         ], $args, $template);
         //替换随机字符串
         if (preg_match('/\{rand\:([\d]*)\}/i', $name, $matches)) {
-            $name = preg_replace('/\{rand\:[\d]*\}/i', substr($randNum, 0, $matches[1]), $name);
+            $name = preg_replace('/\{rand\:[\d]*\}/i', substr($randNum, 0, intval($matches[1])), $name);
         }
         return $name . '.'. $this->type;
     }
