@@ -45,23 +45,7 @@ abstract class BaseInput {
      * @throws \Exception
      */
     public function validate(array $rules): array {
-        $data = [];
-        $validator = new Validator();
-        foreach ($rules as $key => $rule) {
-            $rule = $validator->converterRule($rule);
-            $value = $this->get($key);
-            if (is_null($value) && !isset($item['rules']['required'])) {
-                continue;
-            }
-            if ($validator->validateRule($key, $value, $rule['rules'], $rule['message'])) {
-                $data[$key] = $value;
-                continue;
-            }
-        }
-        if ($validator->messages()->isEmpty()) {
-            return $data;
-        }
-        throw new ValidationException($validator);
+        return Validator::filter($this, $rules);
     }
 
     /**
