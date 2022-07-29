@@ -17,9 +17,24 @@ abstract class BaseInput {
         return isset($this->data[$key]) || array_key_exists($key, $this->data);
     }
 
-    public function get(string $key = '', $default = null)
-    {
+    public function get(string $key = '', $default = null) {
         return $this->getValueWithDefault($this->data, $key, $default);
+    }
+
+    public function bool(string $key, bool $default = false): bool {
+        return Str::toBool($this->get($key, $default));
+    }
+    public function int(string $key, int $default = 0): int {
+        $val = $this->get($key, $default);
+        return is_int($val) ? $val : intval($val);
+    }
+    public function float(string $key, float $default = 0): float {
+        $val = $this->get($key, $default);
+        return is_float($val) ? $val : floatval($val);
+    }
+    public function string(string $key, string $default = ''): string {
+        $val = $this->get($key, $default);
+        return is_string($val) ? $val : sprintf('%s', $val);
     }
 
     public function append(array $data) {

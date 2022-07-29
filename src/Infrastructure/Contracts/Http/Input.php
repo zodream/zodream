@@ -8,6 +8,11 @@ interface Input extends ArrayAccess {
 
     public function has(string $key): bool;
     public function get(string $key = '', $default = null);
+    public function bool(string $key, bool $default = false): bool;
+    public function int(string $key, int $default = 0): int;
+    public function float(string $key, float $default = 0): float;
+    public function string(string $key, string $default = ''): string;
+
     public function post(string $key = '', $default = null);
     public function request(string $key = '', $default = null);
     public function cookie(string $key = '', $default = null);
