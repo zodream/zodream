@@ -37,9 +37,7 @@ class HttpContext implements HttpContextInterface, ArrayAccess {
     {
         if ($request instanceof Input) {
             $this->instance('request', $request);
-            $uri = url()->decode(trim($this->getVirtualUri($request), '/'));
-            $request->append($uri->getData());
-            $this->instance('path', $uri->getPath());
+            $this->instance('path', $request->routePath());
             return $this;
         }
         return $this['request']->get($request);
@@ -129,34 +127,5 @@ class HttpContext implements HttpContextInterface, ArrayAccess {
      */
     public function __set($key, $value) {
         $this[$key] = $value;
-    }
-
-    /**
-     * 获取网址中的虚拟路径
-     * @return string
-     */
-    protected function getVirtualUri(Input $request) {
-        $path = $request->server('PATH_INFO');
-        if (!empty($path)) {
-            // 在nginx 下虚拟路径无法获取
-            return $path;
-        }
-        $script = $request->script().'';
-        $scriptFile = basename($script);
-        $path = parse_url($request->url(), PHP_URL_PATH).'';
-        if (str_starts_with($scriptFile, $path)) {
-            $path = rtrim($path, '/'). '/'. $scriptFile;
-        } elseif (strpos($script, '.php') > 0) {
-            $script = preg_replace('#/[^/]+\.php$#i', '', $script);
-        }
-        // 判断是否是二级文件默认入口
-        if (!empty($script) && str_starts_with($path, $script)) {
-            return substr($path, strlen($script));
-        }
-        // 判断是否是根目录其他文件入口
-        if (strpos($path, $scriptFile) === 1) {
-            return '/'.substr($path, strlen($scriptFile) + 1);
-        }
-        return $path;
     }
 }

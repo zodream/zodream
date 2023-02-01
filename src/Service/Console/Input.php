@@ -2,13 +2,9 @@
 declare(strict_types=1);
 namespace Zodream\Service\Console;
 
-use Zodream\Helpers\Arr;
-use Zodream\Helpers\Str;
 use Zodream\Infrastructure\Contracts\Http\Input as InputInterface;
 use Zodream\Service\Console\Concerns\Argv;
 use Zodream\Service\Http\BaseInput;
-use Zodream\Validate\ValidationException;
-use Zodream\Validate\Validator;
 
 class Input extends BaseInput implements InputInterface {
 
@@ -78,12 +74,15 @@ class Input extends BaseInput implements InputInterface {
         return 'GET';
     }
 
-    public function url(): string
-    {
-        return sprintf('http://%s/%s', $this->host(), $this->getCacheData('path'));
+    public function url(): string {
+        return sprintf('http://%s/%s', $this->host(), $this->path());
     }
 
     public function path(): string {
+        return $this->routePath();
+    }
+
+    public function routePath(): string {
         return $this->getCacheData('path');
     }
 

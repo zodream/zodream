@@ -16,6 +16,8 @@ interface Router {
 
     public function middleware(...$middlewares): Router;
 
+    public function findRoute(string $method, string $uri): ?Route;
+
     public function handle(HttpContext $context): Route;
 
     /**

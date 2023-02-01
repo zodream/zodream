@@ -27,7 +27,19 @@ interface Input extends ArrayAccess {
 
     public function method(): string;
     public function url(): string;
+
+    /**
+     * 网址中的路径
+     * @return string
+     */
     public function path(): string;
+
+    /**
+     * 获取内部解析的路径
+     * @return string
+     */
+    public function routePath(): string;
+
     public function host(): string;
     public function ip(): string;
     public function referrer(): string;

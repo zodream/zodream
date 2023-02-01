@@ -12,8 +12,8 @@ class MatchRouteMiddle implements MiddlewareInterface {
     public function handle(HttpContext $context, callable $next) {
         /** @var Router $router */
         $router = $context[Router::class];
-        $route = $router->getRoute($context['request']->method(), $context->path());
-        if ($route !== false) {
+        $route = $router->findRoute($context['request']->method(), $context->path());
+        if ($route) {
             return $route;
         }
         return $next($context);
