@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace Zodream\Domain\Access;
 
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Zodream\Database\Model\UserModel;
 use Zodream\Helpers\Str;
 use Zodream\Infrastructure\Caching\Cache;
@@ -23,12 +24,12 @@ jti：JWT ID为web token提供唯一标识
  */
 class JWTAuth extends Token {
 
-    protected $payload = false;
+    protected mixed $payload = false;
 
     /**
      * @var array
      */
-    private $configs = [];
+    private array $configs = [];
 
     private $cacheDriver = null;
 
@@ -93,8 +94,8 @@ class JWTAuth extends Token {
     protected function decodePayload() {
         try {
             $configs = $this->getConfigs();
-            $this->setPayload(JWT::decode($this->getToken(),
-                $configs['publicKey'] ?? $configs['key'], [$configs['alg']]));
+            $raw = JWT::decode($this->getToken(), new Key($configs['publicKey'] ?? $configs['key'], $configs['alg']));
+            $this->setPayload($raw);
         } catch (Exception $ex) {
             $this->setPayload(null);
             logger(sprintf('jwt token error: %s', $ex->getMessage()));
@@ -152,7 +153,7 @@ class JWTAuth extends Token {
      * @return string
      * @throws Exception
      */
-    public function refreshToken($refreshTTL = 0): string {
+    public function refreshToken(int $refreshTTL = 0): string {
         $token = $this->getToken();
         if (empty($token)) {
             return '';
@@ -186,7 +187,7 @@ class JWTAuth extends Token {
      * @return string
      * @throws Exception
      */
-    public function createToken(UserModel $user, $refreshTTL = 0): string {
+    public function createToken(UserModel $user, int $refreshTTL = 0): string {
         $time = time();
         $payload = [
             'sub' => $user->getIdentity(),
@@ -204,8 +205,7 @@ class JWTAuth extends Token {
         $payload['exp'] = $time + $configs['TTL'] + $refreshTTL;
         $this->cacheDriver()
             ->set($payload['jti'], $payload, $configs['TTL'] + $refreshTTL + $configs['refreshTTL']);
-        return JWT::encode($payload, isset($configs['privateKey']) ? $configs['privateKey']
-            : $configs['key'], $configs['alg']);
+        return JWT::encode($payload, $configs['privateKey'] ?? $configs['key'], $configs['alg']);
     }
 
     protected function setRememberToken(UserObject $user) {}
