@@ -10,7 +10,6 @@ namespace Zodream\Infrastructure\Mailer;
 
 use PHPMailer\PHPMailer\SMTP;
 use Zodream\Infrastructure\Support\Template;
-use Zodream\Service\Config;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -31,7 +30,7 @@ class Mailer extends BaseMailer {
 		$this->mail->isSMTP();
 		$this->mail->SMTPAuth = true;
 		$this->mail->SMTPSecure = $this->configs['secure'];
-		if (Config::isDebug()) {
+		if (app()->isDebug()) {
 			$this->mail->SMTPDebug = SMTP::DEBUG_SERVER;
 		}
 		$email = empty($this->configs['email']) ? $this->configs['user'] : $this->configs['email'];
