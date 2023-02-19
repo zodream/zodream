@@ -69,7 +69,7 @@ class CacheMiddleware implements MiddlewareInterface {
     }
 
     private function getPath(array $args, string $path, Input $input): string {
-        if (!isset($args['params']) || empty($args['params'])) {
+        if (empty($args['params'])) {
             return '';
         }
         if (is_callable($args['params'])) {

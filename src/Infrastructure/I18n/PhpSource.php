@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\I18n;
 /**
  * Created by PhpStorm.
@@ -8,7 +9,19 @@ namespace Zodream\Infrastructure\I18n;
  */
 class PhpSource extends I18n {
 
-    public function translate($message, $param = [], $name = null) {
+
+    protected function formatLanguage(string $language): string {
+        $language = str_replace('-', '_', strtolower($language));
+        if ($this->existLanguage($language)) {
+            return $language;
+        }
+        if (str_starts_with($language, 'en_')) {
+            return 'en';
+        }
+        return 'zh_CN';
+    }
+
+    public function translate(mixed $message, array $param = [], ?string $name = null): mixed {
         if (empty($message)) {
             return $message;
         }
@@ -56,7 +69,7 @@ class PhpSource extends I18n {
         return $args;
     }
 
-    public function existLanguage($lang) {
-        return $this->directory->hasDirectory($this->language);
+    public function existLanguage(string $lang): bool {
+        return $this->directory->hasDirectory($lang);
     }
 }

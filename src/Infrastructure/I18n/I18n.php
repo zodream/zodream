@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\I18n;
 /**
  * Created by PhpStorm.
@@ -13,22 +14,22 @@ abstract class I18n extends MagicObject {
 
     const DEFAULT_LANGUAGE = 'zh-cn';
 
-    protected $fileName = 'zodream';
+    protected string $fileName = 'zodream';
 
-    protected $language = self::DEFAULT_LANGUAGE;
+    protected string $language = self::DEFAULT_LANGUAGE;
 
     /**
      * @var Directory
      */
-    protected $directory;
+    protected Directory $directory;
 
     public function __construct() {
         $configs = config('i18n', [
             'directory' => 'data/languages',
-            'language' => 'zh-cn',
+            // 'language' => 'zh-cn',
         ]);
         $this->setDirectory($configs['directory']);
-        $this->setLanguage(isset($configs['language']) ? $configs['language'] : null);
+        $this->setLanguage($configs['language'] ?? null);
         $this->reset();
     }
 
@@ -38,7 +39,7 @@ abstract class I18n extends MagicObject {
      * @param string|Directory $directory
      * @return $this
      */
-    public function setDirectory($directory) {
+    public function setDirectory(Directory|string $directory) {
         if (!$directory instanceof Directory) {
             $directory = app_path()->childDirectory($directory);
         }
@@ -51,29 +52,34 @@ abstract class I18n extends MagicObject {
      * @param string $arg
      * @return $this
      */
-    public function setFileName($arg) {
+    public function setFileName(string $arg) {
         $this->fileName = $arg;
         return $this;
     }
 
     /**
      * 设置应用程序语言包
-     * @param string $arg 语言
+     * @param string|null $arg 语言
      * @return $this
-     * @throws \Exception
      */
-    public function setLanguage($arg = null) {
+    public function setLanguage(?string $arg = null) {
         if (empty($arg)) {
-            $arg = $this->getBrowserLanguage();
+            $arg = $this->browserLanguage();
         }
-        $this->language = strtolower($arg);
-        if (!$this->existLanguage($this->language)) {
-            $this->language = self::DEFAULT_LANGUAGE;
-        }
+        $this->language = $this->formatLanguage($arg);
         return $this;
     }
 
-    protected function getBrowserLanguage() {
+    /**
+     * 转换同一的语言标识
+     * @param string $language
+     * @return string
+     */
+    protected function formatLanguage(string $language): string {
+        return strtolower($language);
+    }
+
+    protected function browserLanguage(): string {
         $language = request()->server('HTTP_ACCEPT_LANGUAGE', 'ZH-CN');
         if (empty($language) || !preg_match('/[\w-]+/', $language, $match)) {
             return self::DEFAULT_LANGUAGE;
@@ -89,24 +95,28 @@ abstract class I18n extends MagicObject {
      *
      * @return string 返回语言,
      */
-    public function getLanguage() {
+    public function getLanguage(): string {
         return $this->language;
     }
 
-    public function translate($message, $param = [], $name = null) {
-        if (!is_null($name) && $name != $this->fileName) {
-            $this->fileName = $name;
-            $this->reset();
-        }
+    public function translate(mixed $message, array $param = [], ?string $name = null): mixed {
+        $this->resetFileIfNotEmpty($name);
         return null;
     }
 
-    public function format($message, $param = []) {
+    protected function resetFileIfNotEmpty(?string $name) {
+        if (!is_null($name) && $name !== $this->fileName) {
+            $this->fileName = $name;
+            $this->reset();
+        }
+    }
+
+    public function format(mixed $message, array $param = []): mixed {
         if ($param === []) {
             return $message;
         }
         $args = [];
-        foreach ((array)$param as $key => $item) {
+        foreach ($param as $key => $item) {
             $args['{'.$key.'}'] = $item;
         }
         // 替换
@@ -118,7 +128,4 @@ abstract class I18n extends MagicObject {
      */
     abstract public function reset();
 
-    public function existLanguage($lang) {
-        return true;
-    }
 }
