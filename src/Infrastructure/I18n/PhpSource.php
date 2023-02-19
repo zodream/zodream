@@ -11,14 +11,14 @@ class PhpSource extends I18n {
 
 
     protected function formatLanguage(string $language): string {
-        $language = str_replace('-', '_', strtolower($language));
+        $language = str_replace('_', '-', strtolower($language));
         if ($this->existLanguage($language)) {
             return $language;
         }
-        if (str_starts_with($language, 'en_')) {
+        if (str_starts_with($language, 'en-')) {
             return 'en';
         }
-        return 'zh_CN';
+        return 'zh-cn';
     }
 
     public function translate(mixed $message, array $param = [], ?string $name = null): mixed {
