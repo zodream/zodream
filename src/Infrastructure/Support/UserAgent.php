@@ -145,16 +145,16 @@ class UserAgent {
                     }
                 } // Test for Pocket IE
                 else {
-                    if (stripos($agent, 'mspie') !== false ||
+                    $hasMS = stripos($agent, 'mspie');
+                    if ($hasMS !== false ||
                         stripos(
                             $agent,
                             'pocket'
                         ) !== false
                     ) {
-                        $aResult = explode(' ', stristr($agent, 'mspie'));
                         $args[0] = 'Pocket Internet Explorer';
-
-                        if (stripos($agent, 'mspie') !== false) {
+                        if ($hasMS !== false) {
+                            $aResult = explode(' ', stristr($agent, 'mspie'));
                             if (isset($aResult[1])) {
                                 $args[1] = $aResult[1];
                             }
