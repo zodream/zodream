@@ -125,17 +125,16 @@ class FileCache extends Cache {
         return implode('/', $parts).'/'.$hash.$this->configs['extension'];
     }
 	
-	public function gc($force = false, $expiredOnly = true) {
+	public function gc(bool $force = false, bool $expiredOnly = true) {
         if ($force || mt_rand(0, 1000000) < $this->getGC()) {
             $this->gcRecursive($this->directory, $expiredOnly);
         }
     }
     
-    protected function gcRecursive(Directory $directory, $expiredOnly) {
+    protected function gcRecursive(Directory $directory, bool $expiredOnly) {
         foreach ($directory->children() as $item) {
-            if (!$expiredOnly || $expiredOnly 
-                && $item instanceof File 
-                && $item->modifyTime() < time()) {
+            if (!$expiredOnly || ($item instanceof File
+                && $item->modifyTime() < time())) {
                 $item->delete();
             }
         }

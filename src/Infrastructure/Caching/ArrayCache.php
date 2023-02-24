@@ -8,7 +8,12 @@ namespace Zodream\Infrastructure\Caching;
 
 class ArrayCache extends Cache {
 	
-	protected $cache = array();
+	protected array $cache = [];
+    protected array $configs = [
+        'gc' => 10,
+        'serializer' => false,
+        'keyPrefix' => ''
+    ];
 	
 	protected function getValue($key) {
 		if (isset($this->cache[$key]) 

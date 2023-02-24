@@ -33,7 +33,7 @@ trait EventTrait {
      * @return $this
      */
     public function invoke($event = null, array $args = null) {
-        if (empty($event)) {
+        if (empty($event) && method_exists($this, 'getEvent')) {
             $event = $this->getEvent();
         }
         if (!array_key_exists($event, $this->events)) {

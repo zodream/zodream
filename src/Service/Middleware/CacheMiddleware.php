@@ -123,7 +123,7 @@ class CacheMiddleware implements MiddlewareInterface {
             if ($path === $uri) {
                 return $time;
             }
-            if (substr($uri, 0, 1) !== '~') {
+            if (!str_starts_with($uri, '~')) {
                 continue;
             }
             if (preg_match(sprintf('#%s#i', substr($uri, 1)), $path, $match)) {
