@@ -217,7 +217,7 @@ class JWTAuth extends Token {
      */
     public function logout() {
         $this->cacheDriver()->delete($this->getPayload('jti'));
-        return parent::logout();
+        parent::logout();
     }
 
 }

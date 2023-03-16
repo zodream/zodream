@@ -11,6 +11,8 @@ use Zodream\Infrastructure\Contracts\Cache as CacheInterface;
 
 class FileCache extends Cache {
 
+    const STORE_PREFIX = 'store_';
+
     /**
      * @var Directory
      */
@@ -38,7 +40,7 @@ class FileCache extends Cache {
     public function store(string $store): CacheInterface {
         $newCache = clone $this;
         if (!empty($store)) {
-            $newCache->setDirectory($this->directory->childDirectory($store));
+            $newCache->setDirectory($this->directory->childDirectory(static::STORE_PREFIX.$store));
         }
         return $newCache;
     }
@@ -133,8 +135,12 @@ class FileCache extends Cache {
     
     protected function gcRecursive(Directory $directory, bool $expiredOnly) {
         foreach ($directory->children() as $item) {
+            if ($item instanceof Directory &&
+                str_starts_with($item->getName(), static::STORE_PREFIX)) {
+                continue;
+            }
             if (!$expiredOnly || ($item instanceof File
-                && $item->modifyTime() < time())) {
+                    && $item->modifyTime() < time())) {
                 $item->delete();
             }
         }

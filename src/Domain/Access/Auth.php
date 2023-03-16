@@ -173,7 +173,7 @@ class Auth implements AuthObject {
      * @param bool $remember
      * @throws \Exception
      */
-    public function login(UserObject $user, $remember = false) {
+    public function login(UserObject $user, bool $remember = false) {
         $this->updateSession($user->getIdentity());
         if ($remember) {
             $this->setRememberToken($user);
