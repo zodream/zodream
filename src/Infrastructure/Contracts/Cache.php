@@ -6,6 +6,13 @@ interface Cache {
 
     public function store(string $store): Cache;
 
+    /**
+     * @param $key
+     * @param $callable
+     * @param ?int $duration 当前时间加秒数
+     * @param $dependency
+     * @return mixed
+     */
     public function getOrSet($key, $callable, $duration = null, $dependency = null);
 
     public function get($key);
