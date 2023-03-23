@@ -187,7 +187,7 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
         if (empty($key)) {
             return $_SESSION;
         }
-        return isset($_SESSION[$key]) ? $_SESSION[$key] : $defaultValue;
+        return $_SESSION[$key] ?? $defaultValue;
     }
 
     public function set($key, $value = null) {

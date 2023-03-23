@@ -244,6 +244,7 @@ class Response implements HttpOutput {
             case 'ts':
             case 'm3u8':
             case 'mp4':
+            case 'flac':
                 $this->header->setContentType($fileExtension);
                 break;
             default:
@@ -390,7 +391,7 @@ class Response implements HttpOutput {
      * @return array|null
      * @throws \Exception
      */
-    protected function getRange($fileSize){
+    protected function getRange(int $fileSize): ?array {
         $range = $this->container->make('request')->server('HTTP_RANGE');
         if (empty($range)) {
             return null;
