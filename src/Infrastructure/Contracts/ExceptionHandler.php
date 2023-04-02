@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Zodream\Infrastructure\Contracts;
 
 use Throwable;
-use Zodream\Infrastructure\Http\Response;
+use Zodream\Infrastructure\Contracts\Http\Output;
 
 interface ExceptionHandler {
     /**
@@ -18,16 +18,16 @@ interface ExceptionHandler {
      * Render an exception into an HTTP response.
      *
      * @param Throwable $e
-     * @return Response
+     * @return Output
      */
-    public function render(Throwable $e);
+    public function render(Throwable $e): Output;
 
     /**
      * Render an exception to the console.
      *
-     * @param $output
+     * @param Output $output
      * @param Throwable $e
      * @return void
      */
-    public function renderForConsole($output, Throwable $e);
+    public function renderForConsole(Output $output, Throwable $e);
 }

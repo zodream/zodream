@@ -106,10 +106,10 @@ class Handler implements ExceptionHandler {
      * @return Output
      * @throws Exception
      */
-    public function render(Throwable $e) {
+    public function render(Throwable $e): Output {
         if (method_exists($e, 'render') && $response = $e->render()) {
             return $response instanceof Output ? $response
-                : app('response')->setParameter($response);
+                : response()->setParameter($response);
         } elseif ($e instanceof Responsible) {
             return $e->toResponse();
         }
@@ -180,7 +180,7 @@ class Handler implements ExceptionHandler {
             throw $e;
         }
         $debugger->exceptionHandler($e, true);
-        return app('response');
+        return response();
     }
 
     /**
@@ -204,19 +204,19 @@ class Handler implements ExceptionHandler {
     }
 
     public function unauthenticated(AuthenticationException $e) {
-        return app('response')->redirect([config('auth.home'), 'redirect_uri' => url()->current()]);
+        return response()->redirect([config('auth.home'), 'redirect_uri' => url()->current()]);
     }
 
     /**
      * Render an exception to the console.
      *
-     * @param \Zodream\Service\Console\Output $output
+     * @param Output $output
      * @param Throwable $e
      * @return void
      */
-    public function renderForConsole($output, Throwable $e) {
+    public function renderForConsole(Output $output, Throwable $e) {
         do {
-            $output->writeln(sprintf('%s in %s: %d', $e->getMessage(), $e->getFile(), $e->getLine()));
+            $output->writeLine(sprintf('%s in %s: %d', $e->getMessage(), $e->getFile(), $e->getLine()));
         } while ($e = $e->getPrevious());
     }
 }

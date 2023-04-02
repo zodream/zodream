@@ -201,7 +201,7 @@ class Output implements OutputInterface {
         return fopen($this->hasStderrSupport() ? 'php://stderr' : 'php://output', 'w');
     }
 
-    public function writeln($messages) {
+    public function writeLine(mixed $messages) {
         $this->write($messages, true);
     }
 
@@ -209,7 +209,7 @@ class Output implements OutputInterface {
      * {@inheritdoc}
      */
     public function write($messages, $newline = false) {
-        $messages = (array) $messages;
+        $messages = (array)$messages;
         foreach ($messages as $message) {
             $this->doWrite($message, $newline);
         }

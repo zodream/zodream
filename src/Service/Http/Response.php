@@ -213,6 +213,10 @@ class Response implements HttpOutput {
         return $this->custom($data, 'rss');
     }
 
+    public function writeLine(mixed $messages) {
+        $this->setParameter(Str::value($messages));
+    }
+
     /**
      * 响应内容
      * @param File $file
