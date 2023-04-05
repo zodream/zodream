@@ -66,7 +66,7 @@ class Html {
         'media'
     );
 
-    public static $dataAttributes = ['data', 'data-ng', 'ng'];
+    public static array $dataAttributes = ['data', 'data-ng', 'ng'];
 
     /**
      * 标签
@@ -102,7 +102,7 @@ class Html {
      * @return string
      */
     public static function img($src = '#', $option = array()) {
-        $option['src'] = url()->to($src);
+        $option['src'] = is_string($src) && str_starts_with($src, 'data:') ? $src :  url()->to($src);
         return static::tag('img', null, $option);
     }
 
@@ -217,7 +217,7 @@ class Html {
     public static function link($url, $attributes = []) {
         $defaults = ['media' => 'all', 'type' => 'text/css', 'rel' => 'stylesheet'];
         $attributes = $attributes + $defaults;
-        $attributes['href'] = url()->to($url);
+        $attributes['href'] = is_string($url) && str_starts_with($url, 'data:') ? $url : url()->to($url);
         return static::tag('link', null, $attributes);
     }
 
