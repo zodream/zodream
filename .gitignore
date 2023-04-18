@@ -8,4 +8,5 @@ Thumbs.db
 .project
 phpunit.bat
 .idea/
+.phpunit.cache
 /.scannerwork
