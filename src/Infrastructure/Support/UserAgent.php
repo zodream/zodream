@@ -214,143 +214,44 @@ class UserAgent {
                 }
             } else {
                 $aversion = explode(' ', stristr($resultant, 'opera'));
-                $args[1] = isset($aversion[1]) ? $aversion[1] : '';
+                $args[1] = $aversion[1] ?? '';
             }
             $args[0] = 'Opera';
             return $args;
-        } elseif (stripos($agent, ' OPR/') !== false) {
-            $args[0] = 'Opera';
-            if (preg_match('/OPR\/([\d\.]*)/', $agent, $matches)) {
-                if (isset($matches[1])) {
-                    $args[1] = $matches[1];
-                }
-            }
-            return $args;
         }
 
-        if (stripos($agent, 'Chrome') !== false) {
-            $aResult = explode('/', stristr($agent, 'Chrome'));
-            if (isset($aResult[1])) {
-                $aversion = explode(' ', $aResult[1]);
-                $args[1] = $aversion[0];
+        foreach ([
+            'OPR' => 'Opera',
+            'Vivaldi',
+            'HeyTapBrowser',
+            'HuaweiBrowser',
+            'Edg' => 'Edge',
+            'Edge',
+            'Chrome',
+            'CriOS' => 'Chrome',
+            'GSA',
+            'WebTV',
+            'NetPositive',
+            'Galeon',
+            'Konqueror',
+            'iCab',
+            'OmniWeb',
+            'Phoenix',
+            'Firebird'
+                 ] as $tag => $browser) {
+            if (is_integer($tag)) {
+                $tag = $browser;
             }
-            $args[0] = 'Chrome';
-            return $args;
-        } elseif (stripos($agent, 'CriOS') !== false) {
-            $aResult = explode('/', stristr($agent, 'CriOS'));
-            if (isset($aResult[1])) {
-                $aversion = explode(' ', $aResult[1]);
-                $args[1] = $aversion[0];
+            $i = stripos($agent, $tag);
+            if ($i === false) {
+                continue;
             }
-            $args[0] = 'Chrome';
-            return $args;
-        }
-
-        if (stripos($agent, 'Vivaldi') !== false) {
-            $aResult = explode('/', stristr($agent, 'Vivaldi'));
-            if (isset($aResult[1])) {
-                $aversion = explode(' ', $aResult[1]);
-                $args[1] = $aversion[0];
-            }
-            $args[0] = 'Vivaldi';
-            return $args;
-        }
-
-        if (stripos($agent, 'Edge') !== false) {
-            $version = explode('Edge/', $agent);
-            if (isset($version[1])) {
-                $args[1] = (float)$version[1];
-            }
-            $args[0] = 'Edge';
+            $i += strlen($tag) + 1;
+            $end = strpos($agent, ' ', $i);
+            $args[1] = $end === false ? substr($agent, $i) : substr($agent, $i, $end - $i);
+            $args[0] = $browser;
             return $args;
         }
-
-        if (stripos($agent, 'GSA') !== false) {
-            $aResult = explode('/', stristr($agent, 'GSA'));
-            if (isset($aResult[1])) {
-                $aversion = explode(' ', $aResult[1]);
-                $args[1] = $aversion[0];
-            }
-            $args[0] = 'GSA';
-            return $args;
-        }
-
-        if (stripos($agent, 'webtv') !== false) {
-            $aResult = explode('/', stristr($agent, 'webtv'));
-            if (isset($aResult[1])) {
-                $aversion = explode(' ', $aResult[1]);
-                $args[1] = $aversion[0];
-            }
-            $args[0] = 'WebTV';
-            return $args;
-        }
-
-        if (stripos($agent, 'NetPositive') !== false) {
-            $aResult = explode('/', stristr($agent, 'NetPositive'));
-            if (isset($aResult[1])) {
-                $aversion = explode(' ', $aResult[1]);
-                $args[1] = str_replace(array('(', ')', ';'), '', $aversion[0]);
-            }
-            $args[0] = 'NetPositive';
-            return $args;
-        }
-
-        if (stripos($agent, 'galeon') !== false) {
-            $aResult = explode(' ', stristr($agent, 'galeon'));
-            $aversion = explode('/', $aResult[0]);
-            if (isset($aversion[1])) {
-                $args[1] = $aversion[1];
-            }
-            $args[0] = 'Galeon';
-            return $args;
-        }
-
-        if (stripos($agent, 'Konqueror') !== false) {
-            $aResult = explode(' ', stristr($agent, 'Konqueror'));
-            $aversion = explode('/', $aResult[0]);
-            if (isset($aversion[1])) {
-                $args[1] = $aversion[1];
-            }
-            $args[0] = 'Konqueror';
-            return $args;
-        }
-
-        if (stripos($agent, 'icab') !== false) {
-            $aversion = explode(' ', stristr(str_replace('/', ' ', $agent), 'icab'));
-            if (isset($aversion[1])) {
-                $args[1] = $aversion[1];
-            }
-            $args[0] = 'iCab';
-            return $args;
-        }
-
-        if (stripos($agent, 'omniweb') !== false) {
-            $aResult = explode('/', stristr($agent, 'omniweb'));
-            $aversion = explode(' ', isset($aResult[1]) ? $aResult[1] : '');
-            return [
-                'OmniWeb',
-                $aversion[0]
-            ];
-        }
-
-        if (stripos($agent, 'Phoenix') !== false) {
-            $aversion = explode('/', stristr($agent, 'Phoenix'));
-            if (isset($aversion[1])) {
-                $args[1] = $aversion[1];
-            }
-            $args[0] = 'Phoenix';
-            return $args;
-        }
-
-        if (stripos($agent, 'Firebird') !== false) {
-            $aversion = explode('/', stristr($agent, 'Firebird'));
-            if (isset($aversion[1])) {
-                $args[1] = $aversion[1];
-            }
-            $args[0] = 'Firebird';
-            return $args;
-        }
-
         if (stripos($agent, 'Firefox') !== false &&
             preg_match('/Navigator\/([^ ]*)/i', $agent, $matches)
         ) {
@@ -596,7 +497,7 @@ class UserAgent {
                             $args[1] = 'NT 4.0';
                             break;
                         default:
-                            if ((float)$matches[1] >= 10.0) {
+                            if (floatval($matches[1]) >= 10.0) {
                                 $args[1] = $matches[1];
                             }
                             break;
@@ -682,6 +583,11 @@ class UserAgent {
             return $args;
         }
 
+        if (stripos($agent, 'HarmonyOS') !== false) {
+            $args[0] = 'HarmonyOS';
+            return $args;
+        }
+
         if (stripos($agent, 'Android') !== false) {
             if (preg_match('/Android ([\d\.]*)/i', $agent, $matches)) {
                 if (isset($matches[1])) {
@@ -689,6 +595,13 @@ class UserAgent {
                 }
             }
             $args[0] = 'Android';
+            return $args;
+        }
+
+
+
+        if (stripos($agent, 'Ubuntu') !== false) {
+            $args[0] = 'Ubuntu';
             return $args;
         }
 
