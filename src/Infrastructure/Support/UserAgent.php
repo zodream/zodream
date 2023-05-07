@@ -3,9 +3,12 @@ declare(strict_types=1);
 namespace Zodream\Infrastructure\Support;
 
 class UserAgent {
+    const UNKNOWN = 'unknown';
+
     public static function device(string $agent): array {
         $res = [
-            'brand' => null
+            static::UNKNOWN, // 手机品牌
+            static::UNKNOWN, // 手机型号
         ];
         $clientKeywords = array ('nokia',
             'sony',
@@ -45,14 +48,14 @@ class UserAgent {
             $agent, $match)) {
             return $res;
         }
-        $res['brand'] = $match[1];
+        $res[0] = $match[1];
         return $res;
     }
 
     public static function browser(string $agent): array {
         $args = [
-            'unknown',    //系统
-            'unknown',     //系统版本
+            static::UNKNOWN,    //系统
+            static::UNKNOWN,     //系统版本
         ];
         if (stripos($agent, 'blackberry') !== false) {
             $result = explode('/', stristr($agent, 'BlackBerry'));
@@ -172,8 +175,8 @@ class UserAgent {
         }
 
         $args = [
-            'unknown',
-            'unknown',
+            static::UNKNOWN,
+            static::UNKNOWN,
         ];
 
         if (stripos($agent, 'opera mini') !== false) {
@@ -428,8 +431,8 @@ class UserAgent {
 
     public static function os(string $agent): array {
         $args = [
-            'unknown',    //系统
-            'unknown',     //系统版本
+            static::UNKNOWN,    //系统
+            static::UNKNOWN,     //系统版本
         ];
         //Chrome OS
         if (stripos($agent, 'CrOS') !== false) {

@@ -221,11 +221,11 @@ trait Other {
         // 如果via信息含有wap则一定是移动设备,部分服务商会屏蔽该信息
         if ($via = $this->server('HTTP_VIA')) {
             // 找不到为false,否则为true
-            return stristr($via, 'wap') ? true : false;
+            return (bool)stristr($via, 'wap');
         }
         if ($agent = $this->server('HTTP_USER_AGENT')) {
             $device = UserAgent::device($agent);
-            if ($device['brand']) {
+            if ($device[0] !== UserAgent::UNKNOWN) {
                 return true;
             }
         }
