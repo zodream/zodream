@@ -42,7 +42,8 @@ trait Other {
         $path = parse_url($this->url(), PHP_URL_PATH).'';
         if (str_starts_with($scriptFile, $path)) {
             $path = rtrim($path, '/'). '/'. $scriptFile;
-        } elseif (strpos($script, '.php') > 0) {
+        } elseif (str_ends_with($script, '.php') && !str_starts_with($path, $script)) {
+            // 判断 /a/hh -> /a/index.php/hh
             $script = preg_replace('#/[^/]+\.php$#i', '', $script);
         }
         // 判断是否是二级文件默认入口
@@ -61,8 +62,7 @@ trait Other {
      *
      * @return string 真实显示的网址
      */
-    protected function createUriPath(): string
-    {
+    protected function createUriPath(): string {
         if ($uri = $this->server('REQUEST_URI')) {
             return $uri;
         }

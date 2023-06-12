@@ -62,7 +62,7 @@ interface UrlGenerator {
      *
      * @throws InvalidArgumentException
      */
-    public function route(string $name, $parameters = [], $absolute = true): string;
+    public function route(string $name, array $parameters = [], bool $absolute = true): string;
 
     /**
      * Get the URL to a controller action.
@@ -72,7 +72,7 @@ interface UrlGenerator {
      * @param  bool  $absolute
      * @return string
      */
-    public function action($action, $parameters = [], $absolute = true): string;
+    public function action(string|array $action, array $parameters = [], bool $absolute = true): string;
 
     /**
      * 解码url，对一些路由重写插件有用
