@@ -1,31 +1,10 @@
 <?php
-
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Queue\Events;
 
 use Zodream\Infrastructure\Queue\Jobs\Job;
 
-class JobFailed
-{
-    /**
-     * The connection name.
-     *
-     * @var string
-     */
-    public $connectionName;
-
-    /**
-     * The job instance.
-     *
-     * @var Job
-     */
-    public $job;
-
-    /**
-     * The exception that caused the job to fail.
-     *
-     * @var \Exception
-     */
-    public $exception;
+class JobFailed {
 
     /**
      * Create a new event instance.
@@ -35,10 +14,11 @@ class JobFailed
      * @param  \Exception  $exception
      * @return void
      */
-    public function __construct($connectionName, $job, $exception)
+    public function __construct(
+        public string $connectionName,
+        public Job $job,
+        public \Exception $exception
+    )
     {
-        $this->job = $job;
-        $this->exception = $exception;
-        $this->connectionName = $connectionName;
     }
 }

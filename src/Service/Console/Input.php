@@ -86,6 +86,10 @@ class Input extends BaseInput implements InputInterface {
         return $this->getCacheData('path');
     }
 
+    public function isLinux(): bool {
+        return DIRECTORY_SEPARATOR == '/';
+    }
+
     public function host(): string
     {
         return '127.0.0.1';

@@ -1,38 +1,27 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Queue\Jobs;
 
+use stdClass;
 use Zodream\Infrastructure\Queue\DatabaseQueue;
 
 class DatabaseJob extends Job {
-    /**
-     * The database queue instance.
-     *
-     * @var DatabaseQueue
-     */
-    protected $database;
-
-    /**
-     * The database job payload.
-     *
-     * @var \stdClass
-     */
-    protected $job;
 
     /**
      * Create a new job instance.
      *
      * @param  DatabaseQueue  $database
-     * @param  \stdClass  $job
+     * @param  stdClass  $job
      * @param  string  $connectionName
      * @param  string  $queue
      * @return void
      */
-    public function __construct(DatabaseQueue $database, $job, $connectionName, $queue)
+    public function __construct(
+        protected DatabaseQueue $database,
+        protected stdClass $job,
+        protected string $connectionName,
+        protected string $queue)
     {
-        $this->job = $job;
-        $this->queue = $queue;
-        $this->database = $database;
-        $this->connectionName = $connectionName;
     }
 
     /**
@@ -41,13 +30,12 @@ class DatabaseJob extends Job {
      * @param  int  $delay
      * @return mixed
      */
-    public function release($delay = 0)
-    {
+    public function release(int $delay = 0): void {
         parent::release($delay);
 
         $this->delete();
 
-        return $this->database->release($this->queue, $this->job, $delay);
+        $this->database->release($this->queue, $this->job, $delay);
     }
 
     /**
@@ -55,7 +43,7 @@ class DatabaseJob extends Job {
      *
      * @return void
      */
-    public function delete()
+    public function delete(): void
     {
         parent::delete();
 
@@ -67,7 +55,7 @@ class DatabaseJob extends Job {
      *
      * @return int
      */
-    public function attempts()
+    public function attempts(): int
     {
         return (int) $this->job->attempts;
     }
@@ -77,7 +65,7 @@ class DatabaseJob extends Job {
      *
      * @return string
      */
-    public function getJobId()
+    public function getJobId(): string
     {
         return $this->job->id;
     }
@@ -87,7 +75,7 @@ class DatabaseJob extends Job {
      *
      * @return string
      */
-    public function getRawBody()
+    public function getRawBody(): string
     {
         return $this->job->payload;
     }

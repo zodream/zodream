@@ -1,6 +1,8 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Queue;
 
+use Exception;
 use Zodream\Infrastructure\Queue\Events\JobFailed;
 use Zodream\Infrastructure\Queue\Jobs\Job;
 
@@ -8,13 +10,13 @@ class FailingJob {
     /**
      * Delete the job, call the "failed" method, and raise the failed job event.
      *
-     * @param  string  $connectionName
-     * @param  Job  $job
-     * @param  \Exception $e
+     * @param string $connectionName
+     * @param Job $job
+     * @param Exception|null $e
      * @return void
+     * @throws \Exception
      */
-    public static function handle($connectionName, $job, $e = null)
-    {
+    public static function handle(string $connectionName, Job $job, ?Exception $e = null): void {
         $job->markAsFailed();
 
         if ($job->isDeleted()) {

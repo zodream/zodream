@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Queue\Jobs;
 
 use Zodream\Helpers\Str;
@@ -10,7 +11,7 @@ class JobName {
      * @param  string  $job
      * @return array
      */
-    public static function parse($job) {
+    public static function parse(string $job): array {
         return Str::parseCallback($job, 'fire');
     }
 
@@ -21,7 +22,7 @@ class JobName {
      * @param  array  $payload
      * @return string
      */
-    public static function resolve($name, $payload) {
+    public static function resolve(string $name, array $payload): string {
         if (! empty($payload['displayName'])) {
             return $payload['displayName'];
         }

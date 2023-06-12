@@ -1,15 +1,17 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Queue;
 
 
 use Zodream\Database\Engine\Redis;
 use Zodream\Database\RedisManager;
 use Zodream\Helpers\Str;
+use Zodream\Infrastructure\Error\Exception;
 use Zodream\Infrastructure\Queue\Jobs\Job;
 use Zodream\Infrastructure\Queue\Jobs\RedisJob;
 
 class RedisQueue extends Queue {
-    protected $configs = [
+    protected array $configs = [
         'connection' => '',
         'default' => 'default',
         'retryAfter' => 60,
@@ -19,10 +21,11 @@ class RedisQueue extends Queue {
     /**
      * Get the size of the queue.
      *
-     * @param  string  $queue
+     * @param string|null $queue
      * @return int
+     * @throws \RedisException
      */
-    public function size($queue = null)
+    public function size(?string $queue = null): int
     {
         $queue = $this->getQueue($queue);
 
@@ -34,13 +37,13 @@ class RedisQueue extends Queue {
     /**
      * Push a new job onto the queue.
      *
-     * @param  object|string $job
-     * @param  mixed $data
-     * @param  string $queue
+     * @param object|string $job
+     * @param mixed $data
+     * @param string|null $queue
      * @return mixed
-     * @throws \Zodream\Infrastructure\Error\Exception
+     * @throws Exception
      */
-    public function push($job, $data = '', $queue = null)
+    public function push(mixed $job, mixed $data = '', ?string $queue = null): mixed
     {
         return $this->pushRaw($this->createPayload($job, $data), $queue);
     }
@@ -48,12 +51,12 @@ class RedisQueue extends Queue {
     /**
      * Push a raw payload onto the queue.
      *
-     * @param  string  $payload
-     * @param  string  $queue
-     * @param  array   $options
+     * @param string $payload
+     * @param string|null $queue
+     * @param array $options
      * @return mixed
      */
-    public function pushRaw($payload, $queue = null, array $options = [])
+    public function pushRaw(string $payload, ?string $queue = null, array $options = []): mixed
     {
         $this->getConnection()->rpush($this->getQueue($queue), $payload);
 
@@ -63,14 +66,14 @@ class RedisQueue extends Queue {
     /**
      * Push a new job onto the queue after a delay.
      *
-     * @param  \DateTimeInterface|\DateInterval|int $delay
-     * @param  object|string $job
-     * @param  mixed $data
-     * @param  string $queue
+     * @param int $delay
+     * @param object|string $job
+     * @param mixed $data
+     * @param string|null $queue
      * @return mixed
-     * @throws \Zodream\Infrastructure\Error\Exception
+     * @throws Exception
      */
-    public function later($delay, $job, $data = '', $queue = null)
+    public function later(int $delay, mixed $job, mixed $data = '', ?string $queue = null): mixed
     {
         return $this->laterRaw($delay, $this->createPayload($job, $data), $queue);
     }
@@ -78,12 +81,12 @@ class RedisQueue extends Queue {
     /**
      * Push a raw job onto the queue after a delay.
      *
-     * @param  \DateTimeInterface|\DateInterval|int  $delay
-     * @param  string  $payload
-     * @param  string  $queue
+     * @param int $delay
+     * @param string $payload
+     * @param string|null $queue
      * @return mixed
      */
-    protected function laterRaw($delay, $payload, $queue = null)
+    protected function laterRaw(int $delay, string $payload, ?string $queue = null)
     {
         $this->getConnection()->zadd(
             $this->getQueue($queue).':delayed', time() + $delay, $payload
@@ -95,11 +98,11 @@ class RedisQueue extends Queue {
     /**
      * Create a payload string from the given job and data.
      *
-     * @param  string  $job
-     * @param  mixed   $data
-     * @return string
+     * @param string $job
+     * @param mixed $data
+     * @return array
      */
-    protected function createPayloadArray($job, $data = '')
+    protected function createPayloadArray(string $job, mixed $data = ''): array
     {
         return array_merge(parent::createPayloadArray($job, $data), [
             'id' => $this->getRandomId(),
@@ -110,15 +113,15 @@ class RedisQueue extends Queue {
     /**
      * Pop the next job off of the queue.
      *
-     * @param  string  $queue
+     * @param string|null $queue
      * @return Job|null
      */
-    public function pop($queue = null)
+    public function pop(?string $queue = null): ?Job
     {
         $this->migrate($prefixed = $this->getQueue($queue));
 
         if (empty($nextJob = $this->retrieveNextJob($prefixed))) {
-            return;
+            return null;
         }
 
         list($job, $reserved) = $nextJob;
@@ -129,6 +132,7 @@ class RedisQueue extends Queue {
                 $reserved, $this->connectionName, $queue ?: $this->configs['default']
             );
         }
+        return null;
     }
 
     /**
@@ -137,7 +141,7 @@ class RedisQueue extends Queue {
      * @param  string  $queue
      * @return void
      */
-    protected function migrate($queue)
+    protected function migrate(string $queue): void
     {
         $this->migrateExpiredJobs($queue.':delayed', $queue);
 
@@ -153,10 +157,10 @@ class RedisQueue extends Queue {
      * @param  string  $to
      * @return array
      */
-    public function migrateExpiredJobs($from, $to)
+    public function migrateExpiredJobs(string $from, string $to): array
     {
         return $this->getConnection()->getDriver()->eval(
-            LuaScripts::migrateExpiredJobs(), 2, $from, $to, time()
+            LuaScripts::migrateExpiredJobs(), [$from, $to, time()], 2
         );
     }
 
@@ -166,15 +170,15 @@ class RedisQueue extends Queue {
      * @param  string  $queue
      * @return array
      */
-    protected function retrieveNextJob($queue)
+    protected function retrieveNextJob(string $queue)
     {
         if (! is_null($this->configs['blockFor'])) {
             return $this->blockingPop($queue);
         }
 
         return $this->getConnection()->getDriver()->eval(
-            LuaScripts::pop(), 2, $queue, $queue.':reserved',
-            time() + $this->configs['retryAfter']
+            LuaScripts::pop(), [$queue, $queue.':reserved',
+            time() + $this->configs['retryAfter']], 2
         );
     }
 
@@ -184,7 +188,7 @@ class RedisQueue extends Queue {
      * @param  string  $queue
      * @return array
      */
-    protected function blockingPop($queue)
+    protected function blockingPop(string $queue)
     {
         $rawBody = $this->getConnection()->getDriver()->blpop($queue, $this->configs['blockFor']);
 
@@ -212,7 +216,7 @@ class RedisQueue extends Queue {
      * @param RedisJob  $job
      * @return void
      */
-    public function deleteReserved($queue, $job)
+    public function deleteReserved(string $queue, RedisJob  $job)
     {
         $this->getConnection()->getDriver()->zrem($this->getQueue($queue).':reserved', $job->getReservedJob());
     }
@@ -225,12 +229,12 @@ class RedisQueue extends Queue {
      * @param  int  $delay
      * @return void
      */
-    public function deleteAndRelease($queue, $job, $delay) {
+    public function deleteAndRelease(string $queue, RedisJob $job, int $delay) {
         $queue = $this->getQueue($queue);
 
         $this->getConnection()->getDriver()->eval(
-            LuaScripts::release(), 2, $queue.':delayed', $queue.':reserved',
-            $job->getReservedJob(), time() + $delay
+            LuaScripts::release(), [$queue.':delayed', $queue.':reserved',
+            $job->getReservedJob(), time() + $delay], 2
         );
     }
 
@@ -239,7 +243,7 @@ class RedisQueue extends Queue {
      *
      * @return string
      */
-    protected function getRandomId()
+    protected function getRandomId(): string
     {
         return Str::random(32);
     }
@@ -250,7 +254,7 @@ class RedisQueue extends Queue {
      * @param  string|null  $queue
      * @return string
      */
-    public function getQueue($queue) {
+    public function getQueue(?string $queue): string {
         return 'queues:'.($queue ?: $this->configs['default']);
     }
 
@@ -259,7 +263,7 @@ class RedisQueue extends Queue {
      *
      * @return Redis
      */
-    protected function getConnection() {
+    protected function getConnection(): Redis {
         return RedisManager::connection($this->configs['connection']);
     }
 }

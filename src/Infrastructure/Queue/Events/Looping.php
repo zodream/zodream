@@ -1,22 +1,8 @@
 <?php
-
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Queue\Events;
 
-class Looping
-{
-    /**
-     * The connection name.
-     *
-     * @var string
-     */
-    public $connectionName;
-
-    /**
-     * The queue name.
-     *
-     * @var string
-     */
-    public $queue;
+class Looping {
 
     /**
      * Create a new event instance.
@@ -25,9 +11,9 @@ class Looping
      * @param  string  $queue
      * @return void
      */
-    public function __construct($connectionName, $queue)
+    public function __construct(
+        public string $connectionName,
+        public string $queue)
     {
-        $this->queue = $queue;
-        $this->connectionName = $connectionName;
     }
 }

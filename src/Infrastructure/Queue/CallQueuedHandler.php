@@ -1,9 +1,15 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Queue;
 
+use Exception;
 use Zodream\Database\Model\ModelNotFoundException;
 use Zodream\Infrastructure\Queue\Jobs\Job;
 
+/**
+ * 相关代码来源于 laravel 并进行相应的改变
+ * @see https://github.com/laravel/framework
+ */
 class CallQueuedHandler {
 
     /**
@@ -13,14 +19,14 @@ class CallQueuedHandler {
      * @param  array  $data
      * @return void
      */
-    public function call(Job $job, array $data)
-    {
+    public function call(Job $job, array $data): void {
         try {
             $command = $this->setJobInstanceIfNecessary(
                 $job, unserialize($data['command'])
             );
         } catch (ModelNotFoundException $e) {
-            return $this->handleModelNotFound($job, $e);
+            $this->handleModelNotFound($job, $e);
+            return;
         }
 
         event()->dispatchNow(
@@ -43,8 +49,7 @@ class CallQueuedHandler {
      * @param  mixed  $command
      * @return mixed
      */
-    protected function resolveHandler($job, $command)
-    {
+    protected function resolveHandler(Job $job, mixed $command): mixed {
         $handler = event()->getCommandHandler($command) ?: null;
 
         if ($handler) {
@@ -61,7 +66,7 @@ class CallQueuedHandler {
      * @param  mixed  $instance
      * @return mixed
      */
-    protected function setJobInstanceIfNecessary(Job $job, $instance)
+    protected function setJobInstanceIfNecessary(Job $job, mixed $instance): mixed
     {
         if (in_array(InteractsWithQueue::class, class_uses_recursive($instance))) {
             $instance->setJob($job);
@@ -76,7 +81,7 @@ class CallQueuedHandler {
      * @param  mixed  $command
      * @return void
      */
-    protected function ensureNextJobInChainIsDispatched($command)
+    protected function ensureNextJobInChainIsDispatched(mixed $command): void
     {
         if (method_exists($command, 'dispatchNextJobInChain')) {
             $command->dispatchNextJobInChain();
@@ -87,25 +92,26 @@ class CallQueuedHandler {
      * Handle a model not found exception.
      *
      * @param  Job  $job
-     * @param  \Exception  $e
+     * @param  Exception  $e
      * @return void
      */
-    protected function handleModelNotFound(Job $job, $e)
+    protected function handleModelNotFound(Job $job, Exception $e): void
     {
         $class = $job->resolveName();
 
         try {
             $shouldDelete = (new \ReflectionClass($class))
                     ->getDefaultProperties()['deleteWhenMissingModels'] ?? false;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $shouldDelete = false;
         }
 
         if ($shouldDelete) {
-            return $job->delete();
+            $job->delete();
+            return;
         }
 
-        return FailingJob::handle(
+        FailingJob::handle(
             $job->getConnectionName(), $job, $e
         );
     }
@@ -116,11 +122,10 @@ class CallQueuedHandler {
      * The exception that caused the failure will be passed.
      *
      * @param  array  $data
-     * @param  \Exception  $e
+     * @param  Exception  $e
      * @return void
      */
-    public function failed(array $data, $e)
-    {
+    public function failed(array $data, Exception $e): void {
         $command = unserialize($data['command']);
 
         if (method_exists($command, 'failed')) {

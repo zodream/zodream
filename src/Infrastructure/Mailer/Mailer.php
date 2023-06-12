@@ -1,4 +1,5 @@
-<?php 
+<?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Mailer;
 
 /**
@@ -21,9 +22,9 @@ class Mailer extends BaseMailer {
 	/**
 	 * @var PHPMailer
 	 */
-	protected $mail;
+	protected PHPMailer $mail;
 	
-	public function __construct($config = array()) {
+	public function __construct(array $config = []) {
         $this->loadConfigs($config);
 		$this->mail          = new PHPMailer();
 		$this->mail->CharSet = PHPMailer::CHARSET_UTF8;
@@ -46,7 +47,7 @@ class Mailer extends BaseMailer {
 	 * @param string $password
 	 * @return $this
 	 */
-	public function setUser($username, $password) {
+	public function setUser(string $username, string $password) {
 		$this->mail->Username = $username;
 		$this->mail->Password = $password;
 		return $this;
@@ -58,7 +59,7 @@ class Mailer extends BaseMailer {
 	 * @param string $port
 	 * @return $this
 	 */
-	public function setHost($host, $port) {
+	public function setHost(string $host, string $port) {
 		$this->mail->Host = $host;
 		$this->mail->Port = $port;
 		return $this;
@@ -72,7 +73,7 @@ class Mailer extends BaseMailer {
      * @return $this
      * @throws Exception
      */
-	public function setFrom($address, $name = '', $auto = TRUE) {
+	public function setFrom(string $address, string $name = '', bool $auto = true) {
 		$this->mail->setFrom($address, $name, $auto);
 		return $this;
 	}
@@ -84,7 +85,7 @@ class Mailer extends BaseMailer {
      * @return $this
      * @throws Exception
      */
-	public function addAddress($address, $name = '') {
+	public function addAddress(string $address, string $name = '') {
 		$this->mail->addAddress($address, $name);
 		return $this;
 	}
@@ -96,7 +97,7 @@ class Mailer extends BaseMailer {
      * @return $this
      * @throws Exception
      */
-	public function addReplyTo($address, $name = '') {
+	public function addReplyTo(string $address, string $name = '') {
 		$this->mail->addReplyTo($address, $name);
 		return $this;
 	}
@@ -108,7 +109,7 @@ class Mailer extends BaseMailer {
      * @return $this
      * @throws Exception
      */
-	public function addCC($address, $name = '') {
+	public function addCC(string $address, string $name = '') {
 		$this->mail->addCC($address, $name);
 		return $this;
 	}
@@ -120,7 +121,7 @@ class Mailer extends BaseMailer {
      * @return $this
      * @throws Exception
      */
-	public function addBCC($address, $name = '') {
+	public function addBCC(string $address, string $name = '') {
 		$this->mail->addBCC($address, $name);
 		return $this;
 	}
@@ -132,7 +133,7 @@ class Mailer extends BaseMailer {
      * @return $this
      * @throws Exception
      */
-	public function addAttachment($file, $name = '') {
+	public function addAttachment(string $file, string $name = '') {
 		$this->mail->addAttachment($file, $name);
 		return $this;
 	}
@@ -142,7 +143,7 @@ class Mailer extends BaseMailer {
 	 * @param bool $isHtml
 	 * @return $this
 	 */
-	public function isHtml($isHtml = TRUE) {
+	public function isHtml(bool $isHtml = true) {
 		$this->mail->isHtml($isHtml);
 		return $this;
 	}
@@ -155,14 +156,14 @@ class Mailer extends BaseMailer {
      * @return bool
      * @throws Exception
      */
-	public function send($subject, $body, $altBody = '') {
+	public function send(string $subject, string $body, string $altBody = ''): bool {
 		$this->mail->Subject = $subject;
 		$this->mail->Body    = $body;
 		$this->mail->AltBody = $altBody;
 		return $this->mail->send();
 	}
 
-	public function sendTemplate($file, array $args, $subject) {
+	public function sendTemplate(string $file, array $args, string $subject) {
 	    $template = new Template();
         $template->set($args);
         if (is_dir($this->configs['template'])) {
@@ -176,7 +177,7 @@ class Mailer extends BaseMailer {
 	/**
 	 * 获取错误信息
 	 */
-	public function getError() {
+	public function getError(): string {
 		return $this->mail->ErrorInfo;
 	}
 	

@@ -1,36 +1,17 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Queue\Jobs;
 
 use Zodream\Infrastructure\Queue\RedisQueue;
 
 class RedisJob extends Job {
-    /**
-     * The Redis queue instance.
-     *
-     * @var RedisQueue
-     */
-    protected $redis;
-
-    /**
-     * The Redis raw job payload.
-     *
-     * @var string
-     */
-    protected $job;
 
     /**
      * The JSON decoded version of "$job".
      *
      * @var array
      */
-    protected $decoded;
-
-    /**
-     * The Redis job payload inside the reserved queue.
-     *
-     * @var string
-     */
-    protected $reserved;
+    protected array $decoded;
 
     /**
      * Create a new job instance.
@@ -42,16 +23,16 @@ class RedisJob extends Job {
      * @param  string  $queue
      * @return void
      */
-    public function __construct(RedisQueue $redis, $job, $reserved, $connectionName, $queue)
+    public function __construct(
+        protected RedisQueue $redis,
+        protected string $job,
+        protected string $reserved,
+        protected string $connectionName,
+        protected string $queue)
     {
         // The $job variable is the original job JSON as it existed in the ready queue while
         // the $reserved variable is the raw JSON in the reserved queue. The exact format
         // of the reserved job is required in order for us to properly delete its data.
-        $this->job = $job;
-        $this->redis = $redis;
-        $this->queue = $queue;
-        $this->reserved = $reserved;
-        $this->connectionName = $connectionName;
 
         $this->decoded = $this->payload();
     }
@@ -61,8 +42,7 @@ class RedisJob extends Job {
      *
      * @return string
      */
-    public function getRawBody()
-    {
+    public function getRawBody(): string {
         return $this->job;
     }
 
@@ -71,8 +51,7 @@ class RedisJob extends Job {
      *
      * @return void
      */
-    public function delete()
-    {
+    public function delete(): void {
         parent::delete();
 
         $this->redis->deleteReserved($this->queue, $this);
@@ -84,7 +63,7 @@ class RedisJob extends Job {
      * @param  int   $delay
      * @return void
      */
-    public function release($delay = 0)
+    public function release(int $delay = 0): void
     {
         parent::release($delay);
 
@@ -96,7 +75,7 @@ class RedisJob extends Job {
      *
      * @return int
      */
-    public function attempts()
+    public function attempts(): int
     {
         return ($this->decoded['attempts'] ?? null) + 1;
     }
@@ -106,9 +85,9 @@ class RedisJob extends Job {
      *
      * @return string
      */
-    public function getJobId()
+    public function getJobId(): string
     {
-        return $this->decoded['id'] ?? null;
+        return (string)$this->decoded['id'] ?? '';
     }
 
     /**
@@ -126,7 +105,7 @@ class RedisJob extends Job {
      *
      * @return string
      */
-    public function getReservedJob()
+    public function getReservedJob(): string
     {
         return $this->reserved;
     }

@@ -31,7 +31,7 @@ class JMailer extends BaseMailer {
      * @param string $password
      * @return $this
      */
-    public function setUser($username, $password) {
+    public function setUser(string $username, string $password) {
         $this->mail->MailServerUserName = $username;
         $this->mail->MailServerPassword = $password;
         return $this;
@@ -44,7 +44,7 @@ class JMailer extends BaseMailer {
      * @param bool|string $auto
      * @return $this
      */
-    public function setFrom($address, $name = '', $auto = TRUE) {
+    public function setFrom(string $address, string $name = '', bool $auto = true) {
         $this->mail->From = $address;
         $this->mail->FromName = $name;
         return $this;
@@ -56,7 +56,7 @@ class JMailer extends BaseMailer {
      * @param string $name
      * @return $this
      */
-    public function addAddress($address, $name = '') {
+    public function addAddress(string $address, string $name = '') {
         $this->mail->AddRecipient($address, $name);
         return $this;
     }
@@ -66,7 +66,7 @@ class JMailer extends BaseMailer {
      * @param bool $isHtml
      * @return $this
      */
-    public function isHtml($isHtml = TRUE) {
+    public function isHtml(bool $isHtml = true) {
         if ($isHtml) {
             $this->mail->ContentType = 'Text/html';
         }
@@ -80,17 +80,17 @@ class JMailer extends BaseMailer {
      * @param string $altBody
      * @return bool
      */
-    public function send($subject, $body, $altBody = '') {
+    public function send(string $subject, string $body, string $altBody = ''): bool {
         $this->mail->Subject = $subject;
         $this->mail->Body = $body;
         $this->mail->Send('');
-        return $this;
+        return true;
     }
 
     /**
      * 获取错误信息
      */
-    public function getError() {
-        
+    public function getError(): string {
+        return '';
     }
 }

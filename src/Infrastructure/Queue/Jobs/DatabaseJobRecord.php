@@ -1,23 +1,20 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Queue\Jobs;
 
+use stdClass;
+
 class DatabaseJobRecord {
-    /**
-     * The underlying job record.
-     *
-     * @var \stdClass
-     */
-    protected $record;
 
     /**
      * Create a new job record instance.
      *
-     * @param  \stdClass  $record
+     * @param  stdClass  $record
      * @return void
      */
-    public function __construct($record)
+    public function __construct(
+        protected stdClass $record)
     {
-        $this->record = $record;
     }
 
     /**
@@ -25,8 +22,7 @@ class DatabaseJobRecord {
      *
      * @return int
      */
-    public function increment()
-    {
+    public function increment(): int {
         $this->record->attempts++;
 
         return $this->record->attempts;
@@ -37,8 +33,7 @@ class DatabaseJobRecord {
      *
      * @return int
      */
-    public function touch()
-    {
+    public function touch(): int {
         $this->record->reserved_at = time();
 
         return $this->record->reserved_at;
@@ -50,8 +45,7 @@ class DatabaseJobRecord {
      * @param  string  $key
      * @return mixed
      */
-    public function __get($key)
-    {
+    public function __get(string $key): mixed {
         return $this->record->{$key};
     }
 }

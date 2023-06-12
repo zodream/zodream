@@ -10,7 +10,7 @@ use Zodream\Infrastructure\Concerns\SingletonPattern;
 class QueueManager extends Manager {
     use SingletonPattern;
 
-    protected $configKey = 'queue';
+    protected string $configKey = 'queue';
 
     /**
      * @var Queue[]
@@ -44,7 +44,7 @@ class QueueManager extends Manager {
      * @return Queue
      * @throws \Exception
      */
-    public static function connection($name = null) {
+    public static function connection(string $name = '') {
         return static::getInstance()->getEngine($name);
     }
 

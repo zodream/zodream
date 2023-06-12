@@ -1,8 +1,10 @@
 <?php
-
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Queue\Failed;
 
 
+use Exception;
+use Zodream\Database\Contracts\SqlBuilder;
 use Zodream\Database\DB;
 use Zodream\Database\Query\Builder;
 use Zodream\Database\Schema\Table;
@@ -14,29 +16,24 @@ class DatabaseFailedJobProvider implements FailedJobProviderInterface {
      *
      * @var string
      */
-    protected $database;
+    protected string $database = '';
 
-    /**
-     * The database table.
-     *
-     * @var string
-     */
-    protected $table;
 
-    public function __construct($table) {
-        $this->table = $table;
+    public function __construct(
+        protected string $table) {
     }
 
     /**
      * Log a failed job into storage.
      *
-     * @param  string  $connection
-     * @param  string  $queue
-     * @param  string  $payload
-     * @param  \Exception  $exception
-     * @return int|null
+     * @param string $connection
+     * @param string $queue
+     * @param string $payload
+     * @param Exception $exception
+     * @return int|string|null
+     * @throws Exception
      */
-    public function log($connection, $queue, $payload, $exception)
+    public function log(string $connection, string $queue, string $payload, Exception $exception): null|int|string
     {
         $failed_at = time();
 
@@ -52,7 +49,7 @@ class DatabaseFailedJobProvider implements FailedJobProviderInterface {
      *
      * @return array
      */
-    public function all() {
+    public function all(): array {
         return $this->getTable()->orderBy('id', 'desc')->get();
     }
 
@@ -62,7 +59,7 @@ class DatabaseFailedJobProvider implements FailedJobProviderInterface {
      * @param  mixed  $id
      * @return object|null
      */
-    public function find($id)
+    public function find(string|int $id): ?array
     {
         return $this->getTable()->where('id', $id)->first();
     }
@@ -73,8 +70,7 @@ class DatabaseFailedJobProvider implements FailedJobProviderInterface {
      * @param  mixed  $id
      * @return bool
      */
-    public function forget($id)
-    {
+    public function forget(string|int $id): bool {
         return $this->getTable()->where('id', $id)->delete() > 0;
     }
 
@@ -83,7 +79,7 @@ class DatabaseFailedJobProvider implements FailedJobProviderInterface {
      *
      * @return void
      */
-    public function flush()
+    public function flush(): void
     {
         $this->getTable()->delete();
     }
@@ -93,7 +89,7 @@ class DatabaseFailedJobProvider implements FailedJobProviderInterface {
      *
      * @return Builder
      */
-    protected function getTable() {
+    protected function getTable(): SqlBuilder {
         return DB::table($this->table);
     }
 

@@ -1,14 +1,18 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Queue;
 
 
 use Zodream\Helpers\Str;
+use Zodream\Infrastructure\Contracts\ExceptionHandler;
 use Zodream\Infrastructure\Error\FatalThrowableError;
 use Zodream\Infrastructure\Queue\Jobs\Job;
-use Zodream\Service\Factory;
 use Exception;
 use Throwable;
-
+/**
+ * 相关代码来源于 laravel 并进行相应的改变
+ * @see https://github.com/laravel/framework
+ */
 class Worker {
 
 
@@ -17,14 +21,14 @@ class Worker {
      *
      * @var bool
      */
-    public $shouldQuit = false;
+    public bool $shouldQuit = false;
 
     /**
      * Indicates if the worker is paused.
      *
      * @var bool
      */
-    public $paused = false;
+    public bool $paused = false;
 
 
     /**
@@ -35,7 +39,7 @@ class Worker {
      * @param  WorkerOptions  $options
      * @return void
      */
-    public function daemon($connectionName, $queue, WorkerOptions $options)
+    public function daemon(string $connectionName, string $queue, WorkerOptions $options)
     {
         if ($this->supportsAsyncSignals()) {
             $this->listenForSignals();
@@ -87,7 +91,7 @@ class Worker {
      * @param  WorkerOptions  $options
      * @return void
      */
-    protected function registerTimeoutHandler($job, WorkerOptions $options)
+    protected function registerTimeoutHandler(?Job $job, WorkerOptions $options)
     {
         // We will register a signal handler for the alarm signal so that we can kill this
         // process if it is running too long because it has frozen. This uses the async
@@ -108,7 +112,7 @@ class Worker {
      * @param  WorkerOptions  $options
      * @return int
      */
-    protected function timeoutForJob($job, WorkerOptions $options)
+    protected function timeoutForJob(?Job $job, WorkerOptions $options)
     {
         return $job && ! is_null($job->timeout()) ? $job->timeout() : $options->timeout;
     }
@@ -121,7 +125,7 @@ class Worker {
      * @param  string  $queue
      * @return bool
      */
-    protected function daemonShouldRun(WorkerOptions $options, $connectionName, $queue)
+    protected function daemonShouldRun(WorkerOptions $options, string $connectionName, string $queue)
     {
         return ! ((true && ! $options->force) ||
             $this->paused ||
@@ -135,7 +139,7 @@ class Worker {
      * @param  int  $lastRestart
      * @return void
      */
-    protected function pauseWorker(WorkerOptions $options, $lastRestart)
+    protected function pauseWorker(WorkerOptions $options, int $lastRestart)
     {
         $this->sleep($options->sleep > 0 ? $options->sleep : 1);
 
@@ -148,7 +152,7 @@ class Worker {
      * @param  WorkerOptions  $options
      * @param  int  $lastRestart
      */
-    protected function stopIfNecessary(WorkerOptions $options, $lastRestart)
+    protected function stopIfNecessary(WorkerOptions $options, int $lastRestart)
     {
         if ($this->shouldQuit) {
             $this->kill();
@@ -169,7 +173,7 @@ class Worker {
      * @param  WorkerOptions  $options
      * @return void
      */
-    public function runNextJob($connectionName, $queue, WorkerOptions $options)
+    public function runNextJob(string $connectionName, string $queue, WorkerOptions $options)
     {
         $job = $this->getNextJob(
             QueueManager::connection($connectionName), $queue
@@ -192,7 +196,7 @@ class Worker {
      * @param  string  $queue
      * @return Job|null
      */
-    protected function getNextJob($connection, $queue)
+    protected function getNextJob(Queue $connection, string $queue)
     {
         try {
             foreach (explode(',', $queue) as $queue) {
@@ -201,13 +205,13 @@ class Worker {
                 }
             }
         } catch (Exception $e) {
-            Factory::handler()->report($e);
+            app(ExceptionHandler::class)->report($e);
 
             $this->stopWorkerIfLostConnection($e);
 
             $this->sleep(1);
         } catch (Throwable $e) {
-            Factory::handler()->report($e = new FatalThrowableError($e));
+            app(ExceptionHandler::class)->report($e = new FatalThrowableError($e));
 
             $this->stopWorkerIfLostConnection($e);
 
@@ -223,16 +227,16 @@ class Worker {
      * @param  WorkerOptions  $options
      * @return void
      */
-    protected function runJob($job, $connectionName, WorkerOptions $options)
+    protected function runJob(Job $job, string $connectionName, WorkerOptions $options)
     {
         try {
             return $this->process($connectionName, $job, $options);
         } catch (Exception $e) {
-            Factory::handler()->report($e);
+            app(ExceptionHandler::class)->report($e);
 
             $this->stopWorkerIfLostConnection($e);
         } catch (Throwable $e) {
-            Factory::handler()->report($e = new FatalThrowableError($e));
+            app(ExceptionHandler::class)->report($e = new FatalThrowableError($e));
 
             $this->stopWorkerIfLostConnection($e);
         }
@@ -241,10 +245,10 @@ class Worker {
     /**
      * Stop the worker if we have lost connection to a database.
      *
-     * @param  \Throwable  $e
+     * @param Throwable $e
      * @return void
      */
-    protected function stopWorkerIfLostConnection($e)
+    protected function stopWorkerIfLostConnection(Throwable $e)
     {
         if ($this->causedByLostConnection($e)) {
             $this->shouldQuit = true;
@@ -259,9 +263,9 @@ class Worker {
      * @param  WorkerOptions  $options
      * @return void
      *
-     * @throws \Throwable
+     * @throws Throwable
      */
-    public function process($connectionName, $job, WorkerOptions $options)
+    public function process(string $connectionName, Job $job, WorkerOptions $options)
     {
         try {
             // First we will raise the before job event and determine if the job has already ran
@@ -294,12 +298,12 @@ class Worker {
      * @param  string  $connectionName
      * @param  Job  $job
      * @param  WorkerOptions  $options
-     * @param  \Exception  $e
+     * @param Exception $e
      * @return void
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    protected function handleJobException($connectionName, $job, WorkerOptions $options, $e)
+    protected function handleJobException(string $connectionName, Job $job, WorkerOptions $options, Exception $e)
     {
         try {
             // First, we will go ahead and mark the job as failed if it will exceed the maximum
@@ -336,7 +340,7 @@ class Worker {
      * @param  int  $maxTries
      * @return void
      */
-    protected function markJobAsFailedIfAlreadyExceedsMaxAttempts($connectionName, $job, $maxTries)
+    protected function markJobAsFailedIfAlreadyExceedsMaxAttempts(string $connectionName, Job $job, int $maxTries)
     {
         $maxTries = ! is_null($job->maxTries()) ? $job->maxTries() : $maxTries;
 
@@ -363,10 +367,11 @@ class Worker {
      * @param  string  $connectionName
      * @param  Job  $job
      * @param  int  $maxTries
-     * @param  \Exception  $e
+     * @param Exception $e
      * @return void
      */
-    protected function markJobAsFailedIfWillExceedMaxAttempts($connectionName, $job, $maxTries, $e)
+    protected function markJobAsFailedIfWillExceedMaxAttempts(string $connectionName, Job $job,
+                                                              int $maxTries, Exception $e)
     {
         $maxTries = ! is_null($job->maxTries()) ? $job->maxTries() : $maxTries;
 
@@ -384,12 +389,12 @@ class Worker {
      *
      * @param  string  $connectionName
      * @param  Job  $job
-     * @param  \Exception  $e
+     * @param Exception $e
      * @return void
      */
-    protected function failJob($connectionName, $job, $e)
+    protected function failJob(string $connectionName, Job $job, Exception $e): void
     {
-        return FailingJob::handle($connectionName, $job, $e);
+        FailingJob::handle($connectionName, $job, $e);
     }
 
     /**
@@ -399,7 +404,7 @@ class Worker {
      * @param  Job  $job
      * @return void
      */
-    protected function raiseBeforeJobEvent($connectionName, $job)
+    protected function raiseBeforeJobEvent(string $connectionName, Job $job)
     {
         event(new Events\JobProcessing(
             $connectionName, $job
@@ -413,7 +418,7 @@ class Worker {
      * @param  Job  $job
      * @return void
      */
-    protected function raiseAfterJobEvent($connectionName, $job)
+    protected function raiseAfterJobEvent(string $connectionName, Job $job)
     {
         event(new Events\JobProcessed(
             $connectionName, $job
@@ -425,10 +430,10 @@ class Worker {
      *
      * @param  string  $connectionName
      * @param  Job  $job
-     * @param  \Exception  $e
+     * @param Exception $e
      * @return void
      */
-    protected function raiseExceptionOccurredJobEvent($connectionName, $job, $e)
+    protected function raiseExceptionOccurredJobEvent(string $connectionName, Job $job, Exception $e)
     {
         event(new Events\JobExceptionOccurred(
             $connectionName, $job, $e
@@ -441,9 +446,9 @@ class Worker {
      * @param  int|null  $lastRestart
      * @return bool
      */
-    protected function queueShouldRestart($lastRestart)
+    protected function queueShouldRestart(?int $lastRestart): bool
     {
-        return $this->getTimestampOfLastQueueRestart() != $lastRestart;
+        return $this->getTimestampOfLastQueueRestart() !== $lastRestart;
     }
 
     /**
@@ -451,8 +456,7 @@ class Worker {
      *
      * @return int|null
      */
-    protected function getTimestampOfLastQueueRestart()
-    {
+    protected function getTimestampOfLastQueueRestart(): ?int {
         return cache('zodream:queue:restart');
     }
 
@@ -461,7 +465,7 @@ class Worker {
      *
      * @return void
      */
-    protected function listenForSignals()
+    protected function listenForSignals(): void
     {
         pcntl_async_signals(true);
 
@@ -483,7 +487,7 @@ class Worker {
      *
      * @return bool
      */
-    protected function supportsAsyncSignals()
+    protected function supportsAsyncSignals(): bool
     {
         return extension_loaded('pcntl');
     }
@@ -494,7 +498,7 @@ class Worker {
      * @param  int   $memoryLimit
      * @return bool
      */
-    public function memoryExceeded($memoryLimit)
+    public function memoryExceeded(int $memoryLimit): bool
     {
         return (memory_get_usage(true) / 1024 / 1024) >= $memoryLimit;
     }
@@ -505,7 +509,7 @@ class Worker {
      * @param  int  $status
      * @return void
      */
-    public function stop($status = 0)
+    public function stop(int $status = 0): void
     {
         event(new Events\WorkerStopping);
 
@@ -518,7 +522,7 @@ class Worker {
      * @param  int  $status
      * @return void
      */
-    public function kill($status = 0)
+    public function kill(int $status = 0): void
     {
         event(new Events\WorkerStopping);
 
@@ -535,7 +539,7 @@ class Worker {
      * @param  int|float   $seconds
      * @return void
      */
-    public function sleep($seconds)
+    public function sleep(int|float $seconds): void
     {
         if ($seconds < 1) {
             usleep($seconds * 1000000);
@@ -547,10 +551,10 @@ class Worker {
     /**
      * Determine if the given exception was caused by a lost connection.
      *
-     * @param  \Throwable  $e
+     * @param Throwable $e
      * @return bool
      */
-    protected function causedByLostConnection(Throwable $e)
+    protected function causedByLostConnection(Throwable $e): bool
     {
         $message = $e->getMessage();
 

@@ -1,24 +1,11 @@
 <?php
-
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Queue\Events;
 
 use Zodream\Infrastructure\Queue\Jobs\Job;
 
 class JobProcessing
 {
-    /**
-     * The connection name.
-     *
-     * @var string
-     */
-    public $connectionName;
-
-    /**
-     * The job instance.
-     *
-     * @var Job
-     */
-    public $job;
 
     /**
      * Create a new event instance.
@@ -27,9 +14,10 @@ class JobProcessing
      * @param  Job  $job
      * @return void
      */
-    public function __construct($connectionName, $job)
+    public function __construct(
+        public string $connectionName,
+        public Job $job
+    )
     {
-        $this->job = $job;
-        $this->connectionName = $connectionName;
     }
 }

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Queue;
 
 use Zodream\Infrastructure\Base\ConfigObject;
@@ -11,9 +12,9 @@ abstract class Queue extends ConfigObject {
      *
      * @var string
      */
-    protected $connectionName;
+    protected string $connectionName;
 
-    public function __construct($configs) {
+    public function __construct(array $configs) {
         $this->configs = array_merge($this->configs, $configs);
     }
 
@@ -21,50 +22,50 @@ abstract class Queue extends ConfigObject {
     /**
      * Get the size of the queue.
      *
-     * @param  string  $queue
+     * @param string|null $queue
      * @return int
      */
-    abstract public function size($queue = null);
+    abstract public function size(?string $queue = null): int;
 
     /**
      * Push a new job onto the queue.
      *
-     * @param  string|object  $job
-     * @param  mixed   $data
-     * @param  string  $queue
+     * @param string|object $job
+     * @param mixed $data
+     * @param string|null $queue
      * @return mixed
      */
-    abstract public function push($job, $data = '', $queue = null);
+    abstract public function push(mixed $job, mixed $data = '', ?string $queue = null): mixed;
 
 
     /**
      * Push a raw payload onto the queue.
      *
-     * @param  string  $payload
-     * @param  string  $queue
-     * @param  array   $options
+     * @param string $payload
+     * @param string|null $queue
+     * @param array $options
      * @return mixed
      */
-    abstract public function pushRaw($payload, $queue = null, array $options = []);
+    abstract public function pushRaw(string $payload, ?string $queue = null, array $options = []): mixed;
 
     /**
      * Push a new job onto the queue after a delay.
      *
-     * @param  int  $delay
-     * @param  string|object  $job
-     * @param  mixed   $data
-     * @param  string  $queue
+     * @param int $delay
+     * @param string|object $job
+     * @param mixed $data
+     * @param string|null $queue
      * @return mixed
      */
-    abstract public function later($delay, $job, $data = '', $queue = null);
+    abstract public function later(int $delay, mixed $job, mixed $data = '', ?string $queue = null): mixed;
 
     /**
      * Pop the next job off of the queue.
      *
-     * @param  string  $queue
+     * @param string|null $queue
      * @return Job|null
      */
-    abstract public function pop($queue = null);
+    abstract public function pop(?string $queue = null): ?Job;
 
     /**
      * Push a new job onto the queue.
@@ -74,8 +75,7 @@ abstract class Queue extends ConfigObject {
      * @param  mixed   $data
      * @return mixed
      */
-    public function pushOn($queue, $job, $data = '')
-    {
+    public function pushOn(string $queue, string $job, mixed $data = ''): mixed {
         return $this->push($job, $data, $queue);
     }
 
@@ -88,21 +88,20 @@ abstract class Queue extends ConfigObject {
      * @param  mixed   $data
      * @return mixed
      */
-    public function laterOn($queue, $delay, $job, $data = '')
-    {
+    public function laterOn(string $queue, int $delay, string $job, mixed $data = ''): mixed {
         return $this->later($delay, $job, $data, $queue);
     }
 
     /**
      * Push an array of jobs onto the queue.
      *
-     * @param  array   $jobs
-     * @param  mixed   $data
-     * @param  string  $queue
-     * @return mixed
+     * @param array $jobs
+     * @param mixed $data
+     * @param string|null $queue
+     * @return void
      */
-    public function bulk($jobs, $data = '', $queue = null) {
-        foreach ((array) $jobs as $job) {
+    public function bulk(array $jobs, mixed $data = '', ?string $queue = null): void {
+        foreach ($jobs as $job) {
             $this->push($job, $data, $queue);
         }
     }
@@ -116,7 +115,7 @@ abstract class Queue extends ConfigObject {
      *
      * @throws Exception
      */
-    protected function createPayload($job, $data = '') {
+    protected function createPayload(string $job, mixed $data = '') : string {
         $payload = json_encode($this->createPayloadArray($job, $data));
 
         if (JSON_ERROR_NONE !== json_last_error()) {
@@ -135,7 +134,7 @@ abstract class Queue extends ConfigObject {
      * @param  mixed   $data
      * @return array
      */
-    protected function createPayloadArray($job, $data = '')
+    protected function createPayloadArray(string $job, mixed $data = ''): array
     {
         return is_object($job)
             ? $this->createObjectPayload($job)
@@ -148,7 +147,7 @@ abstract class Queue extends ConfigObject {
      * @param  mixed  $job
      * @return array
      */
-    protected function createObjectPayload($job)
+    protected function createObjectPayload(mixed $job): array
     {
         return [
             'displayName' => $this->getDisplayName($job),
@@ -169,7 +168,7 @@ abstract class Queue extends ConfigObject {
      * @param  mixed  $job
      * @return string
      */
-    protected function getDisplayName($job)
+    protected function getDisplayName(mixed $job): string
     {
         return method_exists($job, 'displayName')
             ? $job->displayName() : get_class($job);
@@ -181,7 +180,7 @@ abstract class Queue extends ConfigObject {
      * @param  mixed  $job
      * @return mixed
      */
-    public function getJobExpiration($job) {
+    public function getJobExpiration(mixed $job): mixed {
         if (! method_exists($job, 'retryUntil') && ! isset($job->timeoutAt)) {
             return 0;
         }
@@ -191,11 +190,11 @@ abstract class Queue extends ConfigObject {
     /**
      * Create a typical, string based queue payload array.
      *
-     * @param  string  $job
-     * @param  mixed  $data
+     * @param string|null $job
+     * @param mixed $data
      * @return array
      */
-    protected function createStringPayload($job, $data) {
+    protected function createStringPayload(?string $job, mixed $data): array {
         return [
             'displayName' => is_string($job) ? explode('@', $job)[0] : null,
             'job' => $job,
@@ -210,7 +209,7 @@ abstract class Queue extends ConfigObject {
      *
      * @return string
      */
-    public function getConnectionName()
+    public function getConnectionName(): string
     {
         return $this->connectionName;
     }
@@ -221,8 +220,7 @@ abstract class Queue extends ConfigObject {
      * @param  string  $name
      * @return $this
      */
-    public function setConnectionName($name)
-    {
+    public function setConnectionName(string $name) {
         $this->connectionName = $name;
 
         return $this;

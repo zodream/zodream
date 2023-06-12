@@ -1,4 +1,5 @@
-<?php 
+<?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Mailer;
 
 /**
@@ -11,9 +12,7 @@ use Zodream\Infrastructure\Base\ConfigObject;
 
 abstract class BaseMailer extends ConfigObject {
 
-	protected $mail;
-
-    protected $configKey = 'mail';
+    protected string $configKey = 'thirdparty.mail';
 
 	/**
 	 * 设置发送者的信息
@@ -21,7 +20,7 @@ abstract class BaseMailer extends ConfigObject {
 	 * @param string $password
 	 * @return $this
 	 */
-	abstract public function setUser($username, $password);
+	abstract public function setUser(string $username, string $password);
 
 	/**
 	 * 设置发件人
@@ -30,7 +29,7 @@ abstract class BaseMailer extends ConfigObject {
 	 * @param bool|string $auto
 	 * @return $this
 	 */
-	abstract public function setFrom($address, $name = '', $auto = TRUE);
+	abstract public function setFrom(string $address, string $name = '', bool $auto = true);
 
 	/**
 	 * 添加接收者
@@ -38,7 +37,7 @@ abstract class BaseMailer extends ConfigObject {
 	 * @param string $name
 	 * @return $this
 	 */
-	abstract public function addAddress($address, $name = '');
+	abstract public function addAddress(string $address, string $name = '');
 
 	/**
 	 * 添加转发
@@ -46,7 +45,7 @@ abstract class BaseMailer extends ConfigObject {
 	 * @param string $name
 	 * @return $this
 	 */
-	public function addReplyTo($address, $name = '') {
+	public function addReplyTo(string $address, string $name = '') {
 		return $this;
 	}
 
@@ -56,7 +55,7 @@ abstract class BaseMailer extends ConfigObject {
 	 * @param string $name
 	 * @return $this
 	 */
-	public function addCC($address, $name = '') {
+	public function addCC(string $address, string $name = '') {
 		return $this;
 	}
 
@@ -66,7 +65,7 @@ abstract class BaseMailer extends ConfigObject {
 	 * @param string $name
 	 * @return $this
 	 */
-	public function addBCC($address, $name = '') {
+	public function addBCC(string $address, string $name = '') {
 		return $this;
 	}
 
@@ -76,8 +75,7 @@ abstract class BaseMailer extends ConfigObject {
 	 * @param string $name
 	 * @return $this
 	 */
-	public function addAttachment($file, $name = '') {
-		$this->mail->addAttachment($file, $name);
+	public function addAttachment(string $file, string $name = '') {
 		return $this;
 	}
 
@@ -86,7 +84,7 @@ abstract class BaseMailer extends ConfigObject {
 	 * @param bool $isHtml
 	 * @return $this
 	 */
-	abstract public function isHtml($isHtml = TRUE);
+	abstract public function isHtml(bool $isHtml = true);
 
 	/**
 	 * 发送
@@ -95,10 +93,10 @@ abstract class BaseMailer extends ConfigObject {
 	 * @param string $altBody
 	 * @return bool
 	 */
-	abstract public function send($subject, $body, $altBody = '');
+	abstract public function send(string $subject, string $body, string $altBody = ''): bool;
 	
 	/**
 	 * 获取错误信息
 	 */
-	abstract public function getError();
+	abstract public function getError(): string;
 }

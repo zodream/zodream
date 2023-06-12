@@ -48,7 +48,7 @@ class Output implements OutputInterface {
         } elseif ($this->parameter instanceof Image) {
             // TODO
         } else {
-            $this->writeln($this->parameter);
+            $this->writeLine($this->parameter);
         }
         $this->getStream()->close();
         return true;

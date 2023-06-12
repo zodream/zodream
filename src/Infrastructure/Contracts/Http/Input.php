@@ -13,6 +13,8 @@ interface Input extends ArrayAccess {
     public function float(string $key, float $default = 0): float;
     public function string(string $key, string $default = ''): string;
 
+
+
     public function post(string $key = '', $default = null);
     public function request(string $key = '', $default = null);
     public function cookie(string $key = '', $default = null);
@@ -28,6 +30,7 @@ interface Input extends ArrayAccess {
     public function method(): string;
     public function url(): string;
 
+    public function isLinux(): bool;
     /**
      * 网址中的路径
      * @return string

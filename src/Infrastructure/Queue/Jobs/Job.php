@@ -1,6 +1,10 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Queue\Jobs;
 
+
+use Exception;
+use Zodream\Helpers\Json;
 
 abstract class Job {
     /**
@@ -8,62 +12,61 @@ abstract class Job {
      *
      * @var mixed
      */
-    protected $instance;
+    protected mixed $instance = null;
 
     /**
      * Indicates if the job has been deleted.
      *
      * @var bool
      */
-    protected $deleted = false;
+    protected bool $deleted = false;
 
     /**
      * Indicates if the job has been released.
      *
      * @var bool
      */
-    protected $released = false;
+    protected bool $released = false;
 
     /**
      * Indicates if the job has failed.
      *
      * @var bool
      */
-    protected $failed = false;
+    protected bool $failed = false;
 
     /**
      * The name of the connection the job belongs to.
      */
-    protected $connectionName;
+    protected string $connectionName;
 
     /**
      * The name of the queue the job belongs to.
      *
      * @var string
      */
-    protected $queue;
+    protected string $queue;
 
     /**
      * Get the job identifier.
      *
      * @return string
      */
-    abstract public function getJobId();
+    abstract public function getJobId(): string;
 
     /**
      * Get the raw body of the job.
      *
      * @return string
      */
-    abstract public function getRawBody();
+    abstract public function getRawBody(): string;
 
     /**
      * Fire the job.
      *
      * @return void
      */
-    public function fire()
-    {
+    public function fire(): void {
         $payload = $this->payload();
 
         list($class, $method) = JobName::parse($payload['job']);
@@ -76,8 +79,7 @@ abstract class Job {
      *
      * @return void
      */
-    public function delete()
-    {
+    public function delete(): void {
         $this->deleted = true;
     }
 
@@ -86,8 +88,7 @@ abstract class Job {
      *
      * @return bool
      */
-    public function isDeleted()
-    {
+    public function isDeleted(): bool {
         return $this->deleted;
     }
 
@@ -97,8 +98,7 @@ abstract class Job {
      * @param  int   $delay
      * @return void
      */
-    public function release($delay = 0)
-    {
+    public function release(int $delay = 0): void {
         $this->released = true;
     }
 
@@ -107,8 +107,7 @@ abstract class Job {
      *
      * @return bool
      */
-    public function isReleased()
-    {
+    public function isReleased(): bool {
         return $this->released;
     }
 
@@ -117,8 +116,7 @@ abstract class Job {
      *
      * @return bool
      */
-    public function isDeletedOrReleased()
-    {
+    public function isDeletedOrReleased(): bool {
         return $this->isDeleted() || $this->isReleased();
     }
 
@@ -127,30 +125,28 @@ abstract class Job {
      *
      * @return bool
      */
-    public function hasFailed()
-    {
+    public function hasFailed(): bool {
         return $this->failed;
     }
 
-    abstract public function attempts();
+    abstract public function attempts(): int;
 
     /**
      * Mark the job as "failed".
      *
      * @return void
      */
-    public function markAsFailed()
-    {
+    public function markAsFailed(): void {
         $this->failed = true;
     }
 
     /**
      * Process an exception that caused the job to fail.
      *
-     * @param  \Exception  $e
+     * @param  Exception  $e
      * @return void
      */
-    public function failed($e)
+    public function failed(Exception $e): void
     {
         $this->markAsFailed();
 
@@ -169,7 +165,7 @@ abstract class Job {
      * @param  string  $class
      * @return mixed
      */
-    protected function resolve($class)
+    protected function resolve(string $class): mixed
     {
         return app($class);
     }
@@ -179,9 +175,9 @@ abstract class Job {
      *
      * @return array
      */
-    public function payload()
+    public function payload(): array
     {
-        return json_decode($this->getRawBody(), true);
+        return Json::decode($this->getRawBody());
     }
 
     /**
@@ -189,8 +185,7 @@ abstract class Job {
      *
      * @return int|null
      */
-    public function maxTries()
-    {
+    public function maxTries(): ?int {
         return $this->payload()['maxTries'] ?? null;
     }
 
@@ -199,7 +194,7 @@ abstract class Job {
      *
      * @return int|null
      */
-    public function timeout()
+    public function timeout(): ?int
     {
         return $this->payload()['timeout'] ?? null;
     }
@@ -209,7 +204,7 @@ abstract class Job {
      *
      * @return int|null
      */
-    public function timeoutAt()
+    public function timeoutAt(): ?int
     {
         return $this->payload()['timeoutAt'] ?? null;
     }
@@ -219,7 +214,7 @@ abstract class Job {
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->payload()['job'];
     }
@@ -231,7 +226,7 @@ abstract class Job {
      *
      * @return string
      */
-    public function resolveName()
+    public function resolveName(): string
     {
         return JobName::resolve($this->getName(), $this->payload());
     }
@@ -241,7 +236,7 @@ abstract class Job {
      *
      * @return string
      */
-    public function getConnectionName()
+    public function getConnectionName(): string
     {
         return $this->connectionName;
     }
@@ -251,7 +246,7 @@ abstract class Job {
      *
      * @return string
      */
-    public function getQueue()
+    public function getQueue(): string
     {
         return $this->queue;
     }

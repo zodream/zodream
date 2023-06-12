@@ -1,11 +1,16 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Queue;
 
+use stdClass;
+use Zodream\Database\Contracts\SqlBuilder;
 use Zodream\Database\DB;
 use Zodream\Database\Query\Builder;
 use Zodream\Database\Schema\Table;
+use Zodream\Infrastructure\Error\Exception;
 use Zodream\Infrastructure\Queue\Jobs\DatabaseJob;
 use Zodream\Infrastructure\Queue\Jobs\DatabaseJobRecord;
+use Zodream\Infrastructure\Queue\Jobs\Job;
 
 class DatabaseQueue extends Queue {
 
@@ -18,52 +23,49 @@ class DatabaseQueue extends Queue {
     /**
      * Get the size of the queue.
      *
-     * @param  string $queue
+     * @param string|null $queue
      * @return int
-     * @throws \Exception
      */
-    public function size($queue = null) {
+    public function size(?string $queue = null): int {
         return $this->getConnection()
             ->where('queue', $this->getQueue($queue))
             ->count();
     }
 
-    public function bulk($jobs, $data = '', $queue = null)
-    {
+    public function bulk(array $jobs, mixed $data = '', ?string $queue = null): void {
         $queue = $this->getQueue($queue);
 
         $availableAt = time();
 
-        return $this->getConnection()->insert(array_map(
+        $this->getConnection()->insert(array_map(
             function ($job) use ($queue, $data, $availableAt) {
                 return $this->buildDatabaseRecord($queue, $this->createPayload($job, $data), $availableAt);
-            }, (array) $jobs));
+            }, $jobs));
     }
 
     /**
      * Push a new job onto the queue.
      *
-     * @param  string|object $job
-     * @param  mixed $data
-     * @param  string $queue
+     * @param string|object $job
+     * @param mixed $data
+     * @param string|null $queue
      * @return mixed
-     * @throws \Exception
-     * @throws \Zodream\Infrastructure\Error\Exception
+     * @throws Exception
      */
-    public function push($job, $data = '', $queue = null) {
+    public function push(mixed $job, mixed $data = '', ?string $queue = null): mixed {
         return $this->pushToDatabase($queue, $this->createPayload($job, $data));
     }
 
     /**
      * Push a raw payload onto the queue.
      *
-     * @param  string $payload
-     * @param  string $queue
-     * @param  array $options
+     * @param string $payload
+     * @param string|null $queue
+     * @param array $options
      * @return mixed
      * @throws \Exception
      */
-    public function pushRaw($payload, $queue = null, array $options = [])
+    public function pushRaw(string $payload, ?string $queue = null, array $options = []): mixed
     {
         return $this->pushToDatabase($queue, $payload);
     }
@@ -71,15 +73,14 @@ class DatabaseQueue extends Queue {
     /**
      * Push a new job onto the queue after a delay.
      *
-     * @param  int $delay
-     * @param  string|object $job
-     * @param  mixed $data
-     * @param  string $queue
+     * @param int $delay
+     * @param string|object $job
+     * @param mixed $data
+     * @param string|null $queue
      * @return mixed
-     * @throws \Exception
-     * @throws \Zodream\Infrastructure\Error\Exception
+     * @throws Exception
      */
-    public function later($delay, $job, $data = '', $queue = null)
+    public function later(int $delay, mixed $job, mixed $data = '', ?string $queue = null): mixed
     {
         return $this->pushToDatabase($queue, $this->createPayload($job, $data), $delay);
     }
@@ -88,14 +89,14 @@ class DatabaseQueue extends Queue {
      * Release a reserved job back onto the queue.
      *
      * @param  string $queue
-     * @param  DatabaseJobRecord $job
+     * @param  stdClass $job
      * @param  int $delay
      * @return mixed
      * @throws \Exception
      */
-    public function release($queue, $job, $delay)
+    public function release(string $queue, stdClass $job, int $delay)
     {
-        return $this->pushToDatabase($queue, $job->payload, $delay, $job->attempts);
+        return $this->pushToDatabase($queue, (string)$job->payload, $delay, intval($job->attempts));
     }
 
     /**
@@ -108,8 +109,7 @@ class DatabaseQueue extends Queue {
      * @return mixed
      * @throws \Exception
      */
-    protected function pushToDatabase($queue, $payload, $delay = 0, $attempts = 0)
-    {
+    protected function pushToDatabase(?string $queue, string $payload, int $delay = 0, int $attempts = 0) {
         return $this->getConnection()->insert($this->buildDatabaseRecord(
             $this->getQueue($queue), $payload, time() + $delay, $attempts
         ));
@@ -124,8 +124,7 @@ class DatabaseQueue extends Queue {
      * @param  int  $attempts
      * @return array
      */
-    protected function buildDatabaseRecord($queue, $payload, $availableAt, $attempts = 0)
-    {
+    protected function buildDatabaseRecord(?string $queue, string $payload, int $availableAt, int $attempts = 0) {
         return [
             'queue' => $queue,
             'attempts' => $attempts,
@@ -139,17 +138,17 @@ class DatabaseQueue extends Queue {
     /**
      * Pop the next job off of the queue.
      *
-     * @param  string  $queue
-     * @return null
-     * @throws \Exception|\Throwable
+     * @param string|null $queue
+     * @return Job|null
+     * @throws \Exception
      */
-    public function pop($queue = null)
-    {
+    public function pop(?string $queue = null): ?Job {
         $queue = $this->getQueue($queue);
 
         if ($job = $this->getNextAvailableJob($queue)) {
             return $this->marshalJob($queue, $job);
         }
+        return null;
     }
 
     /**
@@ -158,8 +157,7 @@ class DatabaseQueue extends Queue {
      * @param  string|null  $queue
      * @return DatabaseJobRecord|null
      */
-    protected function getNextAvailableJob($queue)
-    {
+    protected function getNextAvailableJob(?string $queue): ?DatabaseJobRecord {
         $job = $this->getConnection()
             ->where('queue', $this->getQueue($queue))
             ->where(function ($query) {
@@ -177,7 +175,7 @@ class DatabaseQueue extends Queue {
      * @param  Builder  $query
      * @return void
      */
-    protected function isAvailable($query)
+    protected function isAvailable(SqlBuilder $query): void
     {
         $query->where(function (Builder $query) {
             $query->where('reserved_at', 0)
@@ -191,7 +189,7 @@ class DatabaseQueue extends Queue {
      * @param  Builder  $query
      * @return void
      */
-    protected function isReservedButExpired($query)
+    protected function isReservedButExpired(SqlBuilder $query): void
     {
         $expiration = time() + $this->configs['retryAfter'];
 
@@ -208,7 +206,7 @@ class DatabaseQueue extends Queue {
      * @return DatabaseJob
      * @throws \Exception
      */
-    protected function marshalJob($queue, $job)
+    protected function marshalJob(string $queue, DatabaseJobRecord $job): DatabaseJob
     {
         $job = $this->markJobAsReserved($job);
 
@@ -234,18 +232,17 @@ class DatabaseQueue extends Queue {
     /**
      * Delete a reserved job from the queue.
      *
-     * @param  string  $queue
-     * @param  string  $id
+     * @param string $queue
+     * @param string|int $id
      * @return void
-     * @throws \Exception|\Throwable
      */
-    public function deleteReserved($queue, $id)
+    public function deleteReserved(string $queue, string|int $id)
     {
         $this->getConnection()->where('id', $id)->delete();
     }
 
 
-    public function getQueue($queue) {
+    public function getQueue(?string $queue) {
         return $queue ?: $this->configs['default'];
     }
 
@@ -254,13 +251,13 @@ class DatabaseQueue extends Queue {
      *
      * @return Builder
      */
-    protected function getConnection() {
+    protected function getConnection(): SqlBuilder {
         return DB::table($this->configs['table'], $this->configs['connection']);
     }
 
-    public static function createMigration(Table $table) {
+    public static function createMigration(Table $table): void {
         $table->id();
-        $table->string('queue')->index();
+        $table->string('queue', 200)->index();
         $table->column('payload')->longtext();
         $table->uint('attempts', 2)->default(0);
         $table->timestamp('reserved_at');
