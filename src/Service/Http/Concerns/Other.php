@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Zodream\Service\Http\Concerns;
 
+use Zodream\Infrastructure\Support\RouteHelper;
 use Zodream\Infrastructure\Support\UserAgent;
 
 /**
@@ -37,24 +38,7 @@ trait Other {
             // 在nginx 下虚拟路径无法获取
             return $path;
         }
-        $script = $this->script();
-        $scriptFile = basename($script);
-        $path = parse_url($this->url(), PHP_URL_PATH).'';
-        if (str_starts_with($scriptFile, $path)) {
-            $path = rtrim($path, '/'). '/'. $scriptFile;
-        } elseif (str_ends_with($script, '.php') && !str_starts_with($path, $script)) {
-            // 判断 /a/hh -> /a/index.php/hh
-            $script = preg_replace('#/[^/]+\.php$#i', '', $script);
-        }
-        // 判断是否是二级文件默认入口
-        if (!empty($script) && str_starts_with($path, $script)) {
-            return substr($path, strlen($script));
-        }
-        // 判断是否是根目录其他文件入口
-        if (strpos($path, $scriptFile) === 1) {
-            return '/'.substr($path, strlen($scriptFile) + 1);
-        }
-        return $path;
+        return RouteHelper::getPathInfo((string)parse_url($this->url(), PHP_URL_PATH), $this->script());
     }
 
     /**
