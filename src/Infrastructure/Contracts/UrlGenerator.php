@@ -18,21 +18,21 @@ interface UrlGenerator {
     /**
      * Get the URL for the previous request.
      *
-     * @param  mixed  $fallback
+     * @param  bool  $fallback
      * @return string
      */
-    public function previous($fallback = false): string;
+    public function previous(bool $fallback = false): string;
 
     /**
      * Generate an absolute URL to the given path.
      *
      * @param string|array $path
      * @param mixed $extra
-     * @param null $secure
+     * @param bool|null $secure
      * @param bool $encode
      * @return string
      */
-    public function to($path, $extra = [], $secure = null, bool $encode = true): string;
+    public function to(mixed $path, array $extra = [], ?bool $secure = null, bool $encode = true): string;
 
     /**
      * Generate a secure, absolute URL to the given path.
@@ -41,7 +41,7 @@ interface UrlGenerator {
      * @param  array  $parameters
      * @return string
      */
-    public function secure($path, $parameters = []): string;
+    public function secure(mixed $path, array $parameters = []): string;
 
     /**
      * Generate the URL to an application asset.
@@ -50,7 +50,7 @@ interface UrlGenerator {
      * @param  bool|null  $secure
      * @return string
      */
-    public function asset(string $path, $secure = null): string;
+    public function asset(string $path, ?bool $secure = null): string;
 
     /**
      * Get the URL to a named route.
@@ -88,6 +88,9 @@ interface UrlGenerator {
      */
     public function encode(Uri $url): Uri;
 
+    public function hasUri(?string $search = null): bool;
+
+    public function isUrl(string $url): bool;
     /**
      * 需要更新一些数据
      */

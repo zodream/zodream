@@ -34,7 +34,7 @@ if (! function_exists('app')) {
      * @return Application|mixed
      * @throws Exception
      */
-    function app(string $abstract = null) {
+    function app(?string $abstract = null) {
         if (empty($abstract)) {
             return Application::getInstance();
         }
@@ -50,7 +50,7 @@ if (! function_exists('app_call')) {
      * @return mixed
      * @throws Exception
      */
-    function app_call(string $abstract, callable $cb, $default = null) {
+    function app_call(string $abstract, callable $cb, mixed $default = null): mixed {
         $instance = app($abstract);
         if (empty($instance)) {
             return $default;
@@ -138,7 +138,7 @@ if (! function_exists('cache')) {
             if (count($args) == 1) {
                 return $instance->get($args[0]);
             }
-            return $instance->set($args[0], $args[1], isset($args[2]) ? $args[2] : 0);
+            return $instance->set($args[0], $args[1], $args[2] ?? 0);
         });
     }
 }
@@ -153,7 +153,7 @@ if (! function_exists('config')) {
      * @param  mixed  $default
      * @return mixed|Repository|string
      */
-    function config($key = '', $default = null) {
+    function config(array|string $key = '', mixed $default = null) {
         return app_call('config', function (Repository $repository) use ($key, $default) {
             if (empty($key)) {
                 return $repository;
@@ -171,7 +171,7 @@ if (! function_exists('csrf_token')) {
      *
      * @throws RuntimeException
      */
-    function csrf_token() {
+    function csrf_token(): string {
         return VerifyCsrfToken::get();
     }
 }
@@ -186,7 +186,7 @@ if (! function_exists('info')) {
      * @return void
      * @throws Exception
      */
-    function info($message, $context = []) {
+    function info(string $message, array $context = []): void {
         logger()->info($message, $context);
     }
 }
@@ -195,17 +195,18 @@ if (! function_exists('logger')) {
     /**
      * Log a debug message to the logs.
      *
-     * @param string $message
+     * @param string|null $message
      * @param array $context
      * @return LoggerInterface|void
      * @throws Exception
      */
-    function logger($message = null, array $context = []) {
+    function logger(?string $message = null, array $context = []) {
         return app_call('log', function (LoggerInterface $logger) use ($message, $context) {
             if (is_null($message)) {
                 return $logger;
             }
             $logger->debug($message, $context);
+            return null;
         });
     }
 }
@@ -239,12 +240,12 @@ if (! function_exists('request')) {
     /**
      * Get an instance of the current request or an input item from the request.
      *
-     * @param  array|string $key
-     * @param  mixed $default
+     * @param array|string|null $key
+     * @param mixed $default
      * @return array|string|Input
      * @throws Exception
      */
-    function request($key = null, $default = null) {
+    function request(array|string|null $key = null, mixed $default = null) {
         return app_call('request', function (Input $input) use ($key, $default) {
             if (empty($key)) {
                 return $input;
@@ -270,18 +271,19 @@ if (! function_exists('response')) {
 
 if (! function_exists('session')) {
     /**
-     * @param null $key
+     * @param array|string|null $key
      * @param null $default
      * @return mixed|Session
      * @throws Exception
      */
-    function session($key = null, $default = null) {
+    function session(array|string|null $key = null, mixed $default = null) {
         return app_call('session', function (Session $session) use ($key, $default) {
             if (empty($key)) {
                 return $session;
             }
             if (is_array($key)) {
-                return $session->set($key);
+                $session->set($key);
+                return null;
             }
             return $session->get($key, $default);
         });
@@ -292,13 +294,13 @@ if (! function_exists('trans')) {
     /**
      * Translate the given message.
      *
-     * @param  string  $key
-     * @param  array   $replace
-     * @param  string  $locale
+     * @param string|null $key
+     * @param array $replace
+     * @param string|null $locale
      * @return string|I18n
      * @throws Exception
      */
-    function trans($key = null, $replace = [], $locale = null) {
+    function trans(?string $key = null, array $replace = [], ?string $locale = null) {
         return app_call('i18n', function (I18n $i18n) use ($key, $replace, $locale) {
             if (empty($key)) {
                 return $i18n;
@@ -312,13 +314,13 @@ if (! function_exists('__')) {
     /**
      * Translate the given message.
      *
-     * @param  string $key
-     * @param  array $replace
-     * @param  string $locale
+     * @param string|null $key
+     * @param array $replace
+     * @param string|null $locale
      * @return string
      * @throws Exception
      */
-    function __($key, $replace = [], $locale = null) {
+    function __(?string $key = null, array $replace = [], ?string $locale = null) {
         return trans($key, $replace, $locale);
     }
 }
@@ -329,12 +331,12 @@ if (! function_exists('url')) {
      *
      * @param null $path
      * @param mixed $parameters
-     * @param null $secure
+     * @param bool|null $secure
      * @param bool $encode 是否允许对url进行编码
-     * @return string| UrlGenerator
+     * @return string|UrlGenerator
      * @throws Exception
      */
-    function url($path = null, $parameters = [], $secure = null, bool $encode = true) {
+    function url(mixed $path = null, array|bool $parameters = [], ?bool $secure = null, bool $encode = true) {
         $args = func_get_args();
         return app_call(UrlGenerator::class, function (UrlGenerator $generator) use ($args) {
             if (empty($args)) {
@@ -354,7 +356,7 @@ if (! function_exists('view')) {
      * @throws FileException
      * @throws Exception
      */
-    function view($path = null, array $data = []) {
+    function view(mixed $path = null, array $data = []) {
         return app_call('view', function (ViewFactory $factory) use ($path, $data) {
             if (empty($path)) {
                 return $factory;
@@ -366,16 +368,17 @@ if (! function_exists('view')) {
 
 if (! function_exists('timer')) {
     /**
-     * @param null $name
-     * @return Timer|mixed
+     * @param string $name
+     * @return Timer
      * @throws Exception
      */
-    function timer($name = null) {
+    function timer(string $name = ''): Timer {
         return app_call('timer', function (Timer $timer) use ($name) {
             if (empty($name)) {
                 return $timer;
             }
-            return $timer->record($name);
+            $timer->record($name);
+            return $timer;
         });
     }
 }
@@ -394,7 +397,8 @@ if (! function_exists('event')) {
             if (empty($args)) {
                 return $manger;
             }
-            return $manger->dispatch(...$args);
+            $manger->dispatch(...$args);
+            return null;
         });
     }
 }
@@ -406,12 +410,10 @@ if (! function_exists('class_uses_recursive')) {
      * @param  object|string  $class
      * @return array
      */
-    function class_uses_recursive($class)
-    {
+    function class_uses_recursive(mixed $class): array {
         if (is_object($class)) {
             $class = get_class($class);
         }
-
         $results = [];
 
         foreach (array_reverse(class_parents($class)) + [$class => $class] as $class) {
@@ -429,7 +431,7 @@ if (! function_exists('trait_uses_recursive')) {
      * @param  string  $trait
      * @return array
      */
-    function trait_uses_recursive($trait)
+    function trait_uses_recursive(string $trait): array
     {
         $traits = class_uses($trait);
 
