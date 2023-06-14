@@ -14,9 +14,9 @@ class SystemConfig implements ArrayAccess, Repository {
      *
      * @var array
      */
-    protected $items = [];
+    protected array $items = [];
 
-    protected $folder = 'Service/config';
+    protected string $folder = 'Service/config';
 
     /**
      * Create a new configuration repository.
@@ -24,8 +24,7 @@ class SystemConfig implements ArrayAccess, Repository {
      * @param  array  $items
      * @return void
      */
-    public function __construct(array $items = [])
-    {
+    public function __construct(array $items = []) {
         $this->items = $items;
     }
 
@@ -47,7 +46,7 @@ class SystemConfig implements ArrayAccess, Repository {
      * @param  mixed  $default
      * @return mixed
      */
-    public function get($key, $default = null)
+    public function get(string|array $key, mixed $default = null): mixed
     {
         if (is_array($key)) {
             return $this->getMany($key);
@@ -69,7 +68,7 @@ class SystemConfig implements ArrayAccess, Repository {
      * @param  array  $keys
      * @return array
      */
-    public function getMany($keys)
+    public function getMany(array $keys)
     {
         $config = [];
 
@@ -91,7 +90,7 @@ class SystemConfig implements ArrayAccess, Repository {
      * @param  mixed  $value
      * @return void
      */
-    public function set($key, $value = null)
+    public function set(array|string $key, mixed $value = null): void
     {
         $keys = is_array($key) ? $key : [$key => $value];
 
@@ -107,7 +106,7 @@ class SystemConfig implements ArrayAccess, Repository {
      * @param  mixed  $value
      * @return void
      */
-    public function prepend(string $key, $value)
+    public function prepend(string $key, mixed $value): void
     {
         $array = $this->get($key);
 
@@ -123,7 +122,7 @@ class SystemConfig implements ArrayAccess, Repository {
      * @param  mixed  $value
      * @return void
      */
-    public function push(string $key, $value)
+    public function push(string $key, mixed $value): void
     {
         $array = $this->get($key);
 
@@ -148,7 +147,7 @@ class SystemConfig implements ArrayAccess, Repository {
      * @param  string  $key
      * @return bool
      */
-    public function offsetExists($key): bool
+    public function offsetExists(mixed $key): bool
     {
         return $this->has($key);
     }
@@ -159,7 +158,7 @@ class SystemConfig implements ArrayAccess, Repository {
      * @param  string  $key
      * @return mixed
      */
-    public function offsetGet($key): mixed
+    public function offsetGet(mixed $key): mixed
     {
         return $this->get($key);
     }
@@ -171,7 +170,7 @@ class SystemConfig implements ArrayAccess, Repository {
      * @param  mixed  $value
      * @return void
      */
-    public function offsetSet($key, $value): void
+    public function offsetSet(mixed $key, mixed $value): void
     {
         $this->set($key, $value);
     }
@@ -182,7 +181,7 @@ class SystemConfig implements ArrayAccess, Repository {
      * @param  string  $key
      * @return void
      */
-    public function offsetUnset($key): void
+    public function offsetUnset(mixed $key): void
     {
         $this->set($key, null);
     }

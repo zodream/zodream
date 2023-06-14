@@ -200,7 +200,7 @@ if (! function_exists('logger')) {
      * @return LoggerInterface|void
      * @throws Exception
      */
-    function logger(?string $message = null, array $context = []) {
+    function logger(mixed $message = null, array $context = []) {
         return app_call('log', function (LoggerInterface $logger) use ($message, $context) {
             if (is_null($message)) {
                 return $logger;

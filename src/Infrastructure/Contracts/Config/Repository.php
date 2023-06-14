@@ -19,7 +19,7 @@ interface Repository {
      * @param  mixed  $default
      * @return mixed
      */
-    public function get($key, $default = null);
+    public function get(string|array $key, mixed $default = null): mixed;
 
     /**
      * Get all of the configuration items for the application.
@@ -35,7 +35,7 @@ interface Repository {
      * @param  mixed  $value
      * @return void
      */
-    public function set($key, $value = null);
+    public function set(array|string $key, mixed $value = null): void;
 
     /**
      * Prepend a value onto an array configuration value.
@@ -44,7 +44,7 @@ interface Repository {
      * @param  mixed  $value
      * @return void
      */
-    public function prepend(string $key, $value);
+    public function prepend(string $key, mixed $value): void;
 
     /**
      * Push a value onto an array configuration value.
@@ -53,5 +53,5 @@ interface Repository {
      * @param  mixed  $value
      * @return void
      */
-    public function push(string $key, $value);
+    public function push(string $key, mixed $value): void;
 }

@@ -14,7 +14,7 @@ use Zodream\Infrastructure\Contracts\Session as SessionInterface;
 
 class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
 
-    protected $configKey = 'session';
+    protected string $configKey = 'session';
 
     protected array $configs = [
         'flashParam' => '__flash',
@@ -160,7 +160,7 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
         return false;
     }
 
-    public function useCookie($value) {
+    public function useCookie(mixed $value) {
         if ($value === false) {
             ini_set('session.use_cookies', '0');
             ini_set('session.use_only_cookies', '0');
@@ -173,7 +173,7 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
         }
     }
 
-    public function useTransparentSessionID($value) {
+    public function useTransparentSessionID(bool $value) {
         ini_set('session.use_trans_sid', $value ? '1' : '0');
     }
 
@@ -182,7 +182,7 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
         return count($_SESSION);
     }
 
-    public function get(string $key = '', $defaultValue = null) {
+    public function get(string $key = '', mixed $defaultValue = null) {
         $this->open();
         if (empty($key)) {
             return $_SESSION;
