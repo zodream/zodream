@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Contracts;
 /**
  * Created by PhpStorm.
@@ -12,5 +13,5 @@ interface ArrayAble {
      *
      * @return array
      */
-    public function toArray();
+    public function toArray(): array;
 }

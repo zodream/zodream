@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Contracts;
 /**
  * Created by PhpStorm.
@@ -14,5 +15,5 @@ interface JsonAble {
      * @param  int  $options
      * @return string
      */
-    public function toJson($options = JSON_UNESCAPED_UNICODE);
+    public function toJson(int $options = JSON_UNESCAPED_UNICODE): string;
 }

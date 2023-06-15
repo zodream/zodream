@@ -165,7 +165,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
         return $this->setAttribute($args);
     }
 
-    public function toArray() {
+    public function toArray(): array {
         return $this->getAttribute();
     }
 
@@ -189,7 +189,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
      * @param  int $options
      * @return string
      */
-    public function toJson($options = JSON_UNESCAPED_UNICODE) {
+    public function toJson(int $options = JSON_UNESCAPED_UNICODE): string {
         return Json::encode($this->jsonSerialize(), $options);
     }
 }

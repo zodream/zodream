@@ -13,7 +13,7 @@ trait ErrorTrait {
      * HAS ERROR
      * @return bool
      */
-    public function hasError() {
+    public function hasError(): bool {
         return !empty($this->errors);
     }
 
@@ -22,7 +22,7 @@ trait ErrorTrait {
      * @param string $key
      * @return array
      */
-    public function getError($key = null) {
+    public function getError(mixed $key = null): array {
         if (empty($key)) {
             return $this->errors;
         }
@@ -37,7 +37,7 @@ trait ErrorTrait {
      * @param string $key
      * @return mixed|null
      */
-    public function getFirstError($key = null) {
+    public function getFirstError(mixed $key = null): mixed {
         if (empty($key)) {
             $key = key($this->errors);
         }
@@ -49,11 +49,11 @@ trait ErrorTrait {
 
     /**
      * SET ERROR
-     * @param $key
-     * @param null $error
+     * @param mixed $key
+     * @param mixed $error
      * @return false
      */
-    public function setError($key, $error = null) {
+    public function setError(mixed $key, mixed $error = null): bool {
         if (is_array($key) && is_null($error)) {
             $this->errors = array_merge($this->errors, $key);
             return false;
@@ -78,7 +78,7 @@ trait ErrorTrait {
      * GET LAST ERROR
      * @return array
      */
-    public function getLastError() {
+    public function getLastError(): array {
         return array_slice($this->errors, -1);
     }
 }
