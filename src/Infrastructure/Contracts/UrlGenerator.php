@@ -67,7 +67,7 @@ interface UrlGenerator {
     /**
      * Get the URL to a controller action.
      *
-     * @param  string|array  $action
+     * @param  string|array{module: string, controller: string, action: string}  $action
      * @param  mixed  $parameters
      * @param  bool  $absolute
      * @return string
