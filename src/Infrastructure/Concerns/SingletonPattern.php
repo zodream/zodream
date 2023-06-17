@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Concerns;
 /**
  * 单例模式
@@ -10,14 +11,14 @@ trait SingletonPattern {
 	/**
 	 * @var static
 	 */
-	protected static $instance;
+	protected static mixed $instance = null;
 
 	/**
 	 * 单例
 	 * @param array $args
 	 * @return static
 	 */
-	public static function getInstance($args = array()) {
+	public static function getInstance(array $args = array()): mixed {
 		if (is_null(static::$instance)) {
             static::$instance = false; // 初始化未完成
 			static::$instance = new static($args);
