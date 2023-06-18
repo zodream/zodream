@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Exceptions;
 
 use Exception;
@@ -23,9 +24,9 @@ class Handler implements ExceptionHandler {
      *
      * @var array
      */
-    protected $dontReport = [];
+    protected array $dontReport = [];
 
-    protected $internalDontReport = [
+    protected array $internalDontReport = [
         AuthenticationException::class,
         AuthorizationException::class,
         HttpException::class,
@@ -138,7 +139,7 @@ class Handler implements ExceptionHandler {
      */
     protected function prepareException(Throwable $e) {
         if ($e instanceof ModelNotFoundException) {
-            $e = new NotFoundHttpException($e->getMessage(), $e);
+            $e = new NotFoundHttpException($e->getMessage(), $e->getCode());
         } elseif ($e instanceof AuthorizationException) {
             $e = new HttpException(403, $e->getMessage());
         }
@@ -156,14 +157,14 @@ class Handler implements ExceptionHandler {
 //            return $e->response;
 //        }
 
-        $errors = $e->validator->errors();
+        $errors = $e->toArray();
 
         if (request()->expectsJson()) {
             return response()->statusCode(422)
                 ->json($errors);
         }
-
-
+        return response()->statusCode(422)
+            ->html($e->getMessage());
     }
 
     /**
