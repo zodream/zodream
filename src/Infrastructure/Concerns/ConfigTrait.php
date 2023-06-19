@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Concerns;
 
 
@@ -24,7 +25,7 @@ trait ConfigTrait {
         return $this;
     }
 
-    public function loadConfigs($default = []) {
+    public function loadConfigs(array $default = []) {
         if (empty($this->configKey)) {
             return;
         }
