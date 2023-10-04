@@ -2,28 +2,31 @@
 declare(strict_types=1);
 namespace Zodream\Domain\Upload;
 
+use Zodream\Disk\FileSystem;
+use Zodream\Http\Http;
+use Zodream\Http\MIME;
 
 class UploadRemote extends BaseUpload {
 
-    protected string $content = '';
+    protected string $url = '';
+    protected string $mineType = '';
 
     public function __construct(string $url = '') {
         $this->load($url);
     }
 
-    public function load(string $url = '') {
+    public function load(string $url = ''): void {
         if (empty($url)) {
             $this->setError('ERROR_HTTP_LINK');
             return;
         }
-        $imgUrl = str_replace('&amp;', '&', htmlspecialchars($url));
-
+        $url = str_replace('&amp;', '&', htmlspecialchars($url));
         //http开头验证
-        if (!str_starts_with($imgUrl, 'http')) {
+        if (!str_starts_with($url, 'http')) {
             $this->setError('ERROR_HTTP_LINK');
             return;
         }
-        $host = parse_url($imgUrl, PHP_URL_HOST);
+        $host = parse_url($url, PHP_URL_HOST);
         if (empty($host)) {
             $this->setError('ERROR_HTTP_LINK');
             return;
@@ -35,30 +38,31 @@ class UploadRemote extends BaseUpload {
             $this->setError('INVALID_IP');
             return;
         }
-
+        $client = new Http($url);
+        $headers = $client->getHeaders();
         //获取请求头并检测死链
-        $heads = get_headers($imgUrl,  true);
-        if (!(stristr($heads[0], '200') && stristr($heads[0], 'OK'))) {
+        if ($client->getStatusCode() !== 200) {
             $this->setError('ERROR_DEAD_LINK');
             return;
         }
+        $this->url = $url;
         //格式验证(扩展名验证和Content-Type验证)
-        $this->setType(strtolower(strrchr($imgUrl, '.')));
+        $type = FileSystem::getExtension($url, false);
+        if (isset($headers['Content-Type'])) {
+            $this->mineType = explode(';', $headers['Content-Type'], 2)[0];
+        }
+        $this->setType(empty($type) && isset($headers['Content-Type']) ?
+            MIME::extension($headers['Content-Type']) : $type);
 
-        //打开输出缓冲区并获取远程图片
-        ob_start();
-        $context = stream_context_create(
-            array('http' => array(
-                'follow_location' => false // don't follow redirects
-            ))
-        );
-        readfile($imgUrl, false, $context);
-        $img = ob_get_contents();
-        ob_end_clean();
-        preg_match('/[\/]([^\/]*)[\.]?[^\.\/]*$/', $imgUrl, $m);
-        $this->content = $img;
-        $this->name = $m ? $m[1]:'';
-        $this->size = strlen($this->content);
+        if (preg_match('/[\/]([^\/]*)[\.]?[^\.\/]*$/', $url, $match)) {
+            $this->name = $match[1];
+        }
+        if (isset($headers['Content-Disposition']) &&
+            preg_match('/filename="?([^"]+)"?/', $headers['Content-Disposition'], $match)) {
+            $this->name = $match[1];
+            // $this->setType(FileSystem::getExtension($match[1], false));
+        }
+        $this->size = intval($headers['Content-Length'] ?? 0);
     }
 
     /**
@@ -69,13 +73,18 @@ class UploadRemote extends BaseUpload {
         if (!parent::save()) {
             return false;
         }
-        if (!$this->file->write($this->content) ||
-            !$this->file->exist()) { //移动失败
+        if (empty($this->url)) {
+            return false;
+        }
+        $client = new Http($this->url);
+        $client->save($this->file);
+        if (!$this->file->exist()) {
             $this->setError(
                 __('ERROR_WRITE_CONTENT')
             );
             return false;
         }
+        $this->size = $this->file->size();
         return true;
     }
 }

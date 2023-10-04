@@ -297,7 +297,7 @@ if (! function_exists('trans')) {
      * @param string|null $key
      * @param array $replace
      * @param string|null $locale
-     * @return string|I18n
+     * @return string|array|I18n
      * @throws Exception
      */
     function trans(?string $key = null, array $replace = [], ?string $locale = null) {
@@ -317,7 +317,7 @@ if (! function_exists('__')) {
      * @param string|null $key
      * @param array $replace
      * @param string|null $locale
-     * @return string
+     * @return string|array
      * @throws Exception
      */
     function __(?string $key = null, array $replace = [], ?string $locale = null) {

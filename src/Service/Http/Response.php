@@ -461,7 +461,7 @@ class Response implements HttpOutput {
             return $this;
         }
         if ($this->parameter instanceof File) {
-            readfile((string)$this->parameter);
+            $this->sendFile($this->parameter);
             return $this;
         }
         if ($this->parameter instanceof ExportObject) {
@@ -469,26 +469,33 @@ class Response implements HttpOutput {
             return $this;
         }
         if (is_array($this->parameter) && $this->parameter['file'] instanceof Uri) {
+            // 大文件请不要通过此方法传输
             readfile((string)$this->parameter['file']);
             return $this;
         }
         if (is_array($this->parameter) && $this->parameter['file'] instanceof File) {
-            $stream = new Stream($this->parameter['file']);;
-            $stream->open('rb');
-            $stream->move(intval($this->parameter['offset']));
-            //虚幻输出
-            while(!$stream->isEnd()){
-                //设置文件最长执行时间
-                set_time_limit(0);
-                print $stream->read(intval($this->parameter['speed'] * 1024));//输出文件
-                flush();//输出缓冲
-                ob_flush();
-            }
-            $stream->close();
+            $this->sendFile($this->parameter['file'], intval($this->parameter['offset']), intval($this->parameter['speed'] * 1024));
             return $this;
         }
         echo (string)$this->parameter;
         return $this;
+    }
+
+    protected function sendFile(mixed $file, int $offset = 0, int $chunkSize = 200000): void {
+        $stream = new Stream($file);
+        $stream->open('rb');
+        if ($offset > 0) {
+            $stream->move($offset);
+        }
+        //设置文件最长执行时间
+        set_time_limit(0);
+        //虚幻输出
+        while(!$stream->isEnd()){
+            print $stream->read($chunkSize);//输出文件
+            flush();//输出缓冲
+            ob_flush();
+        }
+        $stream->close();
     }
 
     public function __sleep(): array
@@ -496,8 +503,7 @@ class Response implements HttpOutput {
         return ['statusCode', 'statusText', 'version', 'header', 'parameter'];
     }
 
-    public function __wakeup(): void
-    {
+    public function __wakeup(): void {
         $this->container = app(HttpContextInterface::class);
     }
 }

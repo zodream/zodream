@@ -8,7 +8,6 @@ namespace Zodream\Domain\Upload;
  * Date: 2016/6/28
  * Time: 14:17
  */
-
 use Exception;
 use Zodream\Disk\FileSystem;
 use Zodream\Infrastructure\Base\ConfigObject;
@@ -34,11 +33,11 @@ abstract class BaseUpload extends ConfigObject {
      */
     protected ?File $file = null;
     
-    protected string|int $error = '';
+    protected string $error = '';
     
     protected array $errorMap = [];
 
-    public function setError(string|int $error = 0) {
+    public function setError(string|int $error = 0): static {
         if (empty($error)) {
             return $this;
         }
@@ -46,7 +45,7 @@ abstract class BaseUpload extends ConfigObject {
             $this->error = $error;
             return $this;
         }
-        $this->error = $this->errorMap[$error] ?? $error;
+        $this->error = $this->errorMap[$error] ?? '';
         return $this;
     }
 
@@ -54,11 +53,11 @@ abstract class BaseUpload extends ConfigObject {
      * 获取保存后的路径
      * @return File|null
      */
-    public function getFile() {
+    public function getFile(): ?File {
         return $this->file;
     }
 
-    public function setFile(string|File $file) {
+    public function setFile(string|File $file): static {
         if ($file instanceof File) {
             $file = new File($file);
         }
@@ -66,15 +65,15 @@ abstract class BaseUpload extends ConfigObject {
         return $this;
     }
 
-    public function getError() {
+    public function getError(): string {
         return $this->error;
     }
     
-    public function getName() {
+    public function getName(): string {
         return $this->name;
     }
     
-    public function setType(string $type = '') {
+    public function setType(string $type = ''): static {
         if (empty($type)) {
             $type = FileSystem::getExtension($this->name);
         }
@@ -82,14 +81,14 @@ abstract class BaseUpload extends ConfigObject {
         return $this;
     }
     
-    public function getType() {
+    public function getType(): string {
         if (empty($this->type)) {
             $this->setType();
         }
         return $this->type;
     }
     
-    public function getSize() {
+    public function getSize(): int {
         if ($this->size < 0) {
             $this->size = $this->getFile()->size();
         }
@@ -128,9 +127,9 @@ abstract class BaseUpload extends ConfigObject {
             '{filename}'
         ], $args, $template);
         //替换随机字符串
-        if (preg_match('/\{rand\:([\d]*)\}/i', $name, $matches)) {
-            $name = preg_replace('/\{rand\:[\d]*\}/i', substr($randNum, 0, intval($matches[1])), $name);
-        }
+        $name = preg_replace_callback('/\{rand\:[\d]*\}/i', function ($matches) use ($randNum) {
+            return substr($randNum, 0, intval($matches[1]));
+        }, $name);
         return $name . '.'. $this->type;
     }
 

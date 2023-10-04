@@ -10,9 +10,9 @@ namespace Zodream\Domain\Upload;
  */
 class UploadFile extends BaseUpload {
 
-    protected $tempName;
+    protected string $tempName;
 
-    protected $mineType;
+    protected string $mineType;
 
     protected array $errorMap = [
         '',
@@ -32,7 +32,7 @@ class UploadFile extends BaseUpload {
         }
     }
 
-    public function load($name, $tempName = null, $size = 0, $type = '', $error = 0) {
+    public function load(array|string $name, string $tempName = '', int $size = 0, string $type = '', string $error = '') {
         if (empty($name)) {
             return;
         }
@@ -47,7 +47,7 @@ class UploadFile extends BaseUpload {
         $this->tempName = $tempName;
         $this->size = $size;
         $this->mineType = $type;
-        $this->error = $error;
+        $this->setError($error);
         $this->setType();
     }
 
@@ -60,7 +60,7 @@ class UploadFile extends BaseUpload {
         if (in_array($this->mineType, ['image/svg+xml', 'image/svg'])) {
             return true;
         }
-        if (! $sizeDetails = @getimagesize($this->tempName)) {
+        if (!$sizeDetails = @getimagesize($this->tempName)) {
             return false;
         }
         if (empty($cb)) {

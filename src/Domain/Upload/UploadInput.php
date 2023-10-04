@@ -14,7 +14,7 @@ class UploadInput extends BaseUpload {
         $this->setName(request()->server('HTTP_X_FILENAME'));
     }
 
-    public function setName(string $name) {
+    public function setName(string $name): static {
         $this->name = $name;
         $this->setType();
         return $this;

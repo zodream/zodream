@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Domain\Upload;
 /**
  * Created by PhpStorm.
@@ -18,7 +19,7 @@ class Upload extends MagicObject {
      */
     protected ?Directory $directory = null;
 
-    public function setDirectory($directory) {
+    public function setDirectory($directory): static {
         if (!$directory instanceof Directory) {
             $directory = new Directory($directory);
         }
@@ -32,20 +33,20 @@ class Upload extends MagicObject {
      * @param null $default
      * @return BaseUpload
      */
-    public function get($key = 0, $default = null) {
+    public function get(int $key = 0, mixed $default = null): mixed {
         if (!array_key_exists($key, $this->__attributes)) {
             return $default;
         }
         return $this->__attributes[$key];
     }
 
-    public function upload(string $key) {
+    public function upload(string $key): bool {
         if (!array_key_exists($key, $_FILES)) {
             return false;
         }
         $files = $_FILES[$key];
         if (!is_array($files['name'])) {
-            return $this->addFile($files);
+            return !is_null($this->addFile($files));
         }
         for ($i = 0, $length = count($files['name']); $i < $length; $i ++) {
             $this->addFile(
@@ -56,10 +57,10 @@ class Upload extends MagicObject {
                 $files['error'][$i]
             );
         }
-        return $this;
+        return true;
     }
 
-    public function addFile($file) {
+    public function addFile($file): ?BaseUpload {
         if (func_num_args() > 3) {
             $upload = new UploadFile();
             call_user_func_array([$upload, 'load'], func_get_args());
@@ -76,9 +77,11 @@ class Upload extends MagicObject {
             return $upload;
         }
         if (!is_string($file)) {
-            return false;
+            return null;
         }
-        return $this->upload($file);
+        $count = count($this->__attributes);
+        $this->upload($file);
+        return count($this->__attributes) > $count ? $this->__attributes[$count] : null;
     }
 
     /**
@@ -87,7 +90,7 @@ class Upload extends MagicObject {
      * @param int $count 限制遍历的数量
      * @return $this
      */
-    public function each(callable $callback, int $count = 0) {
+    public function each(callable $callback, int $count = 0): static {
         $items = $this->__attributes;
         $length = count($items);
         $length = $count > 0 && $count > $length ? $count : $length;
