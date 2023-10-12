@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Error;
 
 class FatalThrowableError extends FatalErrorException {
@@ -14,7 +15,7 @@ class FatalThrowableError extends FatalErrorException {
             $severity = E_ERROR;
         }
 
-        \ErrorException::__construct(
+        parent::__construct(
             $message,
             $e->getCode(),
             $severity,

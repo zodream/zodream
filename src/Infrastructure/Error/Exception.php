@@ -3,7 +3,7 @@ namespace Zodream\Infrastructure\Error;
 
 class Exception extends \Exception {
 
-    public function __construct($message = "", $code = 0, \Exception $previous = null) {
+    public function __construct($message = '', $code = 0, \Exception $previous = null) {
         if (is_string($message)) {
             $message = trans($message);
         }
