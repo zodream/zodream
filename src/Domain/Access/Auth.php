@@ -112,7 +112,7 @@ class Auth implements AuthObject {
     /**
      * @param UserObject $user
      */
-    protected function setRememberToken(UserObject $user) {
+    protected function setRememberToken(UserObject $user): void {
         if (empty($this->getRememberTokenFromUser($user))) {
             $this->setRememberTokenFromUser($user, Str::random(60));
         }
@@ -122,7 +122,7 @@ class Auth implements AuthObject {
     /**
      * 取消永久登录
      */
-    protected function cancelRememberToken() {
+    protected function cancelRememberToken(): void {
         $this->app->make('response')->cookie($this->getRememberName(), '', -2628000 * 60);
     }
 
@@ -130,7 +130,7 @@ class Auth implements AuthObject {
      * 设置用户
      * @param UserObject $user
      */
-    public function setUser(UserObject $user) {
+    public function setUser(UserObject $user): void {
 	    $this->identity = $user;
     }
 
@@ -173,7 +173,7 @@ class Auth implements AuthObject {
      * @param bool $remember
      * @throws \Exception
      */
-    public function login(UserObject $user, bool $remember = false) {
+    public function login(UserObject $user, bool $remember = false): void {
         $this->updateSession($user->getIdentity());
         if ($remember) {
             $this->setRememberToken($user);
@@ -184,11 +184,11 @@ class Auth implements AuthObject {
     /**
      * Update the session with the given ID.
      *
-     * @param  string $id
+     * @param int|string $id
      * @return void
      * @throws \Exception
      */
-    protected function updateSession($id) {
+    protected function updateSession(int|string $id): void {
         session()->set($this->getName(), $id);
     }
 
@@ -196,7 +196,7 @@ class Auth implements AuthObject {
      * 登出
      * @throws \Exception
      */
-    public function logout() {
+    public function logout(): void {
         if (empty($this->user())) {
             return;
         }

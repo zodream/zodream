@@ -208,14 +208,14 @@ class JWTAuth extends Token {
         return JWT::encode($payload, $configs['privateKey'] ?? $configs['key'], $configs['alg']);
     }
 
-    protected function setRememberToken(UserObject $user) {}
+    protected function setRememberToken(UserObject $user): void {}
 
-    protected function setRememberTokenFromUser(UserObject $user, $token) {}
+    protected function setRememberTokenFromUser(UserObject $user, $token): void {}
 
     /**
      * @throws \Exception
      */
-    public function logout() {
+    public function logout(): void {
         $this->cacheDriver()->delete($this->getPayload('jti'));
         parent::logout();
     }
