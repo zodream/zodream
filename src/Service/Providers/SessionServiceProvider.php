@@ -8,8 +8,7 @@ use Zodream\Infrastructure\Contracts\Session as SessionInterface;
 
 class SessionServiceProvider extends ServiceProvider {
 
-    public function register()
-    {
+    public function register(): void {
         $this->app->scopedIf(SessionInterface::class, Session::class);
         $this->app->alias(SessionInterface::class, 'session');
     }

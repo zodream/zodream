@@ -9,40 +9,31 @@ use Zodream\Infrastructure\Contracts\Application;
 abstract class ServiceProvider {
 
     /**
-     * The application instance.
-     *
-     * @var Application
-     */
-    protected $app;
-
-    /**
      * All of the registered booting callbacks.
      *
      * @var array
      */
-    protected $bootingCallbacks = [];
+    protected array $bootingCallbacks = [];
 
     /**
      * All of the registered booted callbacks.
      *
      * @var array
      */
-    protected $bootedCallbacks = [];
+    protected array $bootedCallbacks = [];
 
 
     /**
      * Create a new service provider instance.
      *
-     * @param    $app
-     * @return void
+     * @param Application $app
      */
-    public function __construct(Application $app)
+    public function __construct(
+        protected Application $app)
     {
-        $this->app = $app;
     }
 
-    public function register()
-    {
+    public function register(): void {
         //
     }
 
@@ -52,8 +43,7 @@ abstract class ServiceProvider {
      * @param Closure $callback
      * @return void
      */
-    public function booting(Closure $callback)
-    {
+    public function booting(Closure $callback): void {
         $this->bootingCallbacks[] = $callback;
     }
 
@@ -63,8 +53,7 @@ abstract class ServiceProvider {
      * @param Closure $callback
      * @return void
      */
-    public function booted(Closure $callback)
-    {
+    public function booted(Closure $callback): void {
         $this->bootedCallbacks[] = $callback;
     }
 
@@ -73,8 +62,7 @@ abstract class ServiceProvider {
      *
      * @return void
      */
-    public function callBootingCallbacks()
-    {
+    public function callBootingCallbacks(): void {
         foreach ($this->bootingCallbacks as $callback) {
             BoundMethod::call($callback, $this->app);
         }
@@ -85,8 +73,7 @@ abstract class ServiceProvider {
      *
      * @return void
      */
-    public function callBootedCallbacks()
-    {
+    public function callBootedCallbacks(): void {
         foreach ($this->bootedCallbacks as $callback) {
             BoundMethod::call($callback, $this->app);
         }

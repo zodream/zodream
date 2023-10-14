@@ -103,11 +103,11 @@ class JWTAuth extends Token {
     }
 
     /**
-     * @param null $key
+     * @param string|null $key
      * @param null $default
      * @return mixed
      */
-    public function getPayload($key = null, $default = null) {
+    public function getPayload(?string $key = null, mixed $default = null): mixed {
         if ($this->payload === false) {
             $this->decodePayload();
         }

@@ -8,15 +8,15 @@ interface Kernel {
 
     public function getContainer(): Container;
 
-    public function handle($request, array $middlewares = []);
+    public function handle($request, array $middlewares = []): mixed;
 
-    public function bootstrap();
+    public function bootstrap(): void;
 
-    public function terminate($request, $response);
+    public function terminate($request, $response): void;
 
     /**
      * 接收信息，并进行格式化
      * @return Input
      */
-    public function receive();
+    public function receive(): Input;
 }

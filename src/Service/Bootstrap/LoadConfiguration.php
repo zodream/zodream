@@ -8,8 +8,7 @@ use Zodream\Service\SystemConfig;
 
 class LoadConfiguration {
 
-    public function bootstrap(Application $app)
-    {
+    public function bootstrap(Application $app) {
         $items = [];
         if (is_file($cached = $this->getCachedConfigPath())) {
             $items = require $cached;
@@ -28,8 +27,7 @@ class LoadConfiguration {
 
     }
 
-    protected function getCachedConfigPath()
-    {
+    protected function getCachedConfigPath() {
         return (string)app_path('data/cache_config.php');
     }
 }

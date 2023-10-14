@@ -61,16 +61,16 @@ class Auth implements AuthObject {
      * @param UserObject $user
      * @return string
      */
-    protected function getRememberTokenFromUser(UserObject $user) {
+    protected function getRememberTokenFromUser(UserObject $user): string {
         return $user->getRememberToken();
     }
 
     /**
      * 设置用户的永久token
      * @param UserObject $user
-     * @param $token
+     * @param string $token
      */
-    protected function setRememberTokenFromUser(UserObject $user, $token) {
+    protected function setRememberTokenFromUser(UserObject $user, string $token): void {
         $user->setRememberToken($token);
     }
 

@@ -8,6 +8,7 @@ use Zodream\Infrastructure\Contracts\Http\Input;
 use Zodream\Infrastructure\Contracts\Http\Output;
 use Zodream\Infrastructure\Contracts\HttpContext as HttpContextInterface;
 use Zodream\Infrastructure\Contracts\Route;
+use Zodream\Route\ModuleRoute;
 
 class HttpContext implements HttpContextInterface, ArrayAccess {
 
@@ -57,25 +58,25 @@ class HttpContext implements HttpContextInterface, ArrayAccess {
      * 返回已通过url::decode过的路径
      * @return string
      */
-    public function path(): string
-    {
+    public function path(): string {
         return $this->instances['path'] ?? '';
     }
 
-    public function handle(Route $route)
-    {
-        $this->instances['route'] = $route;
+    public function handle(Route $route) {
+        foreach ([
+            Route::class, get_class($route)
+                 ] as $key) {
+            $this->instances[$key] = $route;
+        }
         $this->output($this->make(Output::class));
         return $route->handle($this);
     }
 
-    public function has(string $abstract): bool
-    {
+    public function has(string $abstract): bool {
         return isset($this->instances[$abstract]) || $this->app->has($abstract);
     }
 
-    public function flush()
-    {
+    public function flush(): void {
         $this->instances = [];
     }
 

@@ -8,8 +8,7 @@ use Zodream\Infrastructure\Contracts\Cache as CacheInterface;
 
 class CacheServiceProvider extends ServiceProvider {
 
-    public function register()
-    {
+    public function register(): void {
         $this->app->scopedIf(CacheInterface::class, FileCache::class);
         $this->app->alias(CacheInterface::class, 'cache');
     }

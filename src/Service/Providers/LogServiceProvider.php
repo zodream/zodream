@@ -11,7 +11,7 @@ use Zodream\Infrastructure\Support\ServiceProvider;
 class LogServiceProvider extends ServiceProvider {
 
 
-    public function register() {
+    public function register(): void {
         $this->app->singleton(LoggerInterface::class, function () {
             $args = config('app.log', [
                 'name' => 'ZoDream',

@@ -24,6 +24,6 @@ interface Application extends Container {
 
     public function middleware(...$middlewares);
 
-    public function listen();
+    public function listen(): void;
 
 }

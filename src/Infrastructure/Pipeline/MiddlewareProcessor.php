@@ -14,7 +14,7 @@ use Zodream\Infrastructure\Contracts\Container;
  */
 class MiddlewareProcessor {
 
-    protected $method = 'handle';
+    protected string $method = 'handle';
     protected $container;
     /**
      * The object being passed through the pipeline.
@@ -28,7 +28,7 @@ class MiddlewareProcessor {
      *
      * @var array
      */
-    protected $pipes = [];
+    protected array $pipes = [];
 
     public function __construct(Container $container)
     {
@@ -47,10 +47,8 @@ class MiddlewareProcessor {
         return $this;
     }
 
-    public function via($method)
-    {
+    public function via(string $method) {
         $this->method = $method;
-
         return $this;
     }
 
@@ -75,8 +73,7 @@ class MiddlewareProcessor {
         });
     }
 
-    protected function prepareDestination(Closure $destination)
-    {
+    protected function prepareDestination(Closure $destination) {
         return function ($passable) use ($destination) {
             try {
                 return $destination($passable);
@@ -133,8 +130,7 @@ class MiddlewareProcessor {
         return [$name, $parameters];
     }
 
-    protected function pipes()
-    {
+    protected function pipes() {
         return $this->pipes;
     }
 

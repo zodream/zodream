@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Contracts;
 /**
  * Created by PhpStorm.
@@ -15,61 +16,61 @@ interface UserObject {
 
     /**
      * 根据账号密码登录
-     * @param $username
-     * @param $password
-     * @return UserObject
+     * @param string $username
+     * @param string $password
+     * @return UserObject|null
      */
-    public static function findByAccount($username, $password);
+    public static function findByAccount(string $username, string $password): ?UserObject;
 
     /**
      * 根据 主键获取用户
-     * @param $id
-     * @return UserObject
+     * @param int|string $id
+     * @return UserObject|null
      */
-    public static function findByIdentity($id);
+    public static function findByIdentity(int|string $id): ?UserObject;
 
     /**
      * api 时根据 api token 获取用户
-     * @param $token
-     * @return UserObject
+     * @param string $token
+     * @return UserObject|null
      */
-    public static function findByToken($token);
+    public static function findByToken(string $token): ?UserObject;
 
     /**
      * 根据 记住密码 token 获取用户
-     * @param integer $id
+     * @param int|string $id
      * @param string $token
-     * @return UserObject
+     * @return UserObject|null
      */
-    public static function findByRememberToken($id, $token);
+    public static function findByRememberToken(int|string $id, string $token): ?UserObject;
 
     /**
      * 登录
      * @param bool $remember
-     * @return mixed
+     * @return void
      */
-    public function login($remember = false);
+    public function login(bool $remember = false): void;
 
     /**
      * 注销
-     * @return mixed
+     * @return void
      */
-    public function logout();
+    public function logout(): void;
 
     /**
      * 获取用户ID
      * @return int|string
      */
-    public function getIdentity();
+    public function getIdentity(): int|string;
 
     /**
      * @return string
      */
-    public function getRememberToken();
+    public function getRememberToken(): string;
 
     /**
      * @param string $token
      * @return static
      */
-    public function setRememberToken($token);
+    public function setRememberToken(string $token): UserObject;
 }

@@ -21,7 +21,7 @@ use Zodream\Service\Providers\SessionServiceProvider;
 
 class Application implements ApplicationInterface, ArrayAccess {
 
-    const VERSION = '5.0.0';
+    const VERSION = '5.1.0';
 
     /**
      * @var Application|null
@@ -237,8 +237,7 @@ class Application implements ApplicationInterface, ArrayAccess {
         return $this;
     }
 
-    public function listen()
-    {
+    public function listen(): void {
         $this->singletonIf(KernelInterface::class, Kernel::class);
         /** @var KernelInterface $kernel */
         $kernel = $this->make(KernelInterface::class);
@@ -255,8 +254,7 @@ class Application implements ApplicationInterface, ArrayAccess {
             isset($this->aliases[$abstract]);
     }
 
-    public function flush()
-    {
+    public function flush(): void {
         $this->bindings = [];
     }
 
@@ -339,8 +337,7 @@ class Application implements ApplicationInterface, ArrayAccess {
         $this->register(SessionServiceProvider::class);
     }
 
-    protected function registerCoreContainerAliases()
-    {
+    protected function registerCoreContainerAliases(): void {
         foreach ([
             'app' => [self::class],
             ] as $key => $aliases) {

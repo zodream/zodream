@@ -9,7 +9,7 @@ use Zodream\Infrastructure\Support\ServiceProvider;
 class EventServiceProvider extends ServiceProvider {
 
 
-    public function register() {
+    public function register(): void {
         $this->app->singleton(EventManger::class, function () {
             /** @var EventManger $instance */
             $instance = BoundMethod::newClass(EventManger::class, $this->app);

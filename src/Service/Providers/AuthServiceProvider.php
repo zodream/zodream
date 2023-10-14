@@ -8,8 +8,7 @@ use Zodream\Infrastructure\Support\ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider {
 
-    public function register()
-    {
+    public function register(): void {
         $this->app->scopedIf(AuthObject::class, Auth::class);
         $this->app->alias(AuthObject::class, 'auth');
     }

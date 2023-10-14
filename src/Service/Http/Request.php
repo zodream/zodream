@@ -84,8 +84,7 @@ class Request extends BaseInput implements Input {
         return $this->getCacheData('method');
     }
 
-    public function url(): string
-    {
+    public function url(): string {
         return $this->getCacheData(__FUNCTION__);
     }
 
@@ -107,8 +106,7 @@ class Request extends BaseInput implements Input {
         return $this->getCacheData(__FUNCTION__);
     }
 
-    public function referrer(): string
-    {
+    public function referrer(): string {
         return $this->server('HTTP_REFERER', '');
     }
 

@@ -8,8 +8,7 @@ use Zodream\Infrastructure\Support\ServiceProvider;
 
 class I18nServiceProvider extends ServiceProvider {
 
-    public function register()
-    {
+    public function register(): void {
         $this->app->singletonIf(I18n::class, PhpSource::class);
         $this->app->alias(I18n::class, 'i18n');
     }

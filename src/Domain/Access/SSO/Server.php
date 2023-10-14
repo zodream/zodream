@@ -1,9 +1,9 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Domain\Access\SSO;
 
 use Exception;
 use Zodream\Infrastructure\Caching\Cache;
-use Zodream\Service\Factory;
 
 /**
  * Single sign-on server.
@@ -17,14 +17,14 @@ abstract class Server {
     /**
      * @var array
      */
-    protected $options = ['files_cache_directory' => '/tmp', 'files_cache_ttl' => 36000];
+    protected array $options = ['files_cache_directory' => '/tmp', 'files_cache_ttl' => 36000];
 
     /**
      * Cache that stores the special session data for the brokers.
      *
      * @var Cache
      */
-    protected $cache;
+    protected Cache $cache;
 
     /**
      * @var string
@@ -53,25 +53,27 @@ abstract class Server {
      * @return Cache
      */
     protected function createCacheAdapter() {
-        return Factory::cache();
+        return \cache()->store('sso');
     }
 
     /**
      * Start the session for broker requests to the SSO server
      */
-    public function startBrokerSession() {
+    public function startBrokerSession(): void {
         if (isset($this->brokerId)) return;
 
         $sid = $this->getBrokerSessionID();
 
         if ($sid === false) {
-            return $this->fail("Broker didn't send a session key", 400);
+            $this->fail("Broker didn't send a session key", 400);
+            return;
         }
 
         $linkedId = $this->cache->get($sid);
 
         if (!$linkedId) {
-            return $this->fail("The broker session id isn't attached to a user session", 403);
+            $this->fail("The broker session id isn't attached to a user session", 403);
+            return;
         }
 
         if (session_status() === PHP_SESSION_ACTIVE) {
@@ -91,7 +93,7 @@ abstract class Server {
     protected function getBrokerSessionID() {
         $headers = getallheaders();
 
-        if (isset($headers['Authorization']) &&  strpos($headers['Authorization'], 'Bearer') === 0) {
+        if (isset($headers['Authorization']) && str_starts_with($headers['Authorization'], 'Bearer')) {
             $headers['Authorization'] = substr($headers['Authorization'], 7);
             return $headers['Authorization'];
         }
@@ -112,20 +114,23 @@ abstract class Server {
      * Validate the broker session id
      *
      * @param string $sid session id
-     * @return string  the broker id
+     * @return string|null the broker id
+     * @throws Exception
      */
-    protected function validateBrokerSessionId($sid) {
+    protected function validateBrokerSessionId(string $sid): ?string {
         $matches = null;
 
         if (!preg_match('/^SSO-(\w*+)-(\w*+)-([a-z0-9]*+)$/', $this->getBrokerSessionID(), $matches)) {
-            return $this->fail("Invalid session id");
+            $this->fail("Invalid session id");
+            return null;
         }
 
         $brokerId = $matches[1];
         $token = $matches[2];
 
         if ($this->generateSessionId($brokerId, $token) != $sid) {
-            return $this->fail("Checksum failed: Client IP address may have changed", 403);
+            $this->fail("Checksum failed: Client IP address may have changed", 403);
+            return null;
         }
 
         return $brokerId;
@@ -134,7 +139,7 @@ abstract class Server {
     /**
      * Start the session when a user visits the SSO server
      */
-    protected function startUserSession() {
+    protected function startUserSession(): void {
         if (session_status() !== PHP_SESSION_ACTIVE) session_start();
     }
 
@@ -145,10 +150,12 @@ abstract class Server {
      * @param string $token
      * @return string
      */
-    protected function generateSessionId($brokerId, $token) {
+    protected function generateSessionId(string $brokerId, string $token): string {
         $broker = $this->getBrokerInfo($brokerId);
 
-        if (!isset($broker)) return null;
+        if (!isset($broker)) {
+            return '';
+        }
 
         return "SSO-{$brokerId}-{$token}-" . hash('sha256', 'session' . $token . $broker['secret']);
     }
@@ -160,10 +167,10 @@ abstract class Server {
      * @param string $token
      * @return string
      */
-    protected function generateAttachChecksum($brokerId, $token) {
+    protected function generateAttachChecksum(string $brokerId, string $token): string {
         $broker = $this->getBrokerInfo($brokerId);
 
-        if (!isset($broker)) return null;
+        if (!isset($broker)) return '';
 
         return hash('sha256', 'attach' . $token . $broker['secret']);
     }
@@ -178,9 +185,9 @@ abstract class Server {
             $this->returnType = 'redirect';
         } elseif (!empty($_GET['callback'])) {
             $this->returnType = 'jsonp';
-        } elseif (strpos($_SERVER['HTTP_ACCEPT'], 'image/') !== false) {
+        } elseif (str_contains($_SERVER['HTTP_ACCEPT'], 'image/')) {
             $this->returnType = 'image';
-        } elseif (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
+        } elseif (str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
             $this->returnType = 'json';
         }
     }
@@ -188,18 +195,28 @@ abstract class Server {
     /**
      * Attach a user session to a broker session
      */
-    public function attach() {
+    public function attach(): void {
         $this->detectReturnType();
 
-        if (empty($_REQUEST['broker'])) return $this->fail("No broker specified", 400);
-        if (empty($_REQUEST['token'])) return $this->fail("No token specified", 400);
+        if (empty($_REQUEST['broker'])) {
+            $this->fail("No broker specified", 400);
+            return;
+        }
+        if (empty($_REQUEST['token'])) {
+            $this->fail("No token specified", 400);
+            return;
+        }
 
-        if (!$this->returnType) return $this->fail("No return url specified", 400);
+        if (!$this->returnType) {
+            $this->fail("No return url specified", 400);
+            return;
+        }
 
         $checksum = $this->generateAttachChecksum($_REQUEST['broker'], $_REQUEST['token']);
 
         if (empty($_REQUEST['checksum']) || $checksum != $_REQUEST['checksum']) {
-            return $this->fail("Invalid checksum", 400);
+            $this->fail("Invalid checksum", 400);
+            return;
         }
 
         $this->startUserSession();
@@ -212,7 +229,7 @@ abstract class Server {
     /**
      * Output on a successful attach
      */
-    protected function outputAttachSuccess() {
+    protected function outputAttachSuccess(): void {
         if ($this->returnType === 'image') {
             $this->outputImage();
         }
@@ -251,13 +268,18 @@ abstract class Server {
     public function login() {
         $this->startBrokerSession();
 
-        if (empty($_POST['username'])) $this->fail("No username specified", 400);
-        if (empty($_POST['password'])) $this->fail("No password specified", 400);
+        if (empty($_POST['username'])) {
+            $this->fail("No username specified", 400);
+        }
+        if (empty($_POST['password'])) {
+            $this->fail("No password specified", 400);
+        }
 
         $validation = $this->authenticate($_POST['username'], $_POST['password']);
 
-        if ($validation->failed()) {
-            return $this->fail($validation->getError(), 400);
+        if (!$validation) {
+            $this->fail('username or password error', 400);
+            return;
         }
 
         $this->setSessionData('sso_user', $_POST['username']);
@@ -286,7 +308,9 @@ abstract class Server {
 
         if ($username) {
             $user = $this->getUserInfo($username);
-            if (!$user) return $this->fail("User not found", 500); // Shouldn't happen
+            if (!$user) {
+                $this->fail("User not found", 500); // Shouldn't happen
+            }
         }
 
         header('Content-type: application/json; charset=UTF-8');
@@ -318,7 +342,7 @@ abstract class Server {
     protected function getSessionData($key) {
         if ($key === 'id') return session_id();
 
-        return isset($_SESSION[$key]) ? $_SESSION[$key] : null;
+        return $_SESSION[$key] ?? null;
     }
 
 
@@ -326,17 +350,19 @@ abstract class Server {
      * An error occured.
      *
      * @param string $message
-     * @param int    $http_status
+     * @param int    $httpStatus
      */
-    protected function fail($message, $http_status = 500) {
+    protected function fail(string $message, int $httpStatus = 500) {
         if (!empty($this->options['fail_exception'])) {
-            throw new Exception($message, $http_status);
+            throw new Exception($message, $httpStatus);
         }
 
-        if ($http_status === 500) trigger_error($message, E_USER_WARNING);
+        if ($httpStatus === 500) {
+            trigger_error($message, E_USER_WARNING);
+        }
 
         if ($this->returnType === 'jsonp') {
-            echo $_REQUEST['callback'] . "(" . json_encode(['error' => $message]) . ", $http_status);";
+            echo $_REQUEST['callback'] . "(" . json_encode(['error' => $message]) . ", $httpStatus);";
             exit();
         }
 
@@ -349,7 +375,7 @@ abstract class Server {
 
         header('Content-type: application/json; charset=UTF-8');
         response()
-            ->statusCode($http_status)
+            ->statusCode($httpStatus)
             ->json(['error' => $message])->send();
     }
 
@@ -361,7 +387,7 @@ abstract class Server {
      * @param string $password
      * @return boolean
      */
-    abstract protected function authenticate($username, $password);
+    abstract protected function authenticate(string $username, string $password): bool;
 
     /**
      * Get the secret key and other info of a broker
@@ -369,14 +395,14 @@ abstract class Server {
      * @param string $brokerId
      * @return array
      */
-    abstract protected function getBrokerInfo($brokerId);
+    abstract protected function getBrokerInfo(string $brokerId): array;
 
     /**
      * Get the information about a user
      *
      * @param string $username
-     * @return array|object
+     * @return array
      */
-    abstract protected function getUserInfo($username);
+    abstract protected function getUserInfo(string $username): array;
 }
 

@@ -2,10 +2,12 @@
 declare(strict_types=1);
 namespace Zodream\Service\Http;
 
+use Closure;
 use Throwable;
 use Zodream\Infrastructure\Contracts\Application;
 use Zodream\Infrastructure\Contracts\Container;
 use Zodream\Infrastructure\Contracts\ExceptionHandler;
+use Zodream\Infrastructure\Contracts\Http\Input;
 use Zodream\Infrastructure\Contracts\Kernel as KernelInterface;
 use Zodream\Infrastructure\Contracts\Router;
 use Zodream\Infrastructure\Pipeline\MiddlewareProcessor;
@@ -59,16 +61,18 @@ class Kernel implements KernelInterface {
     public function __construct(Application $app, Router $router) {
         $this->app = $app;
         $this->router = $router;
-        $this->syncMiddlewareToRouter();
+        $this->boot();
     }
 
-    public function getContainer(): Container
-    {
+    protected function boot(): void {
+
+    }
+
+    public function getContainer(): Container {
         return $this->app;
     }
 
-    public function handle($request, array $middlewares = [])
-    {
+    public function handle($request, array $middlewares = []): mixed {
         if (!empty($middlewares)) {
             $this->middleware = array_merge($middlewares, $this->middleware);
         }
@@ -84,36 +88,37 @@ class Kernel implements KernelInterface {
         return $response;
     }
 
-    public function bootstrap()
-    {
+    public function bootstrap(): void {
         $this->getContainer()->bootstrapWith($this->bootstrapper);
     }
 
-    protected function sendRequestThroughRouter($request)
-    {
+    protected function sendRequestThroughRouter($request) {
         $this->app->instance('request', $request);
         $this->bootstrap();
         /** @var HttpContextInterface $context */
         $context = $this->app->make(HttpContextInterface::class);
         $context->input($request);
+        $this->syncMiddlewareToRouter();
         return (new MiddlewareProcessor($context))
             ->send($context)->through($this->middleware)
             ->then($this->dispatchToRouter());
     }
 
-    protected function dispatchToRouter()
-    {
+    protected function dispatchToRouter(): Closure {
         return function (HttpContextInterface $context) {
             return $context->handle($this->router->handle($context));
         };
     }
 
-    protected function syncMiddlewareToRouter() {
+    protected function syncMiddlewareToRouter(): void {
         $this->router->middleware(...$this->routeMiddleware);
+        $items = config('route.middlewares');
+        if (!empty($items)) {
+            $this->router->middleware(...$items);
+        }
     }
 
-    protected function reportException(Throwable $e)
-    {
+    protected function reportException(Throwable $e): void {
         $this->app->make(ExceptionHandler::class)->report($e);
     }
 
@@ -124,18 +129,15 @@ class Kernel implements KernelInterface {
      * @param Throwable $e
      * @return Response
      */
-    protected function renderException($request, Throwable $e)
-    {
+    protected function renderException($request, Throwable $e) {
         return $this->app->make(ExceptionHandler::class)->render($e);
     }
 
-    public function terminate($request, $response)
-    {
+    public function terminate($request, $response): void {
         // TODO: Implement terminate() method.
     }
 
-    public function receive()
-    {
+    public function receive(): Input {
         return Request::createFromGlobals();
     }
 }

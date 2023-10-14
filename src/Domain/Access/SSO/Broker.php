@@ -1,9 +1,10 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Domain\Access\SSO;
 
-use Zodream\Infrastructure\Cookie;
+use Exception;
+use Zodream\Helpers\Str;
 use Zodream\Http\Uri;
-use Zodream\Infrastructure\Http\Request;
 
 
 /**
@@ -78,7 +79,7 @@ class Broker {
      *
      * @return string
      */
-    protected function getCookieName() {
+    protected function getCookieName(): string {
         return 'sso_token_' . preg_replace('/[_\W]+/', '_', strtolower($this->broker));
     }
 
@@ -87,8 +88,8 @@ class Broker {
      *
      * @return string
      */
-    protected function getSessionId() {
-        if (!isset($this->token)) return null;
+    protected function getSessionId(): string {
+        if (!isset($this->token)) return '';
 
         $checksum = hash('sha256', 'session' . $this->token . $this->secret);
         return "SSO-{$this->broker}-{$this->token}-$checksum";
@@ -97,18 +98,18 @@ class Broker {
     /**
      * Generate session token
      */
-    public function generateToken() {
+    public function generateToken(): void {
         if (isset($this->token)) return;
 
-        $this->token = base_convert(md5(uniqid(rand(), true)), 16, 36);
-        Cookie::set($this->getCookieName(), $this->token, time() + $this->cookie_lifetime, '/');
+        $this->token = base_convert(md5(uniqid(Str::random(), true)), 16, 36);
+        response()->cookie($this->getCookieName(), $this->token, time() + $this->cookie_lifetime, '/');
     }
 
     /**
      * Clears session token
      */
     public function clearToken() {
-        Cookie::set($this->getCookieName(), null, 1, '/');
+        response()->cookie($this->getCookieName(), '', 1, '/');
         $this->token = null;
     }
 
@@ -117,7 +118,7 @@ class Broker {
      *
      * @return boolean
      */
-    public function isAttached() {
+    public function isAttached(): bool {
         return isset($this->token);
     }
 
@@ -127,7 +128,7 @@ class Broker {
      * @param array $params
      * @return string
      */
-    public function getAttachUrl($params = []) {
+    public function getAttachUrl(array $params = []): string {
         $this->generateToken();
 
         $data = [
@@ -137,7 +138,7 @@ class Broker {
                 'checksum' => hash('sha256', 'attach' . $this->token . $this->secret)
             ] + $_GET;
 
-        return $this->url->setData($data + $params);
+        return (string)$this->url->setData($data + $params);
     }
 
     /**
@@ -145,8 +146,7 @@ class Broker {
      *
      * @param string|true $returnUrl  The URL the client should be returned to after attaching
      */
-    public function attach($returnUrl = null)
-    {
+    public function attach(string|bool $returnUrl = '') {
         if ($this->isAttached()) return;
 
         if ($returnUrl === true) {
@@ -155,7 +155,7 @@ class Broker {
         }
 
         $params = ['return_url' => $returnUrl];
-        $url = (string)$this->getAttachUrl($params);
+        $url = $this->getAttachUrl($params);
 
         header("Location: $url", true, 307);
         echo "You're redirected to <a href='$url'>$url</a>";
@@ -169,8 +169,7 @@ class Broker {
      * @param array  $params   Query parameters
      * @return string
      */
-    protected function getRequestUrl($command, $params = [])
-    {
+    protected function getRequestUrl(string $command, array $params = []): string {
         $params['command'] = $command;
         return $this->url . '?' . http_build_query($params);
     }
@@ -183,10 +182,9 @@ class Broker {
      * @param array|string $data    Query or post parameters
      * @return array|object
      */
-    protected function request($method, $command, $data = null)
-    {
+    protected function request(string $method, string $command, array|string $data = ''): mixed {
         if (!$this->isAttached()) {
-            throw new NotAttachedException('No token');
+            throw new Exception('No token');
         }
         $url = $this->getRequestUrl($command, !$data || $method === 'POST' ? [] : $data);
 
@@ -201,7 +199,7 @@ class Broker {
         }
 
         $response = curl_exec($ch);
-        if (curl_errno($ch) != 0) {
+        if (curl_errno($ch) !== 0) {
             $message = 'Server request failed: ' . curl_error($ch);
             throw new Exception($message);
         }
@@ -209,7 +207,7 @@ class Broker {
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         list($contentType) = explode(';', curl_getinfo($ch, CURLINFO_CONTENT_TYPE));
 
-        if ($contentType != 'application/json') {
+        if ($contentType !== 'application/json') {
             $message = 'Expected application/json response, got ' . $contentType;
             throw new Exception($message);
         }
@@ -217,9 +215,11 @@ class Broker {
         $data = json_decode($response, true);
         if ($httpCode == 403) {
             $this->clearToken();
-            throw new NotAttachedException($data['error'] ?: $response, $httpCode);
+            throw new Exception($data['error'] ?: $response, $httpCode);
         }
-        if ($httpCode >= 400) throw new Exception($data['error'] ?: $response, $httpCode);
+        if ($httpCode >= 400) {
+            throw new Exception($data['error'] ?: $response, $httpCode);
+        }
 
         return $data;
     }
@@ -236,8 +236,7 @@ class Broker {
      * @return array  user info
      * @throws Exception if login fails eg due to incorrect credentials
      */
-    public function login($username = null, $password = null)
-    {
+    public function login(?string $username = null, ?string $password = null): array {
         if (!isset($username) && isset($_POST['username'])) $username = $_POST['username'];
         if (!isset($password) && isset($_POST['password'])) $password = $_POST['password'];
 
@@ -250,8 +249,7 @@ class Broker {
     /**
      * Logout at sso server.
      */
-    public function logout()
-    {
+    public function logout() {
         $this->request('POST', 'logout', 'logout');
     }
 
@@ -260,12 +258,10 @@ class Broker {
      *
      * @return object|null
      */
-    public function getUserInfo()
-    {
+    public function getUserInfo() {
         if (!isset($this->userinfo)) {
             $this->userinfo = $this->request('GET', 'userInfo');
         }
-
         return $this->userinfo;
     }
 
@@ -276,8 +272,7 @@ class Broker {
      * @param array  $args
      * @return mixed
      */
-    public function __call($fn, $args)
-    {
+    public function __call(string $fn, array $args) {
         $sentence = strtolower(preg_replace('/([a-z0-9])([A-Z])/', '$1 $2', $fn));
         $parts = explode(' ', $sentence);
 
