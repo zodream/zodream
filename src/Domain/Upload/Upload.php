@@ -33,11 +33,12 @@ class Upload extends MagicObject {
      * @param null $default
      * @return BaseUpload
      */
-    public function get(int $key = 0, mixed $default = null): mixed {
-        if (!array_key_exists($key, $this->__attributes)) {
+    public function get($name = null, $default = null) {
+        $name = intval($name);
+        if (!array_key_exists($name, $this->__attributes)) {
             return $default;
         }
-        return $this->__attributes[$key];
+        return $this->__attributes[$name];
     }
 
     public function upload(string $key): bool {
