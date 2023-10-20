@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Event;
 
 trait DispatchAble
@@ -8,7 +9,7 @@ trait DispatchAble
      *
      * @return void
      */
-    public static function dispatch() {
-        return event(new static(...func_get_args()));
+    public static function dispatch(...$items): void {
+        event(new static(...$items));
     }
 }

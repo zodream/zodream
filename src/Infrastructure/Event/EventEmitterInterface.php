@@ -9,10 +9,10 @@ namespace Zodream\Infrastructure\Event;
  * file that was distributed with this source code.
  */
 interface EventEmitterInterface {
-    public function on($event, callable $listener);
-    public function once($event, callable $listener);
-    public function removeListener($event, callable $listener);
-    public function removeAllListeners($event = null);
-    public function listeners($event);
-    public function emit($event, array $arguments = []);
+    public function on($event, callable $listener): void;
+    public function once($event, callable $listener): void;
+    public function removeListener($event, callable $listener): void;
+    public function removeAllListeners($event = null): void;
+    public function listeners($event): array;
+    public function emit($event, array $arguments = []): void;
 }

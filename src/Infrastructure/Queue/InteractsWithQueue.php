@@ -5,8 +5,7 @@ namespace Zodream\Infrastructure\Queue;
 use Throwable;
 use Zodream\Infrastructure\Queue\Jobs\Job;
 
-trait InteractsWithQueue
-{
+trait InteractsWithQueue {
     /**
      * The underlying queue job instance.
      *
@@ -19,8 +18,7 @@ trait InteractsWithQueue
      *
      * @return int
      */
-    public function attempts()
-    {
+    public function attempts(): int {
         return $this->job ? $this->job->attempts() : 1;
     }
 
@@ -29,8 +27,7 @@ trait InteractsWithQueue
      *
      * @return void
      */
-    public function delete()
-    {
+    public function delete(): void {
         $this->job?->delete();
     }
 
@@ -63,8 +60,7 @@ trait InteractsWithQueue
      * @param  Job  $job
      * @return $this
      */
-    public function setJob(Job $job)
-    {
+    public function setJob(Job $job) {
         $this->job = $job;
 
         return $this;

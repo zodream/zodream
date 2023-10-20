@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Event;
 
 use Zodream\Infrastructure\Queue\QueueManager;
@@ -10,10 +11,10 @@ use Zodream\Infrastructure\Queue\ShouldQueue;
  * Date: 2016/3/10
  * Time: 9:49
  */
-class Action {
-    protected $class;
-    protected $function;
-    protected $file;
+class ListenerAction {
+    protected mixed $class;
+    protected mixed $function;
+    protected mixed $file;
 
     public function __construct($class, $function = null, $file = null) {
         if (is_null($function) && is_string($class) && strpos($class, '@')) {
@@ -22,53 +23,53 @@ class Action {
         $this->class = $class;
         $this->function = $function;
         if (!empty($file) && !is_file($file)) {
-            $file = APP_DIR.'/'.ltrim($file, '/');
+            $file = (string)app_path($file);
         }
         $this->file = $file;
     }
 
-    public function run($args = array()) {
+    public function __invoke(array $args = array()): mixed {
         if (is_callable($this->class)) {
             return self::callFunc($this->class, $args);
         }
-        if (strpos($this->class, '::') === false &&
+        if (!str_contains($this->class, '::') &&
             !class_exists($this->class) && !function_exists($this->function)) {
             return require($this->file);
         }
         if (empty($this->class)) {
-            return $this->_runWithFunction($args);
+            return $this->invokeWithFunction($args);
         }
         if (!class_exists($this->class)) {
-            return false;
+            return null;
         }
         if ($this->handlerShouldBeQueued($this->class)) {
             $this->queueHandler($args);
-            return true;
+            return null;
         }
         if (empty($this->function)) {
-            return $this->_runWithClass($args);
+            return $this->invokeWithClass($args);
         }
         $class = $this->class;
         $instance = new $class;
         return static::callFunc(array($instance, $this->function), $args);
     }
 
-    private function _runWithClass($args) {
+    private function invokeWithClass(array $args) {
         $class = $this->class;
         return new $class(...$args);
     }
 
-    private function _runWithFunction($args) {
+    private function invokeWithFunction(array $args): mixed {
         if (empty($this->function)) {
-            return false;
+            return null;
         }
         if (is_callable($this->function)) {
             return static::callFunc($this->function, $args);
         }
-        return false;
+        return null;
     }
 
-    protected function queueHandler(array $args) {
+    protected function queueHandler(array $args): void {
         if (empty($this->function)) {
             $this->function = 'handle';
         }
@@ -81,26 +82,23 @@ class Action {
         list($listener, $job) = $this->createListenerAndJob($this->class, $this->function, $arguments);
 
         $connection = QueueManager::connection(
-            $listener->connection ?? null
+            $listener->connection ?? ''
         );
 
-        $queue = $listener->queue ?? null;
+        $queue = $listener->queue ?? '';
         isset($listener->delay)
             ? $connection->laterOn($queue, $listener->delay, $job)
             : $connection->pushOn($queue, $job);
     }
 
-    protected function createListenerAndJob($class, $method, $arguments)
-    {
+    protected function createListenerAndJob($class, $method, $arguments): array {
         $listener = (new \ReflectionClass($class))->newInstanceWithoutConstructor();
-
         return [$listener, $this->propagateListenerOptions(
             $listener, new CallQueuedListener($class, $method, $arguments)
         )];
     }
 
-    protected function propagateListenerOptions($listener, $job)
-    {
+    protected function propagateListenerOptions($listener, $job) {
         $job->tries = $listener->tries ?? null;
         $job->timeout = $listener->timeout ?? null;
         $job->timeoutAt = method_exists($listener, 'retryUntil')
@@ -108,16 +106,14 @@ class Action {
         return $job;
     }
 
-    protected function handlerWantsToBeQueued($class, $arguments)
-    {
+    protected function handlerWantsToBeQueued($class, array $arguments) {
         if (method_exists($class, 'shouldQueue')) {
-            return app($class)->shouldQueue($arguments[0]);
+            return (is_string($class) ? app($class) : $class)->shouldQueue($arguments[0]);
         }
-
         return true;
     }
 
-    protected function handlerShouldBeQueued($class) {
+    protected function handlerShouldBeQueued(object|string $class) {
         try {
             return (new \ReflectionClass($class))->implementsInterface(
                 ShouldQueue::class
@@ -127,7 +123,7 @@ class Action {
         }
     }
 
-    public static function callFunc($func, $args) {
+    public static function callFunc(array|callable $func, mixed $args) {
         if (is_array($args)) {
             return call_user_func_array($func, $args);
         }

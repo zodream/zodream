@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Event;
 
 use ReflectionClass;
@@ -11,8 +12,7 @@ trait SerializesModels {
      *
      * @return array
      */
-    public function __sleep()
-    {
+    public function __sleep() {
         $properties = (new ReflectionClass($this))->getProperties();
 
         foreach ($properties as $property) {
@@ -29,8 +29,7 @@ trait SerializesModels {
      *
      * @return void
      */
-    public function __wakeup()
-    {
+    public function __wakeup() {
         foreach ((new ReflectionClass($this))->getProperties() as $property) {
             $property->setValue($this, $this->getPropertyValue($property));
         }
@@ -42,8 +41,7 @@ trait SerializesModels {
      * @param  \ReflectionProperty  $property
      * @return mixed
      */
-    protected function getPropertyValue(ReflectionProperty $property)
-    {
+    protected function getPropertyValue(ReflectionProperty $property) {
         $property->setAccessible(true);
 
         return $property->getValue($this);

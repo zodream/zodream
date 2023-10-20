@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Event;
 /*
  * This file is part of Evenement.
@@ -9,9 +10,9 @@ namespace Zodream\Infrastructure\Event;
  * file that was distributed with this source code.
  */
 trait EventEmitterTrait {
-    protected $listeners = [];
+    protected array $listeners = [];
 
-    public function on($event, callable $listener) {
+    public function on($event, callable $listener): void {
         if (!isset($this->listeners[$event])) {
             $this->listeners[$event] = [];
         }
@@ -19,7 +20,7 @@ trait EventEmitterTrait {
         $this->listeners[$event][] = $listener;
     }
 
-    public function once($event, callable $listener) {
+    public function once($event, callable $listener): void {
         $onceListener = function () use (&$onceListener, $event, $listener) {
             $this->removeListener($event, $onceListener);
 
@@ -29,7 +30,7 @@ trait EventEmitterTrait {
         $this->on($event, $onceListener);
     }
 
-    public function removeListener($event, callable $listener) {
+    public function removeListener($event, callable $listener): void {
         if (isset($this->listeners[$event])) {
             if (false !== $index = array_search($listener, $this->listeners[$event], true)) {
                 unset($this->listeners[$event][$index]);
@@ -37,7 +38,7 @@ trait EventEmitterTrait {
         }
     }
 
-    public function removeAllListeners($event = null) {
+    public function removeAllListeners($event = null): void {
         if ($event !== null) {
             unset($this->listeners[$event]);
         } else {
@@ -45,11 +46,11 @@ trait EventEmitterTrait {
         }
     }
 
-    public function listeners($event) {
-        return isset($this->listeners[$event]) ? $this->listeners[$event] : [];
+    public function listeners($event): array {
+        return $this->listeners[$event] ?? [];
     }
 
-    public function emit($event, array $arguments = []) {
+    public function emit($event, array $arguments = []): void {
         foreach ($this->listeners($event) as $listener) {
             call_user_func_array($listener, $arguments);
         }

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Zodream\Infrastructure\Event;
 
+use Closure;
 use Zodream\Helpers\Str;
 
 /**
@@ -14,7 +15,7 @@ use Zodream\Helpers\Str;
 class EventManger {
 
     /**
-     * @var Event[]
+     * @var ListenerBag[]
      */
     protected array $listeners = [];
 
@@ -29,7 +30,7 @@ class EventManger {
      * 获取已经注册的事件名
      * @return array
      */
-    public function getEventName() {
+    public function getEventName(): array {
         return array_keys($this->listeners);
     }
 
@@ -37,61 +38,73 @@ class EventManger {
      * @param string $event 注册事件
      * @param string $class
      * @param int|string|\Closure $function
-     * @param string $file
+     * @param string|null $file
      * @param int $priority
      */
-    public function add(string $event, $class, $function = 10, $file = null, $priority = 10) {
-        if (!isset($this->listeners[$event]) || !($this->listeners[$event] instanceof Event)) {
-            $this->listeners[$event] = new Event();
+    public function add(string $event, mixed $class, int|string|Closure $function = 10,
+                        ?string $file = null, int $priority = 10): void {
+        if (!isset($this->listeners[$event]) || !($this->listeners[$event] instanceof ListenerBag)) {
+            $this->listeners[$event] = new ListenerBag();
         }
         $this->listeners[$event]->add($class, $function, $file, $priority);
     }
 
-    public function run($event, $args = array()) {
-        if (!isset($this->listeners[$event]) ||
-            !($this->listeners[$event] instanceof Event)) {
-            return;
+    public function getListeners(string $eventName): ListenerBag {
+        $items = [];
+        if (isset($this->listeners[$eventName])) {
+            $items[] = $eventName;
         }
-        $this->listeners[$event]->run($args);
-    }
-
-    public function getListeners($eventName) {
-        $listeners = isset($this->listeners[$eventName]) ? $this->listeners[$eventName] : [];
-        $listeners = array_merge(
-            $listeners, $this->getWildcardListeners($eventName)
+        $items = array_merge(
+            $items, $this->getWildcardListeners($eventName)
         );
-
-        return class_exists($eventName, false)
-            ? $this->addInterfaceListeners($eventName, $listeners)
-            : $listeners;
+        if (class_exists($eventName, false)) {
+            $items = array_merge($items, $this->addInterfaceListeners($eventName));
+        }
+        if (count($items) === 1) {
+            return $this->listeners[$items[0]];
+        }
+        $bag = new ListenerBag();
+        foreach ($items as $item) {
+            $this->listeners[$item]->copyTo($bag);
+        }
+        return $bag;
     }
 
-    protected function getWildcardListeners($eventName) {
+    /**
+     * 模糊匹配
+     * @param string $eventName
+     * @return array
+     */
+    protected function getWildcardListeners(string $eventName): array {
         $wildcards = [];
         foreach ($this->listeners as $key => $listeners) {
             if (Str::contains($key, '*') && Str::is($key, $eventName)) {
-                $wildcards = array_merge($wildcards, $listeners);
+                $wildcards[] = $key;
             }
         }
         return $wildcards;
     }
 
-    protected function addInterfaceListeners($eventName, array $listeners = []) {
+    /**
+     * 根据接口获取可能的事件
+     * @param $eventName
+     * @return array
+     */
+    protected function addInterfaceListeners($eventName): array {
+        $items = [];
         foreach (class_implements($eventName) as $interface) {
             if (isset($this->listeners[$interface])) {
-                foreach ($this->listeners[$interface] as $names) {
-                    $listeners = array_merge($listeners, (array) $names);
-                }
+                $items[] = $interface;
             }
         }
-        return $listeners;
+        return $items;
     }
 
     /**
      * 删除某个
      * @param string $name 根据名称删除
      */
-    public function delete($name) {
+    public function delete(string $name): void {
         if (!isset($this->actionNames[$name])) {
             return;
         }
@@ -100,32 +113,48 @@ class EventManger {
 
     /**
      * 执行某个事件
-     * @param string $event
+     * @param object|string $event
      * @param array $payload
      */
-    public function dispatch($event = null, $payload = []) {
+    public function dispatch(object|string $event, array $payload = []): void {
         list($event, $payload) = $this->parseEventAndPayload(
             $event, $payload
         );
-        $this->run($event, $payload);
+        $listeners = $this->getListeners($event);
+        $listeners($payload);
     }
 
-    public function dispatchNow($event = null, $payload = []) {
+    /**
+     * 执行事件并获取返回值
+     * @param object|string $event
+     * @param array $payload 多个参数，第一个参数会进行更新替换
+     * @return mixed
+     */
+    public function filter(object|string $event, array $payload = []): mixed {
+        list($event, $payload) = $this->parseEventAndPayload(
+            $event, $payload
+        );
+        $listeners = $this->getListeners($event);
+        return $listeners($payload, true);
+    }
+
+    public function dispatchNow(object|string $event, array $payload = []): void {
         if (is_object($event)) {
-            return Action::callFunc([$event, 'handle'], $payload);
+            ListenerAction::callFunc([$event, 'handle'], $payload);
+        } else {
+            (new ListenerAction($event, 'handle'))($payload);
         }
-        return (new Action($event, 'handle'))->run($payload);
     }
 
-    protected function parseEventAndPayload($event, $payload) {
+    protected function parseEventAndPayload(object|string $event, array $payload): array {
         if (is_object($event)) {
             list($payload, $event) = [[$event], get_class($event)];
         }
         return [$event, ! is_array($payload) ? [$payload] : $payload];
     }
 
-    public function listen(array|string $events, $listener) {
-        foreach ((array) $events as $event) {
+    public function listen(array|string $events, mixed $listener): static {
+        foreach ((array)$events as $event) {
             $this->add($event, $listener);
         }
         return $this;
@@ -137,7 +166,7 @@ class EventManger {
      * @param  mixed  $command
      * @return bool
      */
-    public function hasCommandHandler($command) {
+    public function hasCommandHandler(object $command): bool {
         return array_key_exists(get_class($command), $this->handlers);
     }
 
@@ -147,11 +176,10 @@ class EventManger {
      * @param  mixed  $command
      * @return bool|mixed
      */
-    public function getCommandHandler($command) {
+    public function getCommandHandler(object $command): mixed {
         if ($this->hasCommandHandler($command)) {
             return app($this->handlers[get_class($command)]);
         }
-
         return false;
     }
 }

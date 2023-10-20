@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Event;
 
 use Zodream\Infrastructure\Queue\InteractsWithQueue;
@@ -10,46 +11,25 @@ class CallQueuedListener implements ShouldQueue {
     use InteractsWithQueue;
 
     /**
-     * The listener class name.
-     *
-     * @var string
-     */
-    public $class;
-
-    /**
-     * The listener method.
-     *
-     * @var string
-     */
-    public $method;
-
-    /**
-     * The data to be passed to the listener.
-     *
-     * @var array
-     */
-    public $data;
-
-    /**
      * The number of times the job may be attempted.
      *
      * @var int
      */
-    public $tries;
+    public int $tries = 0;
 
     /**
      * The timestamp indicating when the job should timeout.
      *
      * @var int
      */
-    public $timeoutAt;
+    public int $timeoutAt = 0;
 
     /**
      * The number of seconds the job can run before timing out.
      *
      * @var int
      */
-    public $timeout;
+    public int $timeout = 0;
 
     /**
      * Create a new job instance.
@@ -59,10 +39,10 @@ class CallQueuedListener implements ShouldQueue {
      * @param  array  $data
      * @return void
      */
-    public function __construct($class, $method, $data) {
-        $this->data = $data;
-        $this->class = $class;
-        $this->method = $method;
+    public function __construct(
+        public string $class,
+        public string $method,
+        public array $data) {
     }
 
     /**
@@ -70,7 +50,7 @@ class CallQueuedListener implements ShouldQueue {
      *
      * @return void
      */
-    public function handle() {
+    public function handle(): void {
 
         $this->prepareData();
 
@@ -123,8 +103,7 @@ class CallQueuedListener implements ShouldQueue {
      *
      * @return void
      */
-    protected function prepareData()
-    {
+    protected function prepareData() {
         if (is_string($this->data)) {
             $this->data = unserialize($this->data);
         }
@@ -135,8 +114,7 @@ class CallQueuedListener implements ShouldQueue {
      *
      * @return string
      */
-    public function displayName()
-    {
+    public function displayName(): string {
         return $this->class;
     }
 
@@ -145,8 +123,7 @@ class CallQueuedListener implements ShouldQueue {
      *
      * @return void
      */
-    public function __clone()
-    {
+    public function __clone() {
         $this->data = array_map(function ($data) {
             return is_object($data) ? clone $data : $data;
         }, $this->data);
