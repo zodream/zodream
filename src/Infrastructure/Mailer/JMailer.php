@@ -31,7 +31,7 @@ class JMailer extends BaseMailer {
      * @param string $password
      * @return $this
      */
-    public function setUser(string $username, string $password) {
+    public function setUser(string $username, string $password): static {
         $this->mail->MailServerUserName = $username;
         $this->mail->MailServerPassword = $password;
         return $this;
@@ -44,7 +44,7 @@ class JMailer extends BaseMailer {
      * @param bool|string $auto
      * @return $this
      */
-    public function setFrom(string $address, string $name = '', bool $auto = true) {
+    public function setFrom(string $address, string $name = '', bool $auto = true): static {
         $this->mail->From = $address;
         $this->mail->FromName = $name;
         return $this;
@@ -56,7 +56,7 @@ class JMailer extends BaseMailer {
      * @param string $name
      * @return $this
      */
-    public function addAddress(string $address, string $name = '') {
+    public function addAddress(string $address, string $name = ''): static {
         $this->mail->AddRecipient($address, $name);
         return $this;
     }
@@ -66,7 +66,7 @@ class JMailer extends BaseMailer {
      * @param bool $isHtml
      * @return $this
      */
-    public function isHtml(bool $isHtml = true) {
+    public function isHtml(bool $isHtml = true): static {
         if ($isHtml) {
             $this->mail->ContentType = 'Text/html';
         }

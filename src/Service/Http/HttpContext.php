@@ -34,8 +34,7 @@ class HttpContext implements HttpContextInterface, ArrayAccess {
     /**
      * @param Input|string $request
      */
-    public function input($request)
-    {
+    public function input($request) {
         if ($request instanceof Input) {
             $this->instance('request', $request);
             $this->instance('path', $request->routePath());
@@ -44,8 +43,7 @@ class HttpContext implements HttpContextInterface, ArrayAccess {
         return $this['request']->get($request);
     }
 
-    public function instance(string $key, $instance)
-    {
+    public function instance(string $key, $instance) {
         $this->instances[$key] = $instance;
         return $this;
     }

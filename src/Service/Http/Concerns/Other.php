@@ -32,7 +32,11 @@ trait Other {
      * 获取网址中的虚拟路径
      * @return string
      */
-    protected function getVirtualUri() {
+    protected function getVirtualUri(): string {
+        $pathKey = config('route.route_key');
+        if (!empty($pathKey) && !empty($_GET[$pathKey])) {
+            return (string)$_GET[$pathKey];
+        }
         $path = $this->server('PATH_INFO');
         if (!empty($path)) {
             // 在nginx 下虚拟路径无法获取
