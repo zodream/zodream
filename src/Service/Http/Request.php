@@ -96,8 +96,11 @@ class Request extends BaseInput implements Input {
         return $this->getCacheData(__FUNCTION__);
     }
 
-    public function host(): string
-    {
+    public function scheme(): string {
+        return $this->isSSL() ? 'https' : 'http';
+    }
+
+    public function host(): string {
         return $this->getCacheData(__FUNCTION__);
     }
 

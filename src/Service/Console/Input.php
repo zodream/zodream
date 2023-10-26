@@ -10,8 +10,7 @@ class Input extends BaseInput implements InputInterface {
 
     use Argv;
 
-    public function __construct()
-    {
+    public function __construct() {
         $data = $this->getCacheData('argv');
         $this->data = $data['options'];
     }
@@ -30,8 +29,7 @@ class Input extends BaseInput implements InputInterface {
      * @param string|null $default
      * @return string|null
      */
-    public function post(string $key = null, $default = null)
-    {
+    public function post(string $key = null, $default = null) {
         if (!empty($key)) {
             echo $key;
         }
@@ -39,43 +37,36 @@ class Input extends BaseInput implements InputInterface {
         return $input === '' ? $default : $input;
     }
 
-    public function request(string $key = '', $default = null)
-    {
+    public function request(string $key = '', $default = null) {
         return $this->getValueWithDefault($this->getCacheData('argv'), $key, $default);
     }
 
-    public function cookie(string $key = null, $default = null)
-    {
+    public function cookie(string $key = null, $default = null) {
         return $this->getValueWithDefault([], $key, $default);
     }
 
-    public function header(string $key = null, $default = null)
-    {
+    public function header(string $key = null, $default = null) {
         return $this->getValueWithDefault([], $key, $default);
     }
 
-    public function server(string $key = null, $default = null)
-    {
+    public function server(string $key = null, $default = null) {
         return $this->getValueWithDefault($_SERVER, $key, $default);
     }
 
-    public function file(string $key = null, $default = null)
-    {
+    public function file(string $key = null, $default = null) {
         return $this->getValueWithDefault([], $key, $default);
     }
 
-    public function input(): string
-    {
+    public function input(): string {
         return '';
     }
 
-    public function method(): string
-    {
+    public function method(): string {
         return 'GET';
     }
 
     public function url(): string {
-        return sprintf('http://%s/%s', $this->host(), $this->path());
+        return sprintf('%s://%s/%s', $this->scheme(), $this->host(), $this->path());
     }
 
     public function path(): string {
@@ -90,18 +81,19 @@ class Input extends BaseInput implements InputInterface {
         return DIRECTORY_SEPARATOR == '/';
     }
 
-    public function host(): string
-    {
+    public function scheme(): string {
+        return 'http';
+    }
+
+    public function host(): string {
+        return $this->ip();
+    }
+
+    public function ip(): string {
         return '127.0.0.1';
     }
 
-    public function ip(): string
-    {
-        return '127.0.0.1';
-    }
-
-    public function referrer(): string
-    {
+    public function referrer(): string {
         return '';
     }
 

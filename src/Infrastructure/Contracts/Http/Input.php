@@ -43,6 +43,16 @@ interface Input extends ArrayAccess {
      */
     public function routePath(): string;
 
+    /**
+     * 获取网址中的 scheme
+     * @return 'http'|'https'
+     */
+    public function scheme(): string;
+
+    /**
+     * 获取网址的域名，不带端口号
+     * @return string
+     */
     public function host(): string;
     public function ip(): string;
     public function referrer(): string;
