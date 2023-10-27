@@ -12,7 +12,7 @@ interface ExceptionHandler {
      * @param Throwable $e
      * @return void
      */
-    public function report(Throwable $e);
+    public function report(Throwable $e): void;
 
     /**
      * Render an exception into an HTTP response.
@@ -29,5 +29,5 @@ interface ExceptionHandler {
      * @param Throwable $e
      * @return void
      */
-    public function renderForConsole(Output $output, Throwable $e);
+    public function renderForConsole(Output $output, Throwable $e): void;
 }

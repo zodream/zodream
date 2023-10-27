@@ -43,13 +43,14 @@ class Handler implements ExceptionHandler {
      *
      * @throws \Exception
      */
-    public function report(Throwable $e) {
+    public function report(Throwable $e): void {
         if ($this->shouldntReport($e)) {
             return;
         }
 
         if (method_exists($e, 'report')) {
-            return $e->report();
+            $e->report();
+            return;
         }
 
         logger()->error(
@@ -215,7 +216,7 @@ class Handler implements ExceptionHandler {
      * @param Throwable $e
      * @return void
      */
-    public function renderForConsole(Output $output, Throwable $e) {
+    public function renderForConsole(Output $output, Throwable $e): void {
         do {
             $output->writeLine(sprintf('%s in %s: %d', $e->getMessage(), $e->getFile(), $e->getLine()));
         } while ($e = $e->getPrevious());
