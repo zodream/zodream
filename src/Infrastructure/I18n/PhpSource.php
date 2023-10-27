@@ -37,10 +37,11 @@ class PhpSource extends I18n {
     /**
      * 修改源
      */
-    public function reset() {
-        if ($this->has($this->fileName)) {
-            return;
-        }
+    public function reset(): void {
+        $this->clearAttribute();
+//        if ($this->has($this->fileName)) {
+//            return;
+//        }
         $file = $this->directory->childFile($this->language.'/'.$this->fileName.'.php');
         if (!$file->exist()) {
             return;
@@ -52,7 +53,7 @@ class PhpSource extends I18n {
         $this->set($this->fileName, $this->formatArr($args));
     }
 
-    protected function formatArr(array $data, $prefix = '') {
+    protected function formatArr(array $data, $prefix = ''): array {
         $args = [];
         foreach ($data as $key => $item) {
             $key = $prefix.$key;

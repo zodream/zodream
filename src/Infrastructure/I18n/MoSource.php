@@ -17,7 +17,7 @@ class MoSource extends I18n {
         };
     }
 
-    public function reset() {
+    public function reset(): void {
         $langEncoding = $this->language.'.UTF8';
 		putenv('LANG='.$langEncoding);
 		putenv('LANGUAGE='.$langEncoding);

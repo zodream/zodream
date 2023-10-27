@@ -39,7 +39,7 @@ abstract class I18n extends MagicObject {
      * @param string|Directory $directory
      * @return $this
      */
-    public function setDirectory(Directory|string $directory) {
+    public function setDirectory(Directory|string $directory): static {
         if (!$directory instanceof Directory) {
             $directory = app_path()->childDirectory($directory);
         }
@@ -52,7 +52,7 @@ abstract class I18n extends MagicObject {
      * @param string $arg
      * @return $this
      */
-    public function setFileName(string $arg) {
+    public function setFileName(string $arg): static {
         $this->fileName = $arg;
         return $this;
     }
@@ -62,7 +62,7 @@ abstract class I18n extends MagicObject {
      * @param string|null $arg 语言
      * @return $this
      */
-    public function setLanguage(?string $arg = null) {
+    public function setLanguage(?string $arg = null): static {
         if (empty($arg)) {
             $arg = $this->browserLanguage();
         }
@@ -104,7 +104,7 @@ abstract class I18n extends MagicObject {
         return null;
     }
 
-    protected function resetFileIfNotEmpty(?string $name) {
+    protected function resetFileIfNotEmpty(?string $name): void {
         if (!is_null($name) && $name !== $this->fileName) {
             $this->fileName = $name;
             $this->reset();
@@ -126,6 +126,6 @@ abstract class I18n extends MagicObject {
     /**
      * 修改源
      */
-    abstract public function reset();
+    abstract public function reset(): void;
 
 }
