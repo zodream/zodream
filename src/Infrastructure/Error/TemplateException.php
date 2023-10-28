@@ -17,6 +17,10 @@ class TemplateException extends RuntimeException {
         int $code = 0,
         ?Throwable $previous = null) {
         parent::__construct($message, $code, $previous);
+        if ($previous) {
+            $this->line = $previous->getLine();
+            $this->file = $previous->getFile();
+        }
     }
 
     /**
