@@ -11,6 +11,7 @@ use Zodream\Helpers\Str;
 use Zodream\Infrastructure\Base\ConfigObject;
 use Zodream\Disk\Directory;
 use Zodream\Infrastructure\Contracts\Session as SessionInterface;
+use Zodream\Service\Middleware\CSRFMiddleware;
 
 class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
 
@@ -340,8 +341,8 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
      *
      * @return string
      */
-    public function token() {
-        return $this->get('_token');
+    public function token(): string {
+        return (string)$this->get(CSRFMiddleware::SESSION_KEY);
     }
 
     /**
@@ -349,8 +350,8 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
      *
      * @return void
      */
-    public function regenerateToken() {
-        $this->set('_token', Str::random(40));
+    public function regenerateToken(): void {
+        $this->set(CSRFMiddleware::SESSION_KEY, Str::random(40));
     }
 
     /**

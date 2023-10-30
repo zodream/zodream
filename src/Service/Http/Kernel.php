@@ -25,15 +25,6 @@ use Zodream\Infrastructure\Contracts\HttpContext as HttpContextInterface;
 
 class Kernel implements KernelInterface {
 
-    /**
-     * @var Application|Container
-     */
-    protected $app;
-
-    /**
-     * @var Router
-     */
-    protected $router;
 
     protected array $bootstrapper = [
         LoadConfiguration::class,
@@ -58,9 +49,9 @@ class Kernel implements KernelInterface {
         MatchRouteMiddle::class,
     ];
 
-    public function __construct(Application $app, Router $router) {
-        $this->app = $app;
-        $this->router = $router;
+    public function __construct(
+        protected Application $app,
+        protected Router $router) {
         $this->boot();
     }
 

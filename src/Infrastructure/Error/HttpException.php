@@ -5,21 +5,18 @@ namespace Zodream\Infrastructure\Error;
 use RuntimeException;
 
 class HttpException extends RuntimeException {
-    private $statusCode;
-    private $headers;
 
-    public function __construct(int $statusCode, string $message = null, \Throwable $previous = null, array $headers = [], ?int $code = 0) {
-        $this->statusCode = $statusCode;
-        $this->headers = $headers;
-
+    public function __construct(
+        protected  int $statusCode, string $message = null, \Throwable $previous = null,
+        protected array $headers = [], ?int $code = 0) {
         parent::__construct($message, $code, $previous);
     }
 
-    public function getStatusCode() {
+    public function getStatusCode(): int {
         return $this->statusCode;
     }
 
-    public function getHeaders() {
+    public function getHeaders(): array {
         return $this->headers;
     }
 
@@ -28,7 +25,7 @@ class HttpException extends RuntimeException {
      *
      * @param array $headers Response headers
      */
-    public function setHeaders(array $headers) {
+    public function setHeaders(array $headers): void {
         $this->headers = $headers;
     }
 }

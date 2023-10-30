@@ -8,11 +8,9 @@ use Zodream\Infrastructure\Contracts\HttpContext;
 
 class CacheMiddleware implements MiddlewareInterface {
 
-    protected $app;
-
-    public function __construct(Application $app)
+    public function __construct(
+        protected Application $app)
     {
-        $this->app = $app;
     }
 
     public function handle(HttpContext $context, callable $next) {

@@ -16,7 +16,6 @@ use Zodream\Infrastructure\Contracts\UrlGenerator;
 use Zodream\Infrastructure\I18n\I18n;
 use Zodream\Infrastructure\Session\Session;
 use Zodream\Route\Exception\NotFoundHttpException;
-use Zodream\Html\VerifyCsrfToken;
 use Zodream\Service\Application;
 use Zodream\Domain\Access\Auth;
 use Zodream\Domain\Access\Token;
@@ -172,7 +171,7 @@ if (! function_exists('csrf_token')) {
      * @throws RuntimeException
      */
     function csrf_token(): string {
-        return VerifyCsrfToken::get();
+        return \session()->token();
     }
 }
 
