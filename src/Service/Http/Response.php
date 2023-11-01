@@ -120,8 +120,7 @@ class Response implements HttpOutput {
         return $this->parameter;
     }
 
-    public function send()
-    {
+    public function send(): bool {
         if (is_object($this->parameter) &&
             ($this->parameter instanceof PreResponse
                 || method_exists($this->parameter, 'ready'))
@@ -148,8 +147,7 @@ class Response implements HttpOutput {
         return true;
     }
 
-    public function statusCode(int $code, string $statusText = ''): Output
-    {
+    public function statusCode(int $code, string $statusText = ''): Output {
         $this->statusCode = $code;
         if ($this->statusCode > 600 || $this->statusCode < 100) {
             throw new \InvalidArgumentException(
@@ -213,7 +211,7 @@ class Response implements HttpOutput {
         return $this->custom($data, 'rss');
     }
 
-    public function writeLine(mixed $messages) {
+    public function writeLine(mixed $messages): void {
         $this->setParameter(Str::value($messages));
     }
 
@@ -331,7 +329,7 @@ class Response implements HttpOutput {
      * 响应允许cors
      * @return Response
      */
-    public function allowCors() {
+    public function allowCors(): Output {
         $this->header->setCORS();
         if (!empty($this->parameter)) {
             return $this;

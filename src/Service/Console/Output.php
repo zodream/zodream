@@ -26,22 +26,19 @@ class Output implements OutputInterface {
 
     protected HttpContextInterface $container;
 
-    public function __construct(HttpContextInterface $container)
-    {
+    public function __construct(HttpContextInterface $container) {
         $this->container = $container;
     }
 
     /**
      * @param array|string|File|Image|ExportObject $parameter
      */
-    public function setParameter(mixed $parameter): OutputInterface
-    {
+    public function setParameter(mixed $parameter): OutputInterface {
         $this->parameter = $parameter;
         return $this;
     }
 
-    public function send()
-    {
+    public function send(): bool {
         $this->setStream($this->statusCode === 200 ? $this->openOutputStream() : $this->openErrorStream());
         if ($this->parameter instanceof File) {
             // TODO
@@ -54,82 +51,67 @@ class Output implements OutputInterface {
         return true;
     }
 
-    public function statusCode(int $code, string $statusText = ''): OutputInterface
-    {
+    public function statusCode(int $code, string $statusText = ''): OutputInterface {
         $this->statusCode = $code;
         return $this;
     }
 
-    public function allowCors()
-    {
+    public function allowCors(): OutputInterface {
         return $this;
     }
 
-    public function contentType(string $type = 'html', string $option = 'utf-8'): OutputInterface
-    {
+    public function contentType(string $type = 'html', string $option = 'utf-8'): OutputInterface {
         return $this;
     }
 
-    public function header(string $key, $value): OutputInterface
-    {
+    public function header(string $key, $value): OutputInterface {
         return $this;
     }
 
-    public function cookie(string $key, string $value = '', int $expire = 0, string $path = '/', string $domain = '', bool $secure = false, bool $httpOnly = true): OutputInterface
-    {
+    public function cookie(string $key, string $value = '', int $expire = 0, string $path = '/', string $domain = '', bool $secure = false, bool $httpOnly = true): OutputInterface {
         return $this;
     }
 
-    public function json($data): OutputInterface
-    {
+    public function json($data): OutputInterface {
         return $this->custom(is_array($data) ? Json::encode($data) : $data, 'json');
     }
 
-    public function jsonP($data): OutputInterface
-    {
+    public function jsonP($data): OutputInterface {
         return $this->json(
             $this->container->make('request')->get('callback', 'jsonpReturn').
             '('.Json::encode($data).');'
         );
     }
 
-    public function xml($data): OutputInterface
-    {
+    public function xml($data): OutputInterface {
         return $this->custom(is_array($data) ? Xml::encode($data) : $data, 'xml');
     }
 
-    public function html($data): OutputInterface
-    {
+    public function html($data): OutputInterface {
         return $this->custom($data, 'html');
     }
 
-    public function str($data): OutputInterface
-    {
+    public function str($data): OutputInterface {
         return $this->custom($data, 'text');
     }
 
-    public function rss($data): OutputInterface
-    {
+    public function rss($data): OutputInterface {
         return $this->custom($data, 'rss');
     }
 
-    public function file(File $file, int $speed = 512): OutputInterface
-    {
+    public function file(File $file, int $speed = 512): OutputInterface {
         return $this->setParameter($file);
     }
 
-    public function image(Image $image): OutputInterface
-    {
+    public function image(Image $image): OutputInterface {
         return $this->setParameter($image);
     }
 
-    public function custom($data, string $type): OutputInterface
-    {
+    public function custom($data, string $type): OutputInterface {
         return $this->setParameter(Str::value($data));
     }
 
-    public function redirect($url, $time = 0): OutputInterface
-    {
+    public function redirect($url, $time = 0): OutputInterface {
         return $this->setParameter(sprintf('Location: %s,time=%d', $url, $time));
     }
 
@@ -154,7 +136,7 @@ class Output implements OutputInterface {
      *
      * @return bool
      */
-    protected function hasStdoutSupport() {
+    protected function hasStdoutSupport(): bool {
         return false === $this->isRunningOS400();
     }
 
@@ -164,7 +146,7 @@ class Output implements OutputInterface {
      *
      * @return bool
      */
-    protected function hasStderrSupport() {
+    protected function hasStderrSupport(): bool  {
         return false === $this->isRunningOS400();
     }
 
@@ -174,7 +156,7 @@ class Output implements OutputInterface {
      *
      * @return bool
      */
-    private function isRunningOS400() {
+    private function isRunningOS400(): bool  {
         $checks = array(
             function_exists('php_uname') ? php_uname('s') : '',
             getenv('OSTYPE'),
@@ -201,21 +183,21 @@ class Output implements OutputInterface {
         return fopen($this->hasStderrSupport() ? 'php://stderr' : 'php://output', 'w');
     }
 
-    public function writeLine(mixed $messages) {
+    public function writeLine(mixed $messages): void {
         $this->write($messages, true);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function write($messages, $newline = false) {
+    public function write(mixed $messages, bool $newline = false): void {
         $messages = (array)$messages;
         foreach ($messages as $message) {
             $this->doWrite($message, $newline);
         }
     }
 
-    protected function doWrite($message, $newline) {
+    protected function doWrite(mixed $message, bool $newline): void {
         if ($newline) {
             $this->getStream()->writeLine($message);
         } else {
