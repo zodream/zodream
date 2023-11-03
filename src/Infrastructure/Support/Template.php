@@ -12,15 +12,15 @@ use Zodream\Disk\File;
 
 class Template extends  MagicObject {
     /**
-     * @var Directory
+     * @var Directory|null
      */
-    protected $directory;
+    protected ?Directory $directory;
 
-    protected $beginTag = '{';
+    protected string $beginTag = '{';
 
-    protected $endTag = '}';
+    protected string $endTag = '}';
 
-    public function __construct($directory = null) {
+    public function __construct(mixed $directory = null) {
         if (!empty($directory)) {
             $this->setDirectory($directory);
         }
@@ -31,7 +31,7 @@ class Template extends  MagicObject {
      * @param $directory
      * @return $this
      */
-    public function setDirectory($directory) {
+    public function setDirectory($directory): static {
         $this->directory = $directory instanceof Directory ?
             $directory : new Directory($directory);
         return $this;
@@ -43,7 +43,7 @@ class Template extends  MagicObject {
      * @param string $endTag
      * @return $this
      */
-    public function setTag($beginTag = '{', $endTag = '}') {
+    public function setTag(string $beginTag = '{', string $endTag = '}'): static {
         $this->beginTag = $beginTag;
         $this->endTag = $endTag;
         return $this;
@@ -54,7 +54,7 @@ class Template extends  MagicObject {
      * @param string $file
      * @return bool|mixed
      */
-    public function getText($file) {
+    public function getText(string $file): false|string {
         $file = is_file($file) ? new File($file) : $this->directory->childFile($file);
         if (!$file->exist()) {
             return false;
@@ -68,14 +68,7 @@ class Template extends  MagicObject {
      * @param array $data
      * @return string
      */
-    public function replaceByArray($content, array $data) {
-        /*foreach ($data as $key => $item) {
-            if (is_array($item)) {
-                $content = $this->replaceByArray($content, $item, $pre.$key.'.');
-            } else {
-                $content = $this->replace($content, $pre.$key, $item);
-            }
-        }*/
+    public function replaceByArray(string $content, array $data): string {
         $keys = [];
         $values = [];
         foreach ($data as $key => $value) {
@@ -92,7 +85,7 @@ class Template extends  MagicObject {
      * @param string $value
      * @return string
      */
-    public function replace($content, $tag, $value) {
+    public function replace(string $content, string $tag, string $value): string {
         return str_ireplace($this->beginTag.$tag.$this->endTag, $value, $content);
     }
 }

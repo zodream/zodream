@@ -181,7 +181,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      * @param  callable  $callback
      * @return $this
      */
-    public function each(callable $callback) {
+    public function each(callable $callback): static {
         foreach ($this->items as $key => $item) {
             if ($callback($item, $key) === false) {
                 break;
@@ -196,7 +196,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      * @param  int  $offset
      * @return static
      */
-    public function every(int $step, int $offset = 0) {
+    public function every(int $step, int $offset = 0): static {
         $new = [];
         $position = 0;
         foreach ($this->items as $item) {
@@ -213,7 +213,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      * @param  mixed  $keys
      * @return static
      */
-    public function except(mixed $keys) {
+    public function except(mixed $keys): static {
         $keys = is_array($keys) ? $keys : func_get_args();
         return new static(Arr::except($this->items, $keys));
     }
@@ -223,7 +223,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      * @param  callable|null  $callback
      * @return static
      */
-    public function filter(callable $callback = null) {
+    public function filter(callable $callback = null): static {
         if ($callback) {
             return new static(array_filter($this->items, $callback, ARRAY_FILTER_USE_BOTH));
         }
