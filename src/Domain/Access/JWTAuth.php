@@ -187,7 +187,7 @@ class JWTAuth extends Token {
      * @return string
      * @throws Exception
      */
-    public function createToken(UserModel $user, int $refreshTTL = 0): string {
+    public function createToken(UserObject $user, int $refreshTTL = 0): string {
         $time = time();
         $payload = [
             'sub' => $user->getIdentity(),
