@@ -88,6 +88,6 @@ class ErrorException extends \ErrorException {
             self::E_HHVM_FATAL_ERROR => 'HHVM Fatal Error',
         ];
 
-        return isset($names[$this->getCode()]) ? $names[$this->getCode()] : 'Error';
+        return $names[$this->getCode()] ?? 'Error';
     }
 }

@@ -2,7 +2,6 @@
 declare(strict_types=1);
 namespace Zodream\Infrastructure\Error;
 
-use RuntimeException;
 use Throwable;
 use Zodream\Disk\File;
 use Zodream\Disk\FileSystem;

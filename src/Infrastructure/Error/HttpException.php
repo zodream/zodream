@@ -2,8 +2,6 @@
 declare(strict_types=1);
 namespace Zodream\Infrastructure\Error;
 
-use RuntimeException;
-
 class HttpException extends RuntimeException {
 
     public function __construct(
