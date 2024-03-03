@@ -21,17 +21,17 @@ class DomainMiddleware implements MiddlewareInterface {
         return $next($context);
     }
 
-    protected function isAllowDomain(Input $input) {
+    protected function isAllowDomain(Input $input): bool {
         $host = config('app.host');
-        $real_host = $input->host();
+        $realHost = $input->host();
         if ($host == '*' || empty($host)
-            || $host == $real_host ||
-            (is_array($host) && in_array($real_host, $host))) {
+            || $host === $realHost ||
+            (is_array($host) && in_array($realHost, $host))) {
             return true;
         }
         // 允许www.默认域名
         return is_string($host) &&
             str_replace('www.', '', $host) ===
-            str_replace('www.', '', $real_host);
+            str_replace('www.', '', $realHost);
     }
 }
