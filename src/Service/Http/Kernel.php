@@ -84,7 +84,8 @@ class Kernel implements KernelInterface {
     }
 
     protected function sendRequestThroughRouter($request) {
-        $this->app->instance('request', $request);
+        $this->app->instance(Input::class, $request);
+        $this->app->alias(Input::class, 'request');
         $this->bootstrap();
         /** @var HttpContextInterface $context */
         $context = $this->app->make(HttpContextInterface::class);
