@@ -75,12 +75,20 @@ class Application implements ApplicationInterface, ArrayAccess {
         return defined('DEBUG') && DEBUG;
     }
 
+    public function setLocale(string $locale): void {
+        $this['config']->set('app.locale', $locale);
+        $this['i18n']->setLocale($locale);
+    }
+
+    public function getLocale(): string {
+        return $this['i18n']->getLocale();
+    }
+
     public function version(): string {
         return static::VERSION;
     }
 
-    public function boot()
-    {
+    public function boot() {
         if ($this->booted) {
             return;
         }

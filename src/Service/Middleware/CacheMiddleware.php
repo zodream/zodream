@@ -85,7 +85,7 @@ class CacheMiddleware implements MiddlewareInterface {
 
     private function getPathParam($item, Input $input) {
         if ($item === '@language') {
-            return trans()->getLanguage();
+            return $this->app->getLocale();
         }
         if ($item === '@user') {
             return auth()->id();

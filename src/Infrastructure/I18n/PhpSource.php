@@ -18,7 +18,7 @@ class PhpSource extends I18n {
         if (str_starts_with($language, 'en-')) {
             return 'en';
         }
-        return 'zh-cn';
+        return static::DEFAULT_LANGUAGE;
     }
 
     public function translate(mixed $message, array $param = [], ?string $name = null): mixed {
@@ -42,7 +42,7 @@ class PhpSource extends I18n {
 //        if ($this->has($this->fileName)) {
 //            return;
 //        }
-        $file = $this->directory->childFile($this->language.'/'.$this->fileName.'.php');
+        $file = $this->directory->childFile($this->locale.'/'.$this->fileName.'.php');
         if (!$file->exist()) {
             return;
         }

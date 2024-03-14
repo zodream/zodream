@@ -18,7 +18,7 @@ class MoSource extends I18n {
     }
 
     public function reset(): void {
-        $langEncoding = $this->language.'.UTF8';
+        $langEncoding = $this->locale.'.UTF8';
 		putenv('LANG='.$langEncoding);
 		putenv('LANGUAGE='.$langEncoding);
 		setlocale(LC_ALL, $langEncoding);

@@ -6,6 +6,10 @@ interface Application extends Container {
 
     public function boot();
 
+    public function setLocale(string $locale): void;
+
+    public function getLocale(): string;
+
     public function alias($abstract, $alias);
 
     public function singleton($abstract, $concrete = null);

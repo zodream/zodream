@@ -6,8 +6,7 @@ use Zodream\Infrastructure\Contracts\Application;
 
 class BootProviders {
 
-    public function bootstrap(Application $app)
-    {
+    public function bootstrap(Application $app) {
         $app->boot();
     }
 }

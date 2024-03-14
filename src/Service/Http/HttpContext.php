@@ -20,13 +20,11 @@ class HttpContext implements HttpContextInterface, ArrayAccess {
      */
     protected Application $app;
 
-    public function __construct(Application $app)
-    {
+    public function __construct(Application $app) {
         $this->app = $app;
     }
 
-    public function middleware(...$middlewares)
-    {
+    public function middleware(...$middlewares) {
         $this->middlewares = array_merge($this->middlewares, $middlewares);
         return $this;
     }

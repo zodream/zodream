@@ -9,14 +9,17 @@ namespace Zodream\Infrastructure\I18n;
  */
 use Zodream\Disk\Directory;
 use Zodream\Infrastructure\Base\MagicObject;
+use Zodream\Infrastructure\Contracts\Translator;
 
-abstract class I18n extends MagicObject {
+abstract class I18n extends MagicObject implements Translator {
 
     const DEFAULT_LANGUAGE = 'zh-cn';
 
     protected string $fileName = 'zodream';
 
-    protected string $language = self::DEFAULT_LANGUAGE;
+    protected string $locale = '';
+
+    protected array $localeItems = [];
 
     /**
      * @var Directory
@@ -26,13 +29,24 @@ abstract class I18n extends MagicObject {
     public function __construct() {
         $configs = config('i18n', [
             'directory' => 'data/languages',
-            // 'language' => 'zh-cn',
+            'languages' => ['zh-cn', 'en'],
         ]);
+        $this->localeItems = $configs['languages'];
         $this->setDirectory($configs['directory']);
-        $this->setLanguage($configs['language'] ?? null);
-        $this->reset();
+//        $this->setLocale((string)$configs['locale']);
+//        $this->reset();
     }
 
+    public function isLoaded(): bool {
+        return !empty($this->locale);
+    }
+
+    public function load(): void {
+        if ($this->isLoaded()) {
+            return;
+        }
+        $this->setLocale(config('app.locale', static::DEFAULT_LANGUAGE));
+    }
 
     /**
      * SET LANGUAGE DIRECTORY
@@ -59,14 +73,15 @@ abstract class I18n extends MagicObject {
 
     /**
      * 设置应用程序语言包
-     * @param string|null $arg 语言
+     * @param string $locale
      * @return $this
      */
-    public function setLanguage(?string $arg = null): static {
-        if (empty($arg)) {
-            $arg = $this->browserLanguage();
+    public function setLocale(string $locale = ''): static {
+        if (empty($locale)) {
+            $locale = $this->browserLanguage();
         }
-        $this->language = $this->formatLanguage($arg);
+        $this->locale = $this->formatLanguage($locale);
+        $this->reset();
         return $this;
     }
 
@@ -95,8 +110,13 @@ abstract class I18n extends MagicObject {
      *
      * @return string 返回语言,
      */
-    public function getLanguage(): string {
-        return $this->language;
+    public function getLocale(): string {
+        $this->load();
+        return $this->locale;
+    }
+
+    public function isLocale(string $locale): bool {
+        return empty($locale) || in_array($locale, $this->localeItems);
     }
 
     public function translate(mixed $message, array $param = [], ?string $name = null): mixed {
@@ -105,6 +125,7 @@ abstract class I18n extends MagicObject {
     }
 
     protected function resetFileIfNotEmpty(?string $name): void {
+        $this->load();
         if (!is_null($name) && $name !== $this->fileName) {
             $this->fileName = $name;
             $this->reset();
