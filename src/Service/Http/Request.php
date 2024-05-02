@@ -25,10 +25,10 @@ class Request extends BaseInput implements Input {
             return json_decode($this->input(), true);
         }
         if ($this->isXml()) {
-            $backup = libxml_disable_entity_loader(true);
+            // $backup = libxml_disable_entity_loader(true);
             $backup_errors = libxml_use_internal_errors(true);
             $data = simplexml_load_string($this->input());
-            libxml_disable_entity_loader($backup);
+            // libxml_disable_entity_loader($backup);
             libxml_clear_errors();
             libxml_use_internal_errors($backup_errors);
             return $data;
