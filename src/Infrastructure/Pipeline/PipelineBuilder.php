@@ -22,7 +22,7 @@ class PipelineBuilder {
         return $this;
     }
 
-    public function build(ProcessorInterface $processor = null): PipelineInterface {
+    public function build(ProcessorInterface|null $processor = null): PipelineInterface {
         return new Pipeline($processor, ...$this->stages);
     }
 }

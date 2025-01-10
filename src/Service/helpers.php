@@ -33,7 +33,7 @@ if (! function_exists('app')) {
      * @return Application|mixed
      * @throws Exception
      */
-    function app(?string $abstract = null) {
+    function app(string|null $abstract = null) {
         if (empty($abstract)) {
             return Application::getInstance();
         }
@@ -299,7 +299,7 @@ if (! function_exists('trans')) {
      * @return string|array|I18n
      * @throws Exception
      */
-    function trans(?string $key = null, array $replace = [], ?string $locale = null) {
+    function trans(string|null $key = null, array $replace = [], string|null $locale = null) {
         return app_call('i18n', function (I18n $i18n) use ($key, $replace, $locale) {
             if (empty($key)) {
                 return $i18n;
@@ -319,7 +319,7 @@ if (! function_exists('__')) {
      * @return string|array
      * @throws Exception
      */
-    function __(?string $key = null, array $replace = [], ?string $locale = null) {
+    function __(string|null $key = null, array $replace = [], string|null $locale = null) {
         return trans($key, $replace, $locale);
     }
 }
@@ -335,7 +335,7 @@ if (! function_exists('url')) {
      * @return string|UrlGenerator
      * @throws Exception
      */
-    function url(mixed $path = null, array|bool $parameters = [], ?bool $secure = null, bool $encode = true) {
+    function url(mixed $path = null, array|bool $parameters = [], bool|null $secure = null, bool $encode = true) {
         $args = func_get_args();
         return app_call(UrlGenerator::class, function (UrlGenerator $generator) use ($args) {
             if (empty($args)) {

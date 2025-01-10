@@ -56,7 +56,7 @@ class UploadFile extends BaseUpload {
      * @param callable|null $cb
      * @return bool
      */
-    public function validateDimensions(callable $cb = null): bool {
+    public function validateDimensions(callable|null $cb = null): bool {
         if (in_array($this->mineType, ['image/svg+xml', 'image/svg'])) {
             return true;
         }

@@ -27,7 +27,7 @@ class MoSource extends I18n {
 		bind_textdomain_codeset($this->fileName, 'UTF-8');
 	}
 
-	public function translate(mixed $message, array $param = [], ?string $name = null): mixed {
+	public function translate(mixed $message, array $param = [], string|null $name = null): mixed {
         if (empty($message)) {
             return $message;
         }

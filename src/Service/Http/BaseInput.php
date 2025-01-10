@@ -79,7 +79,7 @@ abstract class BaseInput {
             = call_user_func([$this, $method]);
     }
 
-    protected function getValueWithDefault(array $data, string $key = null, $default = null) {
+    protected function getValueWithDefault(array $data, string|null $key = null, $default = null) {
         if (empty($key)) {
             return $data;
         }

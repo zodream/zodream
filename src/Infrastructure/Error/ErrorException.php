@@ -26,7 +26,7 @@ class ErrorException extends \ErrorException {
                                 $severity = 1, 
                                 $filename = __FILE__, 
                                 $lineno = __LINE__, 
-                                \Exception $previous = null) {
+                                \Exception|null $previous = null) {
         parent::__construct($message, $code, $severity, $filename, $lineno, $previous);
 
         if (function_exists('xdebug_get_function_stack')) {

@@ -26,7 +26,7 @@ class Application implements ApplicationInterface, ArrayAccess {
     /**
      * @var Application|null
      */
-    protected static ?Application $instance;
+    protected static Application|null $instance;
     protected string $basePath;
 
     /**
@@ -424,7 +424,7 @@ class Application implements ApplicationInterface, ArrayAccess {
         return static::$instance;
     }
 
-    public static function setInstance(Application $container = null) {
+    public static function setInstance(Application|null $container = null) {
         return static::$instance = $container;
     }
 

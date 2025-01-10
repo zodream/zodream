@@ -42,7 +42,7 @@ class EventManger {
      * @param int $priority
      */
     public function add(string $event, mixed $class, int|string|Closure $function = 10,
-                        ?string $file = null, int $priority = 10): void {
+                        string|null $file = null, int $priority = 10): void {
         if (!isset($this->listeners[$event]) || !($this->listeners[$event] instanceof ListenerBag)) {
             $this->listeners[$event] = new ListenerBag();
         }

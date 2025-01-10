@@ -19,5 +19,5 @@ interface Translator {
      */
     public function isLocale(string $locale): bool;
 
-    public function translate(mixed $message, array $param = [], ?string $name = null): mixed;
+    public function translate(mixed $message, array $param = [], string|null $name = null): mixed;
 }

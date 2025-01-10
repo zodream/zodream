@@ -6,7 +6,7 @@ class FatalErrorException extends \ErrorException {
     public function __construct($message,
                                 $code, $severity, $filename,
                                 $lineno, $traceOffset = null,
-                                $traceArgs = true, array $trace = null) {
+                                $traceArgs = true, array|null $trace = null) {
         parent::__construct($message, $code, $severity, $filename, $lineno);
 
         if (null !== $trace) {

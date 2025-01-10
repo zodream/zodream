@@ -32,7 +32,7 @@ interface UrlGenerator {
      * @param bool $encode
      * @return string
      */
-    public function to(mixed $path, array $extra = [], ?bool $secure = null, bool $encode = true): string;
+    public function to(mixed $path, array $extra = [], bool|null $secure = null, bool $encode = true): string;
 
     /**
      * Generate a secure, absolute URL to the given path.
@@ -50,7 +50,7 @@ interface UrlGenerator {
      * @param  bool|null  $secure
      * @return string
      */
-    public function asset(string $path, ?bool $secure = null): string;
+    public function asset(string $path, bool|null $secure = null): string;
 
     /**
      * Get the URL to a named route.
@@ -88,7 +88,7 @@ interface UrlGenerator {
      */
     public function encode(Uri $url): Uri;
 
-    public function hasUri(?string $search = null): bool;
+    public function hasUri(string|null $search = null): bool;
 
     public function isUrl(string $url): bool;
     /**

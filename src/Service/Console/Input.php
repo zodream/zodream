@@ -29,7 +29,7 @@ class Input extends BaseInput implements InputInterface {
      * @param string|null $default
      * @return string|null
      */
-    public function post(string $key = null, $default = null) {
+    public function post(string|null $key = null, $default = null) {
         if (!empty($key)) {
             echo $key;
         }
@@ -41,19 +41,19 @@ class Input extends BaseInput implements InputInterface {
         return $this->getValueWithDefault($this->getCacheData('argv'), $key, $default);
     }
 
-    public function cookie(string $key = null, $default = null) {
+    public function cookie(string|null $key = null, $default = null) {
         return $this->getValueWithDefault([], $key, $default);
     }
 
-    public function header(string $key = null, $default = null) {
+    public function header(string|null $key = null, $default = null) {
         return $this->getValueWithDefault([], $key, $default);
     }
 
-    public function server(string $key = null, $default = null) {
+    public function server(string|null $key = null, $default = null) {
         return $this->getValueWithDefault($_SERVER, $key, $default);
     }
 
-    public function file(string $key = null, $default = null) {
+    public function file(string|null $key = null, $default = null) {
         return $this->getValueWithDefault([], $key, $default);
     }
 

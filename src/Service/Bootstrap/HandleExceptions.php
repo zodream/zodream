@@ -114,7 +114,7 @@ class HandleExceptions {
      * @param  array  $error
      * @param  int|null  $traceOffset
      */
-    protected function fatalErrorFromPhpError(array $error, ?int $traceOffset = null)
+    protected function fatalErrorFromPhpError(array $error, int|null $traceOffset = null)
     {
         return new FatalErrorException(
             $error['message'], $error['type'], 0, $error['file'], $error['line'], $traceOffset

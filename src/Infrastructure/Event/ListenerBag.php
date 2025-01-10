@@ -30,7 +30,7 @@ class ListenerBag {
      * @param int $priority 优先级
      */
     public function add(mixed $class, int|string|Closure $function = 10,
-                        ?string $file = null, int $priority = 10) {
+                        string|null $file = null, int $priority = 10) {
         if ($class instanceof ListenerAction) {
             $this->addAction($class, $function);
             return;

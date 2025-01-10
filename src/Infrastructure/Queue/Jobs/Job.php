@@ -185,7 +185,7 @@ abstract class Job {
      *
      * @return int|null
      */
-    public function maxTries(): ?int {
+    public function maxTries(): int|null {
         return $this->payload()['maxTries'] ?? null;
     }
 
@@ -194,7 +194,7 @@ abstract class Job {
      *
      * @return int|null
      */
-    public function timeout(): ?int
+    public function timeout(): int|null
     {
         return $this->payload()['timeout'] ?? null;
     }
@@ -204,7 +204,7 @@ abstract class Job {
      *
      * @return int|null
      */
-    public function timeoutAt(): ?int
+    public function timeoutAt(): int|null
     {
         return $this->payload()['timeoutAt'] ?? null;
     }

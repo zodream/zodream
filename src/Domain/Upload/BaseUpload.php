@@ -31,7 +31,7 @@ abstract class BaseUpload extends ConfigObject {
     /**
      * @var File|null
      */
-    protected ?File $file = null;
+    protected File|null $file = null;
     
     protected string $error = '';
     
@@ -160,7 +160,7 @@ abstract class BaseUpload extends ConfigObject {
         return $this->size <= $max && $this->size >= $min;
     }
 
-    public function validateDimensions(callable $cb = null): bool {
+    public function validateDimensions(callable|null $cb = null): bool {
         return true;
     }
 

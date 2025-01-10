@@ -54,7 +54,7 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
      * 设置值
      * @param $key
      * @param $callable
-     * @param ?int $duration 当前时间加秒数
+     * @param int|null $duration 当前时间加秒数
      * @param Dependency $dependency 设置判断更新的条件
      * @return bool|mixed
      * @throws Exception

@@ -36,7 +36,7 @@ class NullFailedJobProvider
      * @param  mixed  $id
      * @return object|null
      */
-    public function find(string|int $id): ?array
+    public function find(string|int $id): array|null
     {
         //
         return  null;

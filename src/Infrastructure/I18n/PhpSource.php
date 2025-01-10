@@ -21,7 +21,7 @@ class PhpSource extends I18n {
         return static::DEFAULT_LANGUAGE;
     }
 
-    public function translate(mixed $message, array $param = [], ?string $name = null): mixed {
+    public function translate(mixed $message, array $param = [], string|null $name = null): mixed {
         if (empty($message)) {
             return $message;
         }

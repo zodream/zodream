@@ -91,7 +91,7 @@ class Worker {
      * @param  WorkerOptions  $options
      * @return void
      */
-    protected function registerTimeoutHandler(?Job $job, WorkerOptions $options)
+    protected function registerTimeoutHandler(Job|null $job, WorkerOptions $options)
     {
         // We will register a signal handler for the alarm signal so that we can kill this
         // process if it is running too long because it has frozen. This uses the async
@@ -112,7 +112,7 @@ class Worker {
      * @param  WorkerOptions  $options
      * @return int
      */
-    protected function timeoutForJob(?Job $job, WorkerOptions $options)
+    protected function timeoutForJob(Job|null $job, WorkerOptions $options)
     {
         return $job && ! is_null($job->timeout()) ? $job->timeout() : $options->timeout;
     }
@@ -446,7 +446,7 @@ class Worker {
      * @param  int|null  $lastRestart
      * @return bool
      */
-    protected function queueShouldRestart(?int $lastRestart): bool
+    protected function queueShouldRestart(int|null $lastRestart): bool
     {
         return $this->getTimestampOfLastQueueRestart() !== $lastRestart;
     }
@@ -456,7 +456,7 @@ class Worker {
      *
      * @return int|null
      */
-    protected function getTimestampOfLastQueueRestart(): ?int {
+    protected function getTimestampOfLastQueueRestart(): int|null {
         return cache('zodream:queue:restart');
     }
 

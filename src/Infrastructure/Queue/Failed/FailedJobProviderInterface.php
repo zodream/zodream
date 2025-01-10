@@ -30,7 +30,7 @@ interface FailedJobProviderInterface
      * @param  mixed  $id
      * @return object|null
      */
-    public function find(string|int $id): ?array;
+    public function find(string|int $id): array|null;
 
     /**
      * Delete a single failed job from storage.

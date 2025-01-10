@@ -223,7 +223,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      * @param  callable|null  $callback
      * @return static
      */
-    public function filter(callable $callback = null): static {
+    public function filter(callable|null $callback = null): static {
         if ($callback) {
             return new static(array_filter($this->items, $callback, ARRAY_FILTER_USE_BOTH));
         }
@@ -462,7 +462,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      * @param  mixed  $default
      * @return mixed
      */
-    public function last(callable $callback = null, mixed $default = null) {
+    public function last(callable|null $callback = null, mixed $default = null) {
         return Arr::last($this->items, $callback, $default);
     }
     /**
@@ -743,7 +743,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      * @param int $seed
      * @return static
      */
-    public function shuffle(?int $seed = null) {
+    public function shuffle(int|null $seed = null) {
         $items = $this->items;
         if (is_null($seed)) {
             shuffle($items);
@@ -762,7 +762,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      * @param  int   $length
      * @return static
      */
-    public function slice(int $offset, ?int $length = null) {
+    public function slice(int $offset, int|null $length = null) {
         return new static(array_slice($this->items, $offset, $length, true));
     }
     /**
@@ -800,7 +800,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      * @param  callable|null  $callback
      * @return static
      */
-    public function sort(callable $callback = null) {
+    public function sort(callable|null $callback = null) {
         $items = $this->items;
         $callback
             ? uasort($items, $callback)
@@ -852,7 +852,7 @@ class Collection implements ArrayAccess, ArrayAble, Countable, IteratorAggregate
      * @param  mixed  $replacement
      * @return static
      */
-    public function splice(int $offset, ?int $length = null, mixed $replacement = []) {
+    public function splice(int $offset, int|null $length = null, mixed $replacement = []) {
         if (func_num_args() == 1) {
             return new static(array_splice($this->items, $offset));
         }

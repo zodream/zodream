@@ -9,7 +9,7 @@ interface Cache {
     /**
      * @param $key
      * @param $callable
-     * @param ?int $duration 当前时间加秒数
+     * @param int|null $duration 当前时间加秒数
      * @param $dependency
      * @return mixed
      */

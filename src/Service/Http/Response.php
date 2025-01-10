@@ -393,7 +393,7 @@ class Response implements HttpOutput {
      * @return array|null
      * @throws \Exception
      */
-    protected function getRange(int $fileSize): ?array {
+    protected function getRange(int $fileSize): array|null {
         $range = $this->container->make('request')->server('HTTP_RANGE');
         if (empty($range)) {
             return null;

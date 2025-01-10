@@ -17,7 +17,7 @@ class Upload extends MagicObject {
     /**
      * @var Directory|null
      */
-    protected ?Directory $directory = null;
+    protected Directory|null $directory = null;
 
     public function setDirectory($directory): static {
         if (!$directory instanceof Directory) {

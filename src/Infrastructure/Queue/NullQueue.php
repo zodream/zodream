@@ -12,7 +12,7 @@ class NullQueue extends Queue {
      * @param string|null $queue
      * @return int
      */
-    public function size(?string $queue = null): int {
+    public function size(string|null $queue = null): int {
         return 0;
     }
 
@@ -24,7 +24,7 @@ class NullQueue extends Queue {
      * @param string|null $queue
      * @return mixed
      */
-    public function push(mixed $job, mixed $data = '', ?string $queue = null): mixed {
+    public function push(mixed $job, mixed $data = '', string|null $queue = null): mixed {
         //
     }
 
@@ -36,7 +36,7 @@ class NullQueue extends Queue {
      * @param array $options
      * @return mixed
      */
-    public function pushRaw(string $payload, ?string $queue = null, array $options = []): mixed {
+    public function pushRaw(string $payload, string|null $queue = null, array $options = []): mixed {
         //
     }
 
@@ -49,7 +49,7 @@ class NullQueue extends Queue {
      * @param string|null $queue
      * @return mixed
      */
-    public function later(int $delay, mixed $job, mixed $data = '', ?string $queue = null): mixed
+    public function later(int $delay, mixed $job, mixed $data = '', string|null $queue = null): mixed
     {
         //
     }
@@ -60,7 +60,7 @@ class NullQueue extends Queue {
      * @param string|null $queue
      * @return Job|null
      */
-    public function pop(?string $queue = null): ?Job
+    public function pop(string|null $queue = null): Job|null
     {
         //
     }

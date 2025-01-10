@@ -25,7 +25,7 @@ abstract class Queue extends ConfigObject {
      * @param string|null $queue
      * @return int
      */
-    abstract public function size(?string $queue = null): int;
+    abstract public function size(string|null $queue = null): int;
 
     /**
      * Push a new job onto the queue.
@@ -35,7 +35,7 @@ abstract class Queue extends ConfigObject {
      * @param string|null $queue
      * @return mixed
      */
-    abstract public function push(mixed $job, mixed $data = '', ?string $queue = null): mixed;
+    abstract public function push(mixed $job, mixed $data = '', string|null $queue = null): mixed;
 
 
     /**
@@ -46,7 +46,7 @@ abstract class Queue extends ConfigObject {
      * @param array $options
      * @return mixed
      */
-    abstract public function pushRaw(string $payload, ?string $queue = null, array $options = []): mixed;
+    abstract public function pushRaw(string $payload, string|null $queue = null, array $options = []): mixed;
 
     /**
      * Push a new job onto the queue after a delay.
@@ -57,7 +57,7 @@ abstract class Queue extends ConfigObject {
      * @param string|null $queue
      * @return mixed
      */
-    abstract public function later(int $delay, mixed $job, mixed $data = '', ?string $queue = null): mixed;
+    abstract public function later(int $delay, mixed $job, mixed $data = '', string|null $queue = null): mixed;
 
     /**
      * Pop the next job off of the queue.
@@ -65,7 +65,7 @@ abstract class Queue extends ConfigObject {
      * @param string|null $queue
      * @return Job|null
      */
-    abstract public function pop(?string $queue = null): ?Job;
+    abstract public function pop(string|null $queue = null): Job|null;
 
     /**
      * Push a new job onto the queue.
@@ -100,7 +100,7 @@ abstract class Queue extends ConfigObject {
      * @param string|null $queue
      * @return void
      */
-    public function bulk(array $jobs, mixed $data = '', ?string $queue = null): void {
+    public function bulk(array $jobs, mixed $data = '', string|null $queue = null): void {
         foreach ($jobs as $job) {
             $this->push($job, $data, $queue);
         }
@@ -194,7 +194,7 @@ abstract class Queue extends ConfigObject {
      * @param mixed $data
      * @return array
      */
-    protected function createStringPayload(?string $job, mixed $data): array {
+    protected function createStringPayload(string|null $job, mixed $data): array {
         return [
             'displayName' => is_string($job) ? explode('@', $job)[0] : null,
             'job' => $job,

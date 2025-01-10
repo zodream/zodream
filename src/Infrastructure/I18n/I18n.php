@@ -119,12 +119,12 @@ abstract class I18n extends MagicObject implements Translator {
         return empty($locale) || in_array($locale, $this->localeItems);
     }
 
-    public function translate(mixed $message, array $param = [], ?string $name = null): mixed {
+    public function translate(mixed $message, array $param = [], string|null $name = null): mixed {
         $this->resetFileIfNotEmpty($name);
         return null;
     }
 
-    protected function resetFileIfNotEmpty(?string $name): void {
+    protected function resetFileIfNotEmpty(string|null $name): void {
         $this->load();
         if (!is_null($name) && $name !== $this->fileName) {
             $this->fileName = $name;

@@ -236,7 +236,7 @@ class Broker {
      * @return array  user info
      * @throws Exception if login fails eg due to incorrect credentials
      */
-    public function login(?string $username = null, ?string $password = null): array {
+    public function login(string|null $username = null, string|null $password = null): array {
         if (!isset($username) && isset($_POST['username'])) $username = $_POST['username'];
         if (!isset($password) && isset($_POST['password'])) $password = $_POST['password'];
 

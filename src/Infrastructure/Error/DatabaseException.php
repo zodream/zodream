@@ -10,7 +10,7 @@ class DatabaseException extends RuntimeException {
     public function __construct(
         string $message = '',
         int $code = 0,
-        ?Throwable $previous = null) {
+        Throwable|null $previous = null) {
         parent::__construct($message, $code, $previous);
         if ($previous) {
             $this->line = $previous->getLine();

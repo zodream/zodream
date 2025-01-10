@@ -26,13 +26,13 @@ class DatabaseQueue extends Queue {
      * @param string|null $queue
      * @return int
      */
-    public function size(?string $queue = null): int {
+    public function size(string|null $queue = null): int {
         return $this->getConnection()
             ->where('queue', $this->getQueue($queue))
             ->count();
     }
 
-    public function bulk(array $jobs, mixed $data = '', ?string $queue = null): void {
+    public function bulk(array $jobs, mixed $data = '', string|null $queue = null): void {
         $queue = $this->getQueue($queue);
 
         $availableAt = time();
@@ -52,7 +52,7 @@ class DatabaseQueue extends Queue {
      * @return mixed
      * @throws Exception
      */
-    public function push(mixed $job, mixed $data = '', ?string $queue = null): mixed {
+    public function push(mixed $job, mixed $data = '', string|null $queue = null): mixed {
         return $this->pushToDatabase($queue, $this->createPayload($job, $data));
     }
 
@@ -65,7 +65,7 @@ class DatabaseQueue extends Queue {
      * @return mixed
      * @throws \Exception
      */
-    public function pushRaw(string $payload, ?string $queue = null, array $options = []): mixed
+    public function pushRaw(string $payload, string|null $queue = null, array $options = []): mixed
     {
         return $this->pushToDatabase($queue, $payload);
     }
@@ -80,7 +80,7 @@ class DatabaseQueue extends Queue {
      * @return mixed
      * @throws Exception
      */
-    public function later(int $delay, mixed $job, mixed $data = '', ?string $queue = null): mixed
+    public function later(int $delay, mixed $job, mixed $data = '', string|null $queue = null): mixed
     {
         return $this->pushToDatabase($queue, $this->createPayload($job, $data), $delay);
     }
@@ -109,7 +109,7 @@ class DatabaseQueue extends Queue {
      * @return mixed
      * @throws \Exception
      */
-    protected function pushToDatabase(?string $queue, string $payload, int $delay = 0, int $attempts = 0) {
+    protected function pushToDatabase(string|null $queue, string $payload, int $delay = 0, int $attempts = 0) {
         return $this->getConnection()->insert($this->buildDatabaseRecord(
             $this->getQueue($queue), $payload, time() + $delay, $attempts
         ));
@@ -124,7 +124,7 @@ class DatabaseQueue extends Queue {
      * @param  int  $attempts
      * @return array
      */
-    protected function buildDatabaseRecord(?string $queue, string $payload, int $availableAt, int $attempts = 0) {
+    protected function buildDatabaseRecord(string|null $queue, string $payload, int $availableAt, int $attempts = 0) {
         return [
             'queue' => $queue,
             'attempts' => $attempts,
@@ -142,7 +142,7 @@ class DatabaseQueue extends Queue {
      * @return Job|null
      * @throws \Exception
      */
-    public function pop(?string $queue = null): ?Job {
+    public function pop(string|null $queue = null): Job|null {
         $queue = $this->getQueue($queue);
 
         if ($job = $this->getNextAvailableJob($queue)) {
@@ -157,7 +157,7 @@ class DatabaseQueue extends Queue {
      * @param  string|null  $queue
      * @return DatabaseJobRecord|null
      */
-    protected function getNextAvailableJob(?string $queue): ?DatabaseJobRecord {
+    protected function getNextAvailableJob(string|null $queue): ?DatabaseJobRecord {
         $job = $this->getConnection()
             ->where('queue', $this->getQueue($queue))
             ->where(function ($query) {
@@ -242,7 +242,7 @@ class DatabaseQueue extends Queue {
     }
 
 
-    public function getQueue(?string $queue) {
+    public function getQueue(string|null $queue) {
         return $queue ?: $this->configs['default'];
     }
 

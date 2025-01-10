@@ -11,7 +11,7 @@ trait InteractsWithQueue {
      *
      * @var Job|null
      */
-    protected ?Job $job = null;
+    protected Job|null $job = null;
 
     /**
      * Get the number of times the job has been attempted.
@@ -38,7 +38,7 @@ trait InteractsWithQueue {
      * @return void
      * @throws \Exception
      */
-    public function fail(?Throwable $exception = null): void {
+    public function fail(Throwable|null $exception = null): void {
         if ($this->job) {
             FailingJob::handle($this->job->getConnectionName(), $this->job, $exception);
         }

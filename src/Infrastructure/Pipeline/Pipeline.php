@@ -27,7 +27,7 @@ class Pipeline implements PipelineInterface {
      *
      * @throws InvalidArgumentException
      */
-    public function __construct(ProcessorInterface $processor = null, callable ...$stages) {
+    public function __construct(ProcessorInterface|null $processor = null, callable ...$stages) {
         $this->processor = $processor ?? new FingersCrossedProcessor;
         $this->stages = $stages;
     }

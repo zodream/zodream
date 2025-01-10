@@ -16,7 +16,7 @@ class FailingJob {
      * @return void
      * @throws \Exception
      */
-    public static function handle(string $connectionName, Job $job, ?Exception $e = null): void {
+    public static function handle(string $connectionName, Job $job, Exception|null $e = null): void {
         $job->markAsFailed();
 
         if ($job->isDeleted()) {

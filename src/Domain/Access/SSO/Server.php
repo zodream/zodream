@@ -117,7 +117,7 @@ abstract class Server {
      * @return string|null the broker id
      * @throws Exception
      */
-    protected function validateBrokerSessionId(string $sid): ?string {
+    protected function validateBrokerSessionId(string $sid): string|null {
         $matches = null;
 
         if (!preg_match('/^SSO-(\w*+)-(\w*+)-([a-z0-9]*+)$/', $this->getBrokerSessionID(), $matches)) {

@@ -25,7 +25,7 @@ class RedisQueue extends Queue {
      * @return int
      * @throws \RedisException
      */
-    public function size(?string $queue = null): int
+    public function size(string|null $queue = null): int
     {
         $queue = $this->getQueue($queue);
 
@@ -43,7 +43,7 @@ class RedisQueue extends Queue {
      * @return mixed
      * @throws Exception
      */
-    public function push(mixed $job, mixed $data = '', ?string $queue = null): mixed
+    public function push(mixed $job, mixed $data = '', string|null $queue = null): mixed
     {
         return $this->pushRaw($this->createPayload($job, $data), $queue);
     }
@@ -56,7 +56,7 @@ class RedisQueue extends Queue {
      * @param array $options
      * @return mixed
      */
-    public function pushRaw(string $payload, ?string $queue = null, array $options = []): mixed
+    public function pushRaw(string $payload, string|null $queue = null, array $options = []): mixed
     {
         $this->getConnection()->rpush($this->getQueue($queue), $payload);
 
@@ -73,7 +73,7 @@ class RedisQueue extends Queue {
      * @return mixed
      * @throws Exception
      */
-    public function later(int $delay, mixed $job, mixed $data = '', ?string $queue = null): mixed
+    public function later(int $delay, mixed $job, mixed $data = '', string|null $queue = null): mixed
     {
         return $this->laterRaw($delay, $this->createPayload($job, $data), $queue);
     }
@@ -86,7 +86,7 @@ class RedisQueue extends Queue {
      * @param string|null $queue
      * @return mixed
      */
-    protected function laterRaw(int $delay, string $payload, ?string $queue = null)
+    protected function laterRaw(int $delay, string $payload, string|null $queue = null)
     {
         $this->getConnection()->zadd(
             $this->getQueue($queue).':delayed', time() + $delay, $payload
@@ -116,7 +116,7 @@ class RedisQueue extends Queue {
      * @param string|null $queue
      * @return Job|null
      */
-    public function pop(?string $queue = null): ?Job
+    public function pop(string|null $queue = null): Job|null
     {
         $this->migrate($prefixed = $this->getQueue($queue));
 
@@ -254,7 +254,7 @@ class RedisQueue extends Queue {
      * @param  string|null  $queue
      * @return string
      */
-    public function getQueue(?string $queue): string {
+    public function getQueue(string|null $queue): string {
         return 'queues:'.($queue ?: $this->configs['default']);
     }
 

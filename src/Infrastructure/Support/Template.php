@@ -14,7 +14,7 @@ class Template extends  MagicObject {
     /**
      * @var Directory|null
      */
-    protected ?Directory $directory;
+    protected Directory|null $directory;
 
     protected string $beginTag = '{';
 
