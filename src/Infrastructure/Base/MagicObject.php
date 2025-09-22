@@ -40,7 +40,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
 	public function getWithDefault($key, $default) {
 		$args = func_get_args();
 		foreach ($args as $arg) {
-			if (strpos($arg, '@') !== false) {
+			if (str_contains($arg, '@')) {
 				return substr($arg, 1);
 			}
 			if ($this->hasAttribute($arg)) {
@@ -78,7 +78,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
      * @access public
      */
     public function count(): int {
-        return (int) count($this->__attributes);
+        return count($this->__attributes);
     }
 
     /**
@@ -136,7 +136,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
      * @access public
      */
     public function valid() {
-        return (bool) !(key($this->__attributes) === null);
+        return !(key($this->__attributes) === null);
     }
 
     /**
