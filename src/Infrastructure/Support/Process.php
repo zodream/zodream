@@ -1,25 +1,26 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Support;
 
 use Exception;
 
 class Process {
-    const STDIN = 0;
-    const STDOUT = 1;
-    const STDERR = 2;
+    const int STDIN = 0;
+    const int STDOUT = 1;
+    const int STDERR = 2;
 
-    const NOT_STARTED = 0;
-    const RUNNING = 1;
-    const FINISHED = 2;
+    const int NOT_STARTED = 0;
+    const int RUNNING = 1;
+    const int FINISHED = 2;
 
     private $command;
 
-    private $useSTDIN = false;
-    private $useSTDOUT = true;
-    private $useSTDERR = true;
+    private bool $useSTDIN = false;
+    private bool $useSTDOUT = true;
+    private bool $useSTDERR = true;
 
-    private $storeSTDOUT = true;
-    private $storeSTDERR = true;
+    private bool $storeSTDOUT = true;
+    private bool $storeSTDERR = true;
 
     private $timeout = null;
     private $timedOut = false;
@@ -93,7 +94,8 @@ class Process {
         return $obj;
     }
 
-    protected function updateDescriptors() {
+    protected function updateDescriptors(): void
+    {
         $descriptors = [];
 
         if ($this->useSTDIN) {

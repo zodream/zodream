@@ -1,4 +1,5 @@
-<?php 
+<?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Caching;
 
 /**
@@ -20,7 +21,7 @@ class DatabaseCache extends Cache {
     /**
      * @var Database
      */
-	protected $db;
+	protected Database $db;
 
     /**
      *  ```php

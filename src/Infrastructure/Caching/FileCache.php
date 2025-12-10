@@ -1,4 +1,5 @@
-<?php 
+<?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Caching;
 /**
 * 文件缓存类
@@ -11,7 +12,7 @@ use Zodream\Infrastructure\Contracts\Cache as CacheInterface;
 
 class FileCache extends Cache {
 
-    const STORE_PREFIX = 'store_';
+    const string STORE_PREFIX = 'store_';
 
     /**
      * @var Directory
@@ -65,7 +66,7 @@ class FileCache extends Cache {
 		    $cacheFile->delete();
 		    return false;
         }
-        $fp = @fopen($cacheFile, 'r');
+        $fp = @fopen((string)$cacheFile, 'r');
         if ($fp !== false) {
             @flock($fp, LOCK_SH);
             $cacheValue = @stream_get_contents($fp);

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Concerns;
 
 /**
@@ -7,16 +8,16 @@ namespace Zodream\Infrastructure\Concerns;
  * Date: 2016/11/10
  * Time: 15:08
  */
-use Monolog\Logger;
-use Zodream\Service\Factory;
+
+use Monolog\Level;
 
 trait LogTrait {
     /**
      * 记录日志
      * @param $message
-     * @param int $levels
+     * @param int|Level $levels
      */
-    public function addLog($message, $levels = Logger::INFO) {
-        Factory::log()->addRecord($levels, $message);
+    public function addLog($message, int|Level $levels = Level::Info) {
+        logger()->addRecord($levels, $message);
     }
 }

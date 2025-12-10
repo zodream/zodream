@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Domain\Git;
 /*
  * Git.php
@@ -18,21 +19,23 @@ class Git {
      *
      * @var string
      */
-    protected static $bin = '/usr/bin/git';
+    protected static string $bin = '/usr/bin/git';
 
     /**
      * Sets git executable path
      *
      * @param string $path executable location
      */
-    public static function setBin($path) {
+    public static function setBin(string $path): void
+    {
         static::$bin = $path;
     }
 
     /**
      * Gets git executable path
      */
-    public static function getBin() {
+    public static function getBin(): string
+    {
         return static::$bin;
     }
 

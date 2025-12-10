@@ -15,7 +15,7 @@ abstract class ZObject implements ArrayAble {
      * @param array|ArrayAble $args
      * @return $this
      */
-    public function parse($args) {
+    public function parse(mixed $args) {
         if ($args instanceof ArrayAble) {
             $args = $args->toArray();
         }
@@ -31,6 +31,6 @@ abstract class ZObject implements ArrayAble {
      * @return array
      */
     public function toArray(): array {
-        return array();
+        return [];
     }
 }

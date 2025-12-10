@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Zodream\Infrastructure\Support;
 
 class UserAgent {
-    const UNKNOWN = 'unknown';
+    const string UNKNOWN = 'unknown';
 
     public static function device(string $agent): array {
         $res = [

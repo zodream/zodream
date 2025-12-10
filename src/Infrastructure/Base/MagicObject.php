@@ -161,7 +161,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
 		return new ArrayIterator($this->toArray());
 	}
 
-	public function parse($args) {
+	public function parse(mixed $args) {
         return $this->setAttribute($args);
     }
 

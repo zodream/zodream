@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Concerns;
 
 use Closure;
@@ -10,7 +11,7 @@ trait Macroable {
      *
      * @var array
      */
-    protected static $macros = [];
+    protected static array $macros = [];
 
     /**
      * Register a custom macro.
@@ -19,7 +20,8 @@ trait Macroable {
      * @param callable $macro
      * @return void
      */
-    public static function macro(string $name, callable $macro) {
+    public static function macro(string $name, callable $macro): void
+    {
         static::$macros[$name] = $macro;
     }
 
@@ -29,7 +31,8 @@ trait Macroable {
      * @param string $name
      * @return bool
      */
-    public static function hasMacro(string $name) {
+    public static function hasMacro(string $name): bool
+    {
         return isset(static::$macros[$name]);
     }
 

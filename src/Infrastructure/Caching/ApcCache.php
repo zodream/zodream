@@ -1,4 +1,5 @@
-<?php 
+<?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Caching;
 /**
 * 缓存类
@@ -8,13 +9,13 @@ namespace Zodream\Infrastructure\Caching;
 
 class ApcCache extends Cache {
 
-    const APCU = 'apcu';
-    const APC = 'apc';
+    const string APCU = 'apcu';
+    const string APC = 'apc';
 
     protected array $configs = ['extension' => self::APC];
 
-	protected function isAPc() {
-	    return $this->configs['extension'] == self::APC;
+	protected function isAPc(): bool {
+	    return $this->configs['extension'] === self::APC;
     }
 	
 	protected function getValue($key) {

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\Infrastructure\Support;
 
 /**
@@ -13,7 +14,7 @@ class Html {
     /**
      * @var array 无内容的标签
      */
-    public static $voidTags = array(
+    public static array $voidTags = array(
         'area' => 1,
         'base' => 1,
         'br' => 1,
@@ -35,7 +36,7 @@ class Html {
     /**
      * @var array 属性的顺序
      */
-    public static $attributeOrder = array(
+    public static array $attributeOrder = array(
         'type',
         'id',
         'class',
@@ -71,11 +72,11 @@ class Html {
     /**
      * 标签
      * @param string $name 标签名
-     * @param string $content 内容
+     * @param string|null $content 内容
      * @param array $options 属性值
      * @return string
      */
-    public static function tag($name, $content = '', $options = array()) {
+    public static function tag(string $name, string|null $content = '', array $options = array()): string {
         $html = '<'.$name . static::renderTagAttributes($options) . '>';
         return isset(static::$voidTags[strtolower($name)]) ? $html.PHP_EOL : "{$html}{$content}</{$name}>".PHP_EOL;
     }
@@ -87,7 +88,7 @@ class Html {
      * @param array $option
      * @return string
      */
-    public static function a($text, $href = '#', $option = array()) {
+    public static function a(string $text, string|array $href = '#', array $option = array()): string {
         if (array_key_exists('href', $option)) {
             $href = $option['href'];
         }
@@ -101,7 +102,7 @@ class Html {
      * @param array $option
      * @return string
      */
-    public static function img($src = '#', $option = array()) {
+    public static function img(string $src = '#', array $option = array()): string {
         $option['src'] = is_string($src) && str_starts_with($src, 'data:') ? $src :  url()->to($src);
         return static::tag('img', null, $option);
     }
@@ -112,7 +113,7 @@ class Html {
      * @param array $option
      * @return string
      */
-    public static function input($type, $option = array()) {
+    public static function input(string $type, array $option = array()): string {
         $option['type'] = $type;
         return static::tag('input', null, $option);
     }
@@ -124,7 +125,7 @@ class Html {
      * @param array $options
      * @return string
      */
-    public static function select(array $items, $value = null, $options = []) {
+    public static function select(array $items, mixed $value = null, array $options = []): string {
         $html =  '';
         foreach ($items as $key => $item) {
             $html .= Html::tag('option', $item, array(
@@ -143,23 +144,23 @@ class Html {
      * @param array $option
      * @return string
      */
-    public static function div($content, $option = array()) {
+    public static function div(string $content, array $option = array()): string {
         return static::tag('div', $content, $option);
     }
 
-    public static function ul($content, $option = array()) {
+    public static function ul(string|array $content, array $option = array()): string {
         return static::tag('ul',
             is_array($content) ? static::getLi($content) : $content,
             $option);
     }
 
-    public static function ol($content, $option = array()) {
+    public static function ol(string|array $content, array $option = array()): string {
         return static::tag('ol', 
             is_array($content) ? static::getLi($content) : $content, 
             $option);
     }
     
-    protected static function getLi(array $args) {
+    protected static function getLi(array $args): string {
         $html = null;
         foreach ($args as $item) {
             $html .= static::li(...(array)$item);
@@ -167,23 +168,23 @@ class Html {
         return $html;
     }
 
-    public static function li($content, $option = array()) {
+    public static function li(string $content, array $option = array()): string {
         return static::tag('li', $content, $option);
     }
 
-    public static function p($content, $option = array()) {
+    public static function p(string $content, array $option = array()): string {
         return static::tag('p', $content, $option);
     }
 
-    public static function span($content, $option = array()) {
+    public static function span(string $content, array $option = array()): string {
         return static::tag('span', $content, $option);
     }
 
-    public static function i($content, $option = array()) {
+    public static function i(string $content, array $option = array()): string {
         return static::tag('i', $content, $option);
     }
     
-    public static function form($content, $option = array()) {
+    public static function form(string $content, array $option = array()): string {
         return static::tag('form', $content, $option);
     }
 
@@ -193,28 +194,29 @@ class Html {
      * @param array $options
      * @return string
      */
-    public static function style($content, $options = array()) {
+    public static function style(string $content, array $options = array()): string {
         return static::tag('style', $content, $options);
     }
 
-    public static function meta($content, $option = array()) {
+    public static function meta(string $content, array $option = array()): string {
         $option['content'] = $content;
         return static::tag('meta', null, $option);
     }
 
-    public function nbsp($num = 1) {
+    public function nbsp(int $num = 1): string {
         return str_repeat('&nbsp;', $num);
     }
 
 
     /**
      * LINK OUTSIDE RESOURCE
-     * @param string $url
+     * @param string|array $url
      * @param array $attributes
      * @return string
+     * @throws \Exception
      * @internal param array $option
      */
-    public static function link($url, $attributes = []) {
+    public static function link(string|array $url, array $attributes = []): string {
         $defaults = ['media' => 'all', 'type' => 'text/css', 'rel' => 'stylesheet'];
         $attributes = $attributes + $defaults;
         $attributes['href'] = is_string($url) && str_starts_with($url, 'data:') ? $url : url()->to($url);
@@ -227,7 +229,7 @@ class Html {
      * @param array $options
      * @return string
      */
-    public static function script($content, $options = array()) {
+    public static function script(string|null $content, array $options = array()): string {
         if (is_array($content)) {
             $options = $content;
             $content = null;
@@ -238,7 +240,7 @@ class Html {
         return static::tag('script', $content, $options);
     }
 
-    public static function renderTagAttributes($attributes) {
+    public static function renderTagAttributes(array $attributes): string {
         if (count($attributes) > 1) {
             $sorted = array();
             foreach (static::$attributeOrder as $name) {
@@ -286,9 +288,9 @@ class Html {
     /**
      * 合并css样式
      * @param array $style
-     * @return null
+     * @return string|null
      */
-    public static function cssStyleFromArray(array $style) {
+    public static function cssStyleFromArray(array $style): string|null {
         $result = '';
         foreach ($style as $name => $value) {
             $result .= "$name: $value; ";
@@ -306,11 +308,13 @@ class Html {
         );
     }
 
-    public static function encode($content, $doubleEncode = true) {
+    public static function encode(string $content, bool $doubleEncode = true): string
+    {
         return htmlspecialchars($content, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', $doubleEncode);
     }
 
-    public static function decode($content) {
+    public static function decode(string $content): string
+    {
         return htmlspecialchars_decode($content, ENT_QUOTES);
     }
 }

@@ -13,20 +13,21 @@
         }
     ],
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.5",
         "psr/http-message": "^2.0",
         "psr/http-server-middleware": "^1.0.2",
         "psr/container": "^2.0.2",
         "psr/log": "^3.0.2",
-        "monolog/monolog": "^3.8.1",
-        "guzzlehttp/psr7": "^2.6.2",
-        "firebase/php-jwt": "^v6.10.2"
+        "monolog/monolog": "^3.9.0",
+        "guzzlehttp/psr7": "^2.8.0",
+        "firebase/php-jwt": "^v6.11.1"
     },
     "require-dev": {
-        "phpunit/phpunit": "^11.5.2"
+        "phpunit/phpunit": "^12.5.2"
     },
     "suggest": {
-        "ext-json": "*"
+        "ext-json": "*",
+        "ext-ctype": "*"
     },
     "autoload": {
         "psr-4": {

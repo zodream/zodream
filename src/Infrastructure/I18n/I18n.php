@@ -13,7 +13,7 @@ use Zodream\Infrastructure\Contracts\Translator;
 
 abstract class I18n extends MagicObject implements Translator {
 
-    const DEFAULT_LANGUAGE = 'zh-cn';
+    const string DEFAULT_LANGUAGE = 'zh-cn';
 
     protected string $fileName = 'zodream';
 

@@ -13,19 +13,16 @@ use Zodream\Infrastructure\Contracts\Cache as CacheInterface;
 
 abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAccess {
 
-	/**
-	 * gc自动执行的几率 0-1000000；
-	 * @var int
-	 */
+
     protected array $configs = [
-        'gc' => 10,
+        'gc' => 10, // gc自动执行的几率 0-1000000；
         'serializer' => null,
         'keyPrefix' => ''
     ];
 
-    protected $configKey = 'cache';
+    protected string $configKey = 'cache';
 
-    protected function getGC() {
+    protected function getGC(): int {
         return $this->configs['gc'];
     }
 
@@ -42,7 +39,7 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
         return $newCache;
     }
 	
-	public function filterKey($key) {
+	public function filterKey(mixed $key): string {
 		if (is_string($key)) {
 			return $this->configs['keyPrefix'].
                 (ctype_alnum($key) && Str::byteLength($key) <= 32 ? $key : md5($key));
@@ -135,7 +132,6 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
      * @return int|bool
      */
     public function increment($key, $value = 1) {
-
         return false;
     }
 
