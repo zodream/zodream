@@ -262,14 +262,14 @@ class Html {
                         if (is_array($v)) {
                             $html .= " $name-$n='" . json_encode($v) . "'";
                         } else {
-                            $html .= " $name-$n=\"" . htmlspecialchars($v) . '"';
+                            $html .= " $name-$n=\"" . static::encode($v) . '"';
                         }
                     }
                 } elseif ($name === 'class') {
                     if (empty($value)) {
                         continue;
                     }
-                    $html .= " $name=\"" . htmlspecialchars(implode(' ', $value)) . '"';
+                    $html .= " $name=\"" . static::encode(implode(' ', $value)) . '"';
                 } elseif ($name === 'style') {
                     if (empty($value)) {
                         continue;
@@ -279,7 +279,7 @@ class Html {
                     $html .= " $name='" . json_encode($value) . "'";
                 }
             } elseif ($value !== null) {
-                $html .= " $name=\"" .htmlspecialchars($value) . '"';
+                $html .= " $name=\"" .static::encode($value) . '"';
             }
         }
         return $html;
@@ -308,8 +308,11 @@ class Html {
         );
     }
 
-    public static function encode(string $content, bool $doubleEncode = true): string
+    public static function encode(mixed $content, bool $doubleEncode = true): string
     {
+        if (!is_string($content)) {
+            $content = (string)$content;
+        }
         return htmlspecialchars($content, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', $doubleEncode);
     }
 
