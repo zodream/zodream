@@ -36,7 +36,7 @@ class Mailer extends BaseMailer {
 		$this->mail->SMTPAuth = true;
 		$this->mail->SMTPSecure = $this->configs['secure'];
 		if (app()->isDebug()) {
-			$this->mail->SMTPDebug = SMTP::DEBUG_SERVER;
+			// $this->mail->SMTPDebug = SMTP::DEBUG_SERVER;
 		}
 		$email = empty($this->configs['email']) ? $this->configs['user'] : $this->configs['email'];
 		$name = empty($this->configs['name']) ? $email : $this->configs['name'];

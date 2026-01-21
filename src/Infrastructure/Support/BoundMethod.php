@@ -13,7 +13,6 @@ use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
 use Zodream\Infrastructure\Contracts\Container;
-use Zodream\Infrastructure\Contracts\Http\Input;
 
 class BoundMethod {
 
