@@ -45,7 +45,8 @@ class CSRFMiddleware implements MiddlewareInterface {
     }
 
     protected function shouldAddXsrfTokenCookie(Input $input): bool {
-        return true;
+        // TODO 只有请求 html 才可以设置 token 因为一些未存在文件也会触发这个
+        return str_contains((string)$input->header('Accept'), 'text/html');
     }
 
     protected function addCookieToResponse(Input $request, mixed $response) {
