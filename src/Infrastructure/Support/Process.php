@@ -5,15 +5,15 @@ namespace Zodream\Infrastructure\Support;
 use Exception;
 
 class Process {
-    const int STDIN = 0;
-    const int STDOUT = 1;
-    const int STDERR = 2;
+    const STDIN = 0;
+    const STDOUT = 1;
+    const STDERR = 2;
 
-    const int NOT_STARTED = 0;
-    const int RUNNING = 1;
-    const int FINISHED = 2;
+    const NOT_STARTED = 0;
+    const RUNNING = 1;
+    const FINISHED = 2;
 
-    private $command;
+    private string $command = '';
 
     private bool $useSTDIN = false;
     private bool $useSTDOUT = true;
@@ -22,33 +22,33 @@ class Process {
     private bool $storeSTDOUT = true;
     private bool $storeSTDERR = true;
 
-    private $timeout = null;
-    private $timedOut = false;
-    private $killed = false;
+    private int $timeout = 0;
+    private bool $timedOut = false;
+    private bool $killed = false;
 
-    private $descriptors;
-    private $startTime = null;
-    private $endTime = null;
-    private $process; // proc_open resource
-    private $pipes; // file pointers to stdin, stdout, stderr
-    private $sleeptime = 100; // ms to sleep while waiting for processes
-    private $cwd = null;
-    private $env = null;
+    private array $descriptors = [];
+    private float $startTime = 0;
+    private float $endTime = 0;
+    private mixed $process = null; // proc_open resource
+    private array $pipes = []; // file pointers to stdin, stdout, stderr
+    private int $sleeptime = 100; // ms to sleep while waiting for processes
+    private string|null $cwd = null;
+    private array|null $env = null;
 
-    private $stdout = ""; // container for process output (stdout)
-    private $stderr = ""; // container for process output (stderr)
+    private string $stdout = ''; // container for process output (stdout)
+    private string $stderr = ''; // container for process output (stderr)
 
-    private $state = self::NOT_STARTED;
-    private $pid = null;
-    private $running = null;
-    private $exitCode = null;
+    private int $state = self::NOT_STARTED;
+    private int $pid = 0;
+    private bool $running = false;
+    private int $exitCode = 0;
 
     /**
      * @param null $command
      * @param array $options
      * @return Process
      */
-    public static function factory($command = null, $options = []) {
+    public static function factory($command = null, array $options = []) {
         $obj = new self();
 
         if ($command !== null) {
@@ -154,7 +154,7 @@ class Process {
         $this->setExitCode($processStatus['exitcode']);
     }
 
-    public function running() {
+    public function running(): bool {
         $this->updateStatus();
         return $this->running;
     }
@@ -162,8 +162,8 @@ class Process {
     public function update() {
         $this->updateStatus();
 
-        $stdout = "";
-        $stderr = "";
+        $stdout = '';
+        $stderr = '';
         $readStreams = [];
 
         if (isset($this->pipes[self::STDOUT])) {
@@ -210,14 +210,14 @@ class Process {
 
     public function join() {
         while ($this->running()) {
-            extract($this->update());
+            $data = $this->update();
 
             if ($this->timeout && !$this->killed && (microtime(true) - $this->startTime) > $this->timeout) {
                 $this->timedOut = true;
                 $this->kill();
             }
 
-            if (!mb_strlen($stdout) && !mb_strlen($stderr)) {
+            if (!mb_strlen($data['stdout']) && !mb_strlen($data['stderr'])) {
                 // No output, wait some time
                 usleep($this->sleeptime * 1000);
             }
@@ -235,11 +235,11 @@ class Process {
             }
         }
         $exitcode = proc_close($this->process);
-        $this->setExitCode(trim($exitcode));
+        $this->setExitCode($exitcode);
         return $this->exitCode;
     }
 
-    public function kill($signal = 15) {
+    public function kill(int $signal = 15) {
         $this->updateStatus();
         if ($this->running()) {
             proc_terminate($this->process, $signal);
@@ -249,9 +249,9 @@ class Process {
         return $this;
     }
 
-    public function send($data, $end = false) {
+    public function send(string $data, bool $end = false) {
         if (isset($this->pipes[self::STDIN])) {
-            $bytes = fwrite($this->pipes[self::STDIN], $data);
+            fwrite($this->pipes[self::STDIN], $data);
 
             if ($end) {
                 $this->endSend();
@@ -273,7 +273,7 @@ class Process {
         return $this;
     }
 
-    public function getOutput() {
+    public function getOutput(): array {
         return [
             'stdout' => $this->stdout,
             'stderr' => $this->stderr,
@@ -284,37 +284,37 @@ class Process {
         return $this->command;
     }
 
-    public function setCommand($command) {
+    public function setCommand(string $command) {
         $this->command = $command;
 
         return $this;
     }
 
-    public function useSTDIN($useSTDIN = true) {
+    public function useSTDIN(bool $useSTDIN = true) {
         $this->useSTDIN = $useSTDIN;
 
         return $this;
     }
 
-    public function useSTDOUT($useSTDOUT = true) {
+    public function useSTDOUT(bool $useSTDOUT = true) {
         $this->useSTDOUT = $useSTDOUT;
 
         return $this;
     }
 
-    public function useSTDERR($useSTDERR = true) {
+    public function useSTDERR(bool $useSTDERR = true) {
         $this->useSTDERR = $useSTDERR;
 
         return $this;
     }
 
-    public function storeSTDOUT($storeSTDOUT = true) {
+    public function storeSTDOUT(bool $storeSTDOUT = true) {
         $this->storeSTDOUT = $storeSTDOUT;
 
         return $this;
     }
 
-    public function storeSTDERR($storeSTDERR = true) {
+    public function storeSTDERR(bool $storeSTDERR = true) {
         $this->storeSTDERR = $storeSTDERR;
 
         return $this;
@@ -324,7 +324,7 @@ class Process {
         return $this->timeout;
     }
 
-    public function setTimeout($timeout) {
+    public function setTimeout(int $timeout) {
         $this->timeout = $timeout;
 
         return $this;
@@ -334,7 +334,7 @@ class Process {
         return $this->timedOut;
     }
 
-    protected function setTimedOut($timedOut) {
+    protected function setTimedOut(bool $timedOut) {
         $this->timedOut = $timedOut;
 
         return $this;
@@ -344,13 +344,13 @@ class Process {
         return $this->killed;
     }
 
-    protected function setKilled($killed) {
+    protected function setKilled(bool $killed) {
         $this->killed = $killed;
 
         return $this;
     }
 
-    protected function setDescriptors($descriptors) {
+    protected function setDescriptors(array $descriptors) {
         $this->descriptors = $descriptors;
 
         return $this;
@@ -380,11 +380,11 @@ class Process {
         return $this->stderr;
     }
 
-    public function getPid() {
+    public function getPid(): int {
         return $this->pid;
     }
 
-    protected function setPid($pid) {
+    protected function setPid(int $pid) {
         $this->pid = $pid;
 
         return $this;
@@ -394,7 +394,7 @@ class Process {
         return $this->running;
     }
 
-    protected function setRunning($running) {
+    protected function setRunning(bool $running) {
         $this->running = $running;
 
         if (!$running && $this->state == self::RUNNING) {
@@ -405,11 +405,11 @@ class Process {
         return $this;
     }
 
-    public function getExitCode() {
+    public function getExitCode(): int {
         return $this->exitCode;
     }
 
-    protected function setExitCode($exitCode) {
+    protected function setExitCode(int $exitCode) {
         if ($exitCode > -1) {
             // don't set it if there was an error
             $this->exitCode = $exitCode;
@@ -422,7 +422,7 @@ class Process {
         return $this->sleeptime;
     }
 
-    public function setSleepTime($sleeptime) {
+    public function setSleepTime(int $sleeptime) {
         $this->sleeptime = $sleeptime;
 
         return $this;
@@ -432,7 +432,7 @@ class Process {
         return $this->cwd;
     }
 
-    public function setCwd($cwd) {
+    public function setCwd(string $cwd) {
         $this->cwd = $cwd;
 
         return $this;
@@ -442,13 +442,13 @@ class Process {
         return $this->env;
     }
 
-    public function setEnv($env) {
+    public function setEnv(array $env) {
         $this->env = $env;
 
         return $this;
     }
 
-    public function addEnv($key, $val) {
+    public function addEnv(string $key, mixed $val) {
         $this->env[$key] = $val;
 
         return $this;

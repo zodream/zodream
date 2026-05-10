@@ -21,7 +21,7 @@ use Zodream\Service\Providers\SessionServiceProvider;
 
 class Application implements ApplicationInterface, ArrayAccess {
 
-    const string VERSION = '5.1.0';
+    const VERSION = '6.0.0';
 
     /**
      * @var Application|null

@@ -55,7 +55,7 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
             is_dir($this->configs['directory'])) {
             $this->savePath($this->configs['directory']);
         }
-        @session_start();
+        session_start();
 //        if (! $this->has('_token')) {
 //            $this->regenerateToken();
 //        }

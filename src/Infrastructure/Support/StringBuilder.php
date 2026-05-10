@@ -9,17 +9,42 @@ class StringBuilder implements IStreamWriter {
 
     public function __construct(
         protected string $content = '',
-        protected string $lineSeparator = "\n"
+        protected readonly string $lineSeparator = "\n"
     ) {
     }
 
-    public function write(mixed $content): static {
-        $this->content .= $content;
+    public function append(mixed $value): static {
+        if (!is_null($value) && $value !== '') {
+            $this->content .= $value;
+        }
         return $this;
     }
 
+    public function appendByte(int $value): static {
+        return $this->append(chr($value));
+    }
+
+    public function appendFormat(string $format, mixed ...$args): static {
+        return $this->append(sprintf($format, ...$args));
+    }
+
+    public function appendLine(mixed $value = null): static {
+        if (is_null($value)) {
+            $this->append($this->lineSeparator);
+            return $this;
+        }
+        if (!$this->isAppendLine()) {
+            return $this->append($value.$this->lineSeparator);
+        }
+        return $this->append($this->lineSeparator.$value.$this->lineSeparator);
+    }
+
+    public function write(mixed $content): static {
+        return $this->append($content);
+    }
+
     public function writeByte(int $byte): static {
-        return $this->write(chr($byte));
+        return $this->appendByte($byte);
     }
 
     protected function isAppendLine(): bool {
@@ -33,21 +58,15 @@ class StringBuilder implements IStreamWriter {
     }
 
     public function writeLine(mixed $line): static {
-        if (!$this->isAppendLine()) {
-            return $this->write($line.$this->lineSeparator);
-        }
-        return $this->write($this->lineSeparator.$line.$this->lineSeparator);
+        return $this->appendLine($line);
     }
 
     public function writeLines(array $lines): static {
         if (empty($lines)) {
             return $this;
         }
-        if ($this->isAppendLine()) {
-            $this->write($this->lineSeparator);
-        }
         foreach ($lines as $line) {
-            $this->write($line.$this->lineSeparator);
+            $this->appendLine($line);
         }
         return $this;
     }

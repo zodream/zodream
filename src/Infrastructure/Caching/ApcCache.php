@@ -9,8 +9,8 @@ namespace Zodream\Infrastructure\Caching;
 
 class ApcCache extends Cache {
 
-    const string APCU = 'apcu';
-    const string APC = 'apc';
+    const APCU = 'apcu';
+    const APC = 'apc';
 
     protected array $configs = ['extension' => self::APC];
 

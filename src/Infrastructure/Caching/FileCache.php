@@ -12,7 +12,7 @@ use Zodream\Infrastructure\Contracts\Cache as CacheInterface;
 
 class FileCache extends Cache {
 
-    const string STORE_PREFIX = 'store_';
+    const STORE_PREFIX = 'store_';
 
     /**
      * @var Directory
