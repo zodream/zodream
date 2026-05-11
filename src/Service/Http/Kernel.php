@@ -5,9 +5,11 @@ namespace Zodream\Service\Http;
 use Closure;
 use Throwable;
 use Zodream\Infrastructure\Contracts\Application;
+use Zodream\Infrastructure\Error\RuntimeException;
 use Zodream\Infrastructure\Contracts\Container;
 use Zodream\Infrastructure\Contracts\ExceptionHandler;
 use Zodream\Infrastructure\Contracts\Http\Input;
+use Zodream\Infrastructure\Contracts\Http\Output;
 use Zodream\Infrastructure\Contracts\Kernel as KernelInterface;
 use Zodream\Infrastructure\Contracts\Router;
 use Zodream\Infrastructure\Pipeline\MiddlewareProcessor;
@@ -91,9 +93,19 @@ class Kernel implements KernelInterface {
         $context = $this->app->make(HttpContextInterface::class);
         $context->input($request);
         $this->syncMiddlewareToRouter();
-        return (new MiddlewareProcessor($context))
+        $res = (new MiddlewareProcessor($context))
             ->send($context)->through($this->middleware)
             ->then($this->dispatchToRouter());
+        if (is_string($res)) {
+            return $context['response']->html($res);
+        }
+        if (!is_object($res)) {
+            return $context['response']->json($res);
+        }
+        if ($res instanceof Output) {
+            return $res;
+        }
+        throw new RuntimeException(sprintf('Unknown response [%s]', get_class($res)));
     }
 
     protected function dispatchToRouter(): Closure {

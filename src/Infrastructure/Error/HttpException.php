@@ -5,7 +5,7 @@ namespace Zodream\Infrastructure\Error;
 class HttpException extends RuntimeException {
 
     public function __construct(
-        protected  int $statusCode, string|null $message = null, \Throwable|null $previous = null,
+        protected int $statusCode, string|null $message = null, \Throwable|null $previous = null,
         protected array $headers = [], int|null $code = 0) {
         parent::__construct($message, $code, $previous);
     }

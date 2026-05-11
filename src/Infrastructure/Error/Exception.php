@@ -4,7 +4,7 @@ namespace Zodream\Infrastructure\Error;
 
 class Exception extends \Exception {
 
-    public function __construct($message = '', $code = 0, \Exception|null $previous = null) {
+    public function __construct(string $message = '', int $code = 0, \Exception|null $previous = null) {
         if (is_string($message)) {
             $message = trans($message);
         }
@@ -20,7 +20,7 @@ class Exception extends \Exception {
      * @param string $file
      * @return $this
      */
-    public function setFile($file) {
+    public function setFile(string|null $file) {
         if (!is_null($file)) {
             $this->file = $file;
         }
@@ -29,10 +29,10 @@ class Exception extends \Exception {
 
     /**
      * 设置行号
-     * @param string|integer $line
+     * @param integer $line
      * @return $this
      */
-    public function setLine($line) {
+    public function setLine(int|null $line) {
         if (!is_null($line)) {
             $this->line = $line;
         }

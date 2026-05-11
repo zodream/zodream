@@ -15,13 +15,12 @@ use Zodream\Infrastructure\Contracts\Container;
 class MiddlewareProcessor {
 
     protected string $method = 'handle';
-    protected $container;
     /**
      * The object being passed through the pipeline.
      *
      * @var mixed
      */
-    protected $passable;
+    protected mixed $passable = null;
 
     /**
      * The array of class pipes.
@@ -30,18 +29,18 @@ class MiddlewareProcessor {
      */
     protected array $pipes = [];
 
-    public function __construct(Container $container)
+    public function __construct(
+        protected Container $container)
     {
-        $this->container = $container;
     }
 
-    public function send($passable)
+    public function send(mixed $passable)
     {
         $this->passable = $passable;
         return $this;
     }
 
-    public function through($pipes)
+    public function through(mixed $pipes)
     {
         $this->pipes = is_array($pipes) ? $pipes : func_get_args();
         return $this;

@@ -21,16 +21,16 @@ class ErrorException extends \ErrorException {
      * @param $lineno [optional]
      * @param $previous [optional]
      */
-    public function __construct($message = '', 
-                                $code = 0, 
-                                $severity = 1, 
-                                $filename = __FILE__, 
-                                $lineno = __LINE__, 
+    public function __construct(string $message = '', 
+                                int $code = 0, 
+                                int $severity = 1, 
+                                string|null $filename = __FILE__, 
+                                int|null $lineno = __LINE__, 
                                 \Exception|null $previous = null) {
         parent::__construct($message, $code, $severity, $filename, $lineno, $previous);
 
         if (function_exists('xdebug_get_function_stack')) {
-            $trace = array_slice(array_reverse(xdebug_get_function_stack()), 3, -1);
+            $trace = array_slice(array_reverse(\xdebug_get_function_stack()), 3, -1);
             foreach ($trace as &$frame) {
                 if (!isset($frame['function'])) {
                     $frame['function'] = 'unknown';
@@ -50,7 +50,6 @@ class ErrorException extends \ErrorException {
             }
 
             $ref = new \ReflectionProperty('Exception', 'trace');
-            $ref->setAccessible(true);
             $ref->setValue($this, $trace);
         }
     }
@@ -79,7 +78,7 @@ class ErrorException extends \ErrorException {
             E_NOTICE => 'PHP Notice',
             E_PARSE => 'PHP Parse Error',
             E_RECOVERABLE_ERROR => 'PHP Recoverable Error',
-            E_STRICT => 'PHP Strict Warning',
+            // E_STRICT => 'PHP Strict Warning',
             E_USER_DEPRECATED => 'PHP User Deprecated Warning',
             E_USER_ERROR => 'PHP User Error',
             E_USER_NOTICE => 'PHP User Notice',
