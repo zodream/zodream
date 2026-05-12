@@ -192,7 +192,7 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
         return $_SESSION[$key] ?? $defaultValue;
     }
 
-    public function set(string $key, mixed $value = null) {
+    public function set(string|array $key, mixed $value = null) {
         $this->open();
         if (!is_array($key)) {
             $_SESSION[$key] = $value;

@@ -16,7 +16,7 @@ interface Session {
 
     public function get(string $key = '', mixed $defaultValue = null);
 
-    public function set(string $key, mixed $value = null);
+    public function set(string|array $key, mixed $value = null);
 
     public function delete(string $key);
 
