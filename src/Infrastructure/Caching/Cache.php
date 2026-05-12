@@ -118,7 +118,7 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
             $value = call_user_func($this->configs['serializer'][0], [$value, $dependency]);
         }
         $key = $this->filterKey($key);
-        return $this->setValue($key, $value, $duration);
+        return $this->setValue($key, $value, $duration ?? 0);
 	}
 	
 	public function add(mixed $key, mixed $value, int $duration) {

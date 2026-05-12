@@ -16,7 +16,7 @@ trait Attributes {
      * @api     public
      * @return  boolean
      */
-    public function has($attribute = null) {
+    public function has(mixed $attribute = null) {
         return $this->hasAttribute($attribute);
     }
 
@@ -30,7 +30,7 @@ trait Attributes {
      *
      * @return  boolean
      */
-    public function __isset($attribute) {
+    public function __isset(mixed $attribute) {
         return $this->hasAttribute($attribute);
     }
     /**
@@ -41,7 +41,7 @@ trait Attributes {
      *
      * @return  mixed
      */
-    public function get($name = null, $default = null) {
+    public function get(mixed $name = null, mixed $default = null) {
         return $this->getAttribute($name, $default);
     }
 
@@ -51,7 +51,7 @@ trait Attributes {
      * @param string $default 默认返回值
      * @return array|string
      */
-    public function getAttribute($key = null, $default = null) {
+    public function getAttribute(mixed $key = null, mixed $default = null) {
         if (empty($key)) {
             return $this->__attributes;
         }
@@ -78,7 +78,7 @@ trait Attributes {
      * @param string $value
      * @return $this
      */
-    public function setAttribute($key, $value = null) {
+    public function setAttribute(mixed $key, mixed $value = null) {
         if (is_object($key)) {
             $key = (array)$key;
         }
@@ -98,7 +98,7 @@ trait Attributes {
      * @param string|null $key 如果为null 则判断是否有数据
      * @return bool
      */
-    public function hasAttribute($key = null) {
+    public function hasAttribute(mixed $key = null) {
         if (is_null($key)) {
             return !empty($this->__attributes);
         }
@@ -108,7 +108,7 @@ trait Attributes {
         return isset($this->__attributes[$key]) || array_key_exists($key, $this->__attributes);
     }
 
-    public function deleteAttribute($key) {
+    public function deleteAttribute(mixed $key) {
         foreach (func_get_args() as $value) {
             unset($this->__attributes[$value]);
         }
@@ -127,7 +127,7 @@ trait Attributes {
      *
      * @return  mixed
      */
-    public function __get($attribute) {
+    public function __get(mixed $attribute) {
         return $this->getAttribute($attribute);
     }
     /**
@@ -138,7 +138,7 @@ trait Attributes {
      *
      * @return  $this
      */
-    public function set($attribute, $value = null) {
+    public function set(mixed $attribute, mixed $value = null) {
         return $this->setAttribute($attribute, $value);
     }
 
@@ -149,7 +149,7 @@ trait Attributes {
      * @param   mixed   $value      attribute value
      *
      */
-    public function __set($attribute, $value) {
+    public function __set(mixed $attribute, mixed $value) {
         $this->setAttribute($attribute, $value);
     }
     /**
@@ -159,7 +159,7 @@ trait Attributes {
      *
      * @return  $this
      */
-    public function __unset($attribute) {
+    public function __unset(mixed $attribute) {
         return $this->deleteAttribute($attribute);
     }
 

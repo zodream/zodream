@@ -37,7 +37,7 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
 	 * @param $default
 	 * @return array|string
 	 */
-	public function getWithDefault($key, $default) {
+	public function getWithDefault(mixed $key, mixed $default) {
 		$args = func_get_args();
 		foreach ($args as $arg) {
 			if (str_contains($arg, '@')) {
@@ -50,19 +50,19 @@ class MagicObject extends ZObject implements ArrayAccess, JsonAble, IteratorAggr
 		return null;
 	}
 
-	public function offsetExists($offset): bool {
+	public function offsetExists(mixed $offset): bool {
 		return $this->hasAttribute($offset);
 	}
 
-	public function offsetGet($offset): mixed {
+	public function offsetGet(mixed $offset): mixed {
 		return $this->getAttribute($offset);
 	}
 
-	public function offsetSet($offset, $value): void {
+	public function offsetSet(mixed $offset, mixed $value): void {
 		$this->setAttribute($offset, $value);
 	}
 
-	public function offsetUnset($offset): void {
+	public function offsetUnset(mixed $offset): void {
 		$this->deleteAttribute($offset);
 	}
 
