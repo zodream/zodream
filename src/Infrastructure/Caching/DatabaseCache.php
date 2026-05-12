@@ -38,14 +38,14 @@ class DatabaseCache extends Cache {
 	    $this->db = $db;
 	}
 	
-	protected function getValue($key) {
+	protected function getValue(string $key) {
         $sql = sprintf('SELECT data AS count FROM %s WHERE id=:id AND (expire=0 OR expire>%d)', $this->tableName(), time());
         return $this->db->executeScalar($sql, [
             ':id' => $key
         ]);
 	}
 	
-	protected function setValue($key, $value, $duration) {
+	protected function setValue(string $key, mixed $value, int $duration) {
         $sql = sprintf('UPDATE %s SET expire=:expire, data=:data WHERE id=:id', $this->tableName());
         $result = $this->db->update($sql, [
             ':expire' => $duration > 0 ? $duration + time() : 0,
@@ -59,7 +59,7 @@ class DatabaseCache extends Cache {
 		return $this->addValue($key, $value, $duration);
 	}
 	
-	protected function addValue($key, $value, $duration) {
+	protected function addValue(string $key, mixed $value, int $duration) {
 		$this->gc();
 		try {
             $sql = sprintf('INSERT INTO %s (id, expire, data) VALUES (:id, :expire, :data)', $this->tableName());
@@ -74,14 +74,14 @@ class DatabaseCache extends Cache {
 		}
 	}
 
-	public function gc($force = false) {
+	public function gc(bool $force = false) {
 		if ($force || mt_rand(0, 1000000) < $this->getGC()) {
             $sql = sprintf('DELETE FROM %s WHERE expire>0 AND expire<%d', $this->tableName(), time());
             $this->db->delete($sql);
 		}
 	}
 	
-	protected function hasValue($key) {
+	protected function hasValue(string $key): bool {
         $sql = sprintf('SELECT COUNT(*) AS count FROM %s WHERE id=:id AND (expire=0 OR expire>%d)', $this->tableName(), time());
 		$count = $this->db->executeScalar($sql, [
 		    ':id' => $key
@@ -89,7 +89,7 @@ class DatabaseCache extends Cache {
         return intval($count) > 0;
 	}
 	
-	protected function deleteValue($key) {
+	protected function deleteValue(string $key) {
         $sql = sprintf('DELETE FROM %s WHERE id=:id', $this->tableName());
         $this->db->delete($sql, [
             ':id' => $key

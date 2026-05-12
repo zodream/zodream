@@ -32,26 +32,26 @@ class Memcache extends Cache {
     }
 
 
-    protected function getValue($key) {
+    protected function getValue(string $key) {
         return $this->client->get($key);
     }
 
-    protected function setValue($key, $value, $duration) {
+    protected function setValue(string $key, mixed $value, int $duration) {
         if ($duration < 0) {
             $duration = 0;
         }
         return $this->client->set($key, $value, MEMCACHE_COMPRESSED, $duration);
     }
 
-    protected function addValue($key, $value, $duration) {
+    protected function addValue(string $key, mixed $value, int $duration) {
         return $this->client->add($key, $value, MEMCACHE_COMPRESSED, $duration);
     }
 
-    protected function replaceValue($key, $value, $duration) {
+    protected function replaceValue(string $key, mixed $value, int $duration) {
         return $this->client->replace($key, $value, MEMCACHE_COMPRESSED, $duration);
     }
 
-    protected function deleteValue($key) {
+    protected function deleteValue(string $key) {
         return $this->client->delete($key);
     }
 

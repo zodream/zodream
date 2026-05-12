@@ -14,17 +14,17 @@ class CacheSession extends Session {
         return true;
     }
 
-    public function readSession($id) {
+    public function readSession(string $id) {
         $data = cache()->get($this->calculateKey($id));
         return $data === false ? '' : $data;
     }
 
 
-    public function writeSession($id, $data) {
+    public function writeSession(string $id, mixed $data) {
         cache()->set($this->calculateKey($id), $data, $this->getTimeout());
     }
 
-    public function destroySession($id) {
+    public function destroySession(string $id) {
         return cache()->delete($this->calculateKey($id));
     }
 
@@ -36,7 +36,7 @@ class CacheSession extends Session {
         return 0;
     }
 
-    protected function calculateKey($id) {
+    protected function calculateKey(string $id) {
         return json_encode([__CLASS__, $id]);
     }
 }

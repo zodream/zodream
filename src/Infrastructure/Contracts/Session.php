@@ -14,13 +14,13 @@ interface Session {
 
     public function count(): int;
 
-    public function get(string $key = '', $defaultValue = null);
+    public function get(string $key = '', mixed $defaultValue = null);
 
-    public function set($key, $value = null);
+    public function set(string $key, mixed $value = null);
 
-    public function delete($key);
+    public function delete(string $key);
 
-    public function has($key): bool;
+    public function has(string $key): bool;
 
     public function flush();
 }

@@ -74,7 +74,7 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
         }
     }
 
-    public function openSession($savePath, $sessionName) {
+    public function openSession(string $savePath, string $sessionName) {
         return true;
     }
 
@@ -82,19 +82,19 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
         return true;
     }
 
-    public function readSession($id) {
+    public function readSession(string $id) {
         return '';
     }
 
-    public function writeSession($id, $data) {
+    public function writeSession(string $id, mixed $data) {
         return true;
     }
 
-    public function destroySession($id) {
+    public function destroySession(string $id) {
         return true;
     }
 
-    public function gcSession($maxLifetime) {
+    public function gcSession(int $maxLifetime) {
         return true;
     }
 
@@ -192,7 +192,7 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
         return $_SESSION[$key] ?? $defaultValue;
     }
 
-    public function set($key, $value = null) {
+    public function set(string $key, mixed $value = null) {
         $this->open();
         if (!is_array($key)) {
             $_SESSION[$key] = $value;
@@ -220,7 +220,7 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
         }
     }
 
-    public function getFlash($key, $defaultValue = null, $delete = false) {
+    public function getFlash(string $key, mixed $defaultValue = null, bool $delete = false) {
         $counters = $this->get($this->configs['flashParam'], []);
         if (isset($counters[$key])) {
             $value = $this->get($key, $defaultValue);
@@ -238,7 +238,7 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
         }
     }
 
-    public function getAllFlashes($delete = false) {
+    public function getAllFlashes(bool $delete = false) {
         $counters = $this->get($this->configs['flashParam'], []);
         $flashes = [];
         foreach (array_keys($counters) as $key) {
@@ -260,14 +260,14 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
         return $flashes;
     }
 
-    public function setFlash($key, $value = true, $removeAfterAccess = true) {
+    public function setFlash(string $key, mixed $value = true, bool $removeAfterAccess = true) {
         $counters = $this->get($this->configs['flashParam'], []);
         $counters[$key] = $removeAfterAccess ? -1 : 0;
         $_SESSION[$key] = $value;
         $_SESSION[$this->configs['flashParam']] = $counters;
     }
 
-    public function delete($key) {
+    public function delete(string $key) {
         $this->open();
         if (isset($_SESSION[$key])) {
             $value = $_SESSION[$key];
@@ -277,7 +277,7 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
         return null;
     }
 
-    public function addFlash($key, $value = true, $removeAfterAccess = true) {
+    public function addFlash(string $key, mixed $value = true, bool $removeAfterAccess = true) {
         $counters = $this->get($this->configs['flashParam'], []);
         $counters[$key] = $removeAfterAccess ? -1 : 0;
         $_SESSION[$this->configs['flashParam']] = $counters;
@@ -292,7 +292,7 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
         }
     }
 
-    public function removeFlash($key) {
+    public function removeFlash(string $key) {
         $counters = $this->get($this->configs['flashParam'], []);
         $value = isset($_SESSION[$key], $counters[$key]) ? $_SESSION[$key] : null;
         unset($counters[$key], $_SESSION[$key]);
@@ -309,7 +309,7 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
         unset($_SESSION[$this->configs['flashParam']]);
     }
 
-    public function hasFlash($key) {
+    public function hasFlash(string $key) {
         return $this->getFlash($key) !== null;
     }
 
@@ -328,7 +328,7 @@ class Session extends ConfigObject implements SessionInterface, \ArrayAccess {
         return true;
     }
 
-    public function has($key): bool {
+    public function has(string $key): bool {
         $this->open();
         return isset($_SESSION[$key]);
     }

@@ -29,7 +29,7 @@ class DatabaseSession extends Session {
         return true;
     }
 
-    public function regenerateID($deleteOldSession = false) {
+    public function regenerateID(bool $deleteOldSession = false) {
         $oldID = session_id();
 
         // if no session is started, there is nothing to regenerate
@@ -58,7 +58,7 @@ class DatabaseSession extends Session {
         }
     }
 
-    public function readSession($id) {
+    public function readSession(string $id) {
         $sql = sprintf('SELECT `data` FROM %s WHERE id = ? AND expire > ? LIMIT 1', $this->tableName());
         $data = $this->db->executeScalar($sql, [$id, time()]);
         if (empty($data)) {
@@ -67,7 +67,7 @@ class DatabaseSession extends Session {
         return $data;
     }
 
-    public function writeSession($id, $data) {
+    public function writeSession(string $id, mixed $data) {
         try {
             $sql = sprintf('SELECT * FROM %s WHERE id = ? LIMIT 1', $this->tableName());
             $exists = $this->db->first($sql, [$id]);
@@ -84,13 +84,13 @@ class DatabaseSession extends Session {
         return true;
     }
 
-    public function destroySession($id) {
+    public function destroySession(string $id) {
         $sql = sprintf('DELETE FROM %s WHERE id = ?', $this->tableName());
         $this->db->delete($sql, [$id]);
         return true;
     }
 
-    public function gcSession($maxLifetime) {
+    public function gcSession(int $maxLifetime) {
         $sql = sprintf('DELETE FROM %s WHERE expire < ?', $this->tableName());
         $this->db->delete($sql, [time()]);
         return true;

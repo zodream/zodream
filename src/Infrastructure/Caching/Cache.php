@@ -10,6 +10,7 @@ use Zodream\Infrastructure\Base\ConfigObject;
 use Zodream\Helpers\Str;
 use Exception;
 use Zodream\Infrastructure\Contracts\Cache as CacheInterface;
+use Zodream\Infrastructure\Contracts\CacheDependency as DependencyInterface;
 
 abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAccess {
 
@@ -56,7 +57,7 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
      * @return bool|mixed
      * @throws Exception
      */
-    public function getOrSet($key, $callable, $duration = null, $dependency = null) {
+    public function getOrSet(mixed $key, callable $callable, int|null $duration = null, DependencyInterface|null $dependency = null) {
         if (($value = $this->get($key)) !== false) {
             return $value;
         }
@@ -75,7 +76,7 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
      * @param $key
      * @return bool|mixed
      */
-	public function get($key) {
+	public function get(mixed $key) {
         $key = $this->filterKey($key);
         $value = $this->getValue($key);
         if ($value === false || $this->configs['serializer'] === false) {
@@ -99,7 +100,7 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
      * @param Dependency $dependency
      * @return static|mixed
      */
-	public function set($key, $value = null, $duration = null, $dependency = null) {
+	public function set(mixed $key, mixed $value = null, int|null $duration = null, DependencyInterface|null $dependency = null) {
 		if (is_array($key) && null === $value && null === $duration) {
 			foreach ($key as $k => $v) {
 				$this->set($k, $v[0],
@@ -120,7 +121,7 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
         return $this->setValue($key, $value, $duration);
 	}
 	
-	public function add($key, $value, $duration) {
+	public function add(mixed $key, mixed $value, int $duration) {
 		return $this->addValue($this->filterKey($key), $value, $duration);
 	}
 
@@ -131,7 +132,7 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
      * @param  mixed   $value
      * @return int|bool
      */
-    public function increment($key, $value = 1) {
+    public function increment(mixed $key, int $value = 1) {
         return false;
     }
 
@@ -142,15 +143,15 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
      * @param  mixed   $value
      * @return int|bool
      */
-    public function decrement($key, $value = 1) {
+    public function decrement(mixed $key, int $value = 1) {
         return false;
     }
 	
-	public function has($key): bool {
+	public function has(mixed $key): bool {
 		return $this->hasValue($this->filterKey($key));
 	}
 	
-	public function delete($key) {
+	public function delete(mixed $key) {
 		return $this->deleteValue($this->filterKey($key));
 	}
 
@@ -159,21 +160,21 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
         return $this->clearValue();
     }
 
-    abstract protected function getValue($key);
+    abstract protected function getValue(string $key);
 	
-	abstract protected function setValue($key, $value, $duration);
+	abstract protected function setValue(string $key, mixed $value, int $duration);
 	
-	abstract protected function addValue($key, $value, $duration);
+	abstract protected function addValue(string $key, mixed $value, int $duration);
 	
-	protected function hasValue($key) {
+	protected function hasValue(string $key): bool {
         return $this->getValue($key) !== false;
 	}
 	
-	abstract protected function deleteValue($key);
+	abstract protected function deleteValue(string $key);
 	
 	abstract protected function clearValue();
 	
-	public function offsetExists($key): bool {
+	public function offsetExists(mixed $key): bool {
 		return $this->has($key);
 	}
 
@@ -181,7 +182,7 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
 	 * @param string $key
 	 * @return array|string
 	 */
-	public function offsetGet($key): mixed {
+	public function offsetGet(mixed $key): mixed {
 		return $this->get($key);
 	}
 
@@ -189,7 +190,7 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
 	 * @param string $key
 	 * @param string|array $value
 	 */
-	public function offsetSet($key, $value): void {
+	public function offsetSet(mixed $key, mixed $value): void {
 		$this->set($key, $value);
 	}
 
@@ -197,7 +198,7 @@ abstract class Cache extends ConfigObject implements CacheInterface, \ArrayAcces
 	 * @param string $key
 	 * @internal param $offset
 	 */
-	public function offsetUnset($key): void {
+	public function offsetUnset(mixed $key): void {
 		$this->delete($key);
 	}
 }

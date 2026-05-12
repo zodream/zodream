@@ -8,24 +8,24 @@ namespace Zodream\Infrastructure\Caching;
 */
 
 class ZendCache extends Cache {
-	protected function getValue($key) {
-		$result = zend_shm_cache_fetch($key);
+	protected function getValue(string $key) {
+		$result = \zend_shm_cache_fetch($key);
         return $result === null ? false : $result;
 	}
 	
-	protected function setValue($key, $value, $duration) {
-		return zend_shm_cache_store($key, $value, $duration);
+	protected function setValue(string $key, mixed $value, int $duration) {
+		return \zend_shm_cache_store($key, $value, $duration);
 	}
 	
-	protected function addValue($key, $value, $duration) {
-		return zend_shm_cache_fetch($key) === null ? $this->setValue($key, $value, $duration) : false;
+	protected function addValue(string $key, mixed $value, int $duration) {
+		return \zend_shm_cache_fetch($key) === null ? $this->setValue($key, $value, $duration) : false;
 	}
 	
-	protected function deleteValue($key) {
-		return zend_shm_cache_delete($key);
+	protected function deleteValue(string $key) {
+		return \zend_shm_cache_delete($key);
 	}
 	
 	protected function clearValue() {
-		return zend_shm_cache_clear();
+		return \zend_shm_cache_clear();
 	}
 }

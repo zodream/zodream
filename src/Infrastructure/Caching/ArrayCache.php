@@ -16,7 +16,7 @@ class ArrayCache extends Cache {
         'keyPrefix' => ''
     ];
 	
-	protected function getValue($key) {
+	protected function getValue(string $key) {
 		if (isset($this->cache[$key]) 
 				&& ($this->cache[$key][1] === 0 
 				|| $this->cache[$key][1] > microtime(true))) {
@@ -26,14 +26,14 @@ class ArrayCache extends Cache {
 		}
 	}
 	
-	protected function setValue($key, $value, $duration) {
+	protected function setValue(string $key, mixed $value, int $duration) {
 		$this->cache[$key] = array(
 				$value, 
 				$duration === 0 ? 0 : microtime(true) + $duration
 		);
 	}
 	
-	protected function addValue($key, $value, $duration) {
+	protected function addValue(string $key, mixed $value, int $duration) {
 		if (isset($this->cache[$key]) 
 				&& ($this->cache[$key][1] === 0 
 				|| $this->cache[$key][1] > microtime(true))) {
@@ -44,13 +44,13 @@ class ArrayCache extends Cache {
 		}
 	}
 	
-	protected function hasValue($key) {
+	protected function hasValue(string $key): bool {
 		return isset($this->cache[$key]) 
 				&& ($this->cache[$key][1] === 0 
 				|| $this->cache[$key][1] > microtime(true));
 	}
 	
-	protected function deleteValue($key) {
+	protected function deleteValue(string $key) {
 		unset($this->cache[$key]);
 		return true;
 	}

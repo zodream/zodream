@@ -17,7 +17,7 @@ class FileCache extends Cache {
     /**
      * @var Directory
      */
-	protected $directory;
+	protected Directory|null $directory = null;
 
     protected array $configs = [
         'directory' => 'data/cache/',
@@ -46,7 +46,7 @@ class FileCache extends Cache {
         return $newCache;
     }
 
-    public function setDirectory($directory) {
+    public function setDirectory(mixed $directory) {
         if (!$directory instanceof Directory) {
             $directory = app_path()->childDirectory($directory);
         }
@@ -57,7 +57,7 @@ class FileCache extends Cache {
         return $this;
     }
 
-    protected function getValue($key) {
+    protected function getValue(string $key) {
 		$cacheFile = $this->getCacheFile($key);
 		if (!$cacheFile->exist()) {
 		    return false;
@@ -77,7 +77,7 @@ class FileCache extends Cache {
         return false;
 	}
 	
-	protected function setValue($key, $value, $duration) {
+	protected function setValue(string $key, mixed $value, int $duration) {
 		$this->gc();
 		$cacheFile = $this->getCacheFile($key);
 		if ($cacheFile->write($value, LOCK_EX) !== false) {
@@ -89,7 +89,7 @@ class FileCache extends Cache {
         return null;
 	}
 	
-	protected function addValue($key, $value, $duration) {
+	protected function addValue(string $key, mixed $value, int $duration) {
 		$cacheFile = $this->getCacheFile($key);
         if ($cacheFile->modifyTime() > time()) {
             return false;
@@ -98,13 +98,13 @@ class FileCache extends Cache {
         return $this->setValue($key, $value, $duration);
 	}
 	
-	protected function hasValue($key) {
+	protected function hasValue(string $key): bool {
 		$cacheFile = $this->getCacheFile($key);
         return $cacheFile->exist() && $cacheFile->modifyTime() > time();
 	}
 	
-	protected function deleteValue($key) {
-		$cacheFile = $this->getCacheFile($key);
+	protected function deleteValue(string $key) {
+		$cacheFile = $this->getCacheFile((string)$key);
         return $cacheFile->exist() && $cacheFile->delete();
 	}
 	
@@ -117,13 +117,13 @@ class FileCache extends Cache {
      * @param string $key
      * @return File
      */
-	public function getCacheFile($key) {
+	public function getCacheFile(string $key) {
         $file = $this->directory->childFile($this->path($key));
         $file->getDirectory()->create();
 		return $file;
 	}
 
-    protected function path($key) {
+    protected function path(string $key) {
         $parts = array_slice(str_split($hash = sha1($key), 2), 0, 2);
         return implode('/', $parts).'/'.$hash.$this->configs['extension'];
     }

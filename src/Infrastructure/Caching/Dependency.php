@@ -2,8 +2,10 @@
 declare(strict_types=1);
 namespace Zodream\Infrastructure\Caching;
 
+use Zodream\Infrastructure\Contracts\CacheDependency as DependencyInterface;
+use Zodream\Infrastructure\Contracts\Cache as CacheInterface;
 
-abstract class Dependency {
+abstract class Dependency implements DependencyInterface {
     /**
      * @var mixed the dependency data that is saved in cache and later is compared with the
      * latest dependency data.
@@ -28,7 +30,7 @@ abstract class Dependency {
      * This method is invoked by cache before writing data into it.
      * @param Cache $cache the cache component that is currently evaluating this dependency
      */
-    public function evaluateDependency($cache) {
+    public function evaluateDependency(CacheInterface $cache): void {
         if ($this->reusable) {
             $hash = $this->generateReusableHash();
             if (!array_key_exists($hash, self::$_reusableData)) {
@@ -46,7 +48,7 @@ abstract class Dependency {
      * @param Cache $cache the cache component that is currently evaluating this dependency
      * @return bool whether the dependency has changed.
      */
-    public function isChanged($cache) {
+    public function isChanged(CacheInterface $cache): bool {
         if ($this->reusable) {
             $hash = $this->generateReusableHash();
             if (!array_key_exists($hash, self::$_reusableData)) {
@@ -63,7 +65,7 @@ abstract class Dependency {
     /**
      * Resets all cached data for reusable dependencies.
      */
-    public static function resetReusableData() {
+    public static function resetReusableData(): void {
         self::$_reusableData = [];
     }
 
@@ -86,5 +88,5 @@ abstract class Dependency {
      * @param CacheInterface $cache the cache component that is currently evaluating this dependency
      * @return mixed the data needed to determine if dependency has been changed.
      */
-    abstract protected function generateDependencyData($cache);
+    abstract protected function generateDependencyData(CacheInterface $cache): mixed;
 }

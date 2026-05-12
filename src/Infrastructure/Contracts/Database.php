@@ -5,6 +5,11 @@ namespace Zodream\Infrastructure\Contracts;
 
 interface Database {
 
+    /**
+     * 开启自动缓存
+     */
+    public function openCache(int|bool $expire = 3600): Database;
+
     public function addPrefix(string $table): string;
     public function changedSchema(string $schema): Database;
 

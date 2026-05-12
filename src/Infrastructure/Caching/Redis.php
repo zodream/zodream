@@ -24,23 +24,23 @@ class Redis extends Cache {
     }
 
 
-    protected function getValue($key) {
+    protected function getValue(string $key) {
         return $this->getConnection()->get($key);
     }
 
-    protected function setValue($key, $value, $duration) {
+    protected function setValue(string $key, mixed $value, int $duration) {
         if ($duration < 0) {
             $duration = 0;
         }
         return $this->getConnection()->setex($key, $duration, $value);
     }
 
-    protected function addValue($key, $value, $duration) {
+    protected function addValue(string $key, mixed $value, int $duration) {
         return $this->setValue($key, $value, $duration);
     }
 
 
-    protected function deleteValue($key) {
+    protected function deleteValue(string $key) {
         return $this->getConnection()->del($key);
     }
 

@@ -154,12 +154,10 @@ class Handler implements ExceptionHandler {
      * @return Output
      */
     protected function convertValidationExceptionToResponse(ValidationException $e) {
-//        if ($e->response) {
-//            return $e->response;
-//        }
-
+        if (app()->isDebug()) {
+            return $this->prepareResponse($e);
+        }
         $errors = $e->toArray();
-
         if (request()->expectsJson()) {
             return response()->statusCode(422)
                 ->json($errors);

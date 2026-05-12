@@ -13,21 +13,21 @@ interface Cache {
      * @param $dependency
      * @return mixed
      */
-    public function getOrSet($key, $callable, $duration = null, $dependency = null);
+    public function getOrSet(mixed $key, callable $callable, int|null $duration = null, CacheDependency|null $dependency = null);
 
-    public function get($key);
+    public function get(mixed $key);
 
-    public function set($key, $value = null, $duration = null, $dependency = null);
+    public function set(mixed $key, mixed $value = null, int|null $duration = null, CacheDependency|null $dependency = null);
 
-    public function add($key, $value, $duration);
+    public function add(mixed $key, mixed $value, int $duration);
 
-    public function increment($key, int $value = 1);
+    public function increment(mixed $key, int $value = 1);
 
-    public function decrement($key, int $value = 1);
+    public function decrement(mixed $key, int $value = 1);
 
-    public function has($key): bool;
+    public function has(mixed $key): bool;
 
-    public function delete($key);
+    public function delete(mixed $key);
 
     public function flush();
 }
