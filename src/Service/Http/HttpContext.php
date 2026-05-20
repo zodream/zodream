@@ -8,7 +8,6 @@ use Zodream\Infrastructure\Contracts\Http\Input;
 use Zodream\Infrastructure\Contracts\Http\Output;
 use Zodream\Infrastructure\Contracts\HttpContext as HttpContextInterface;
 use Zodream\Infrastructure\Contracts\Route;
-use Zodream\Route\ModuleRoute;
 
 class HttpContext implements HttpContextInterface, ArrayAccess {
 
