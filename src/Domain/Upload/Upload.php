@@ -19,7 +19,7 @@ class Upload extends MagicObject {
      */
     protected Directory|null $directory = null;
 
-    public function setDirectory($directory): static {
+    public function setDirectory(mixed $directory): static {
         if (!$directory instanceof Directory) {
             $directory = new Directory($directory);
         }
@@ -33,7 +33,7 @@ class Upload extends MagicObject {
      * @param null $default
      * @return BaseUpload
      */
-    public function get($name = null, $default = null) {
+    public function get(mixed $name = null, mixed $default = null): mixed {
         $name = intval($name);
         if (!array_key_exists($name, $this->__attributes)) {
             return $default;
@@ -61,7 +61,7 @@ class Upload extends MagicObject {
         return true;
     }
 
-    public function addFile($file): ?BaseUpload {
+    public function addFile(mixed $file): BaseUpload|null {
         if (func_num_args() > 3) {
             $upload = new UploadFile();
             call_user_func_array([$upload, 'load'], func_get_args());
@@ -141,7 +141,7 @@ class Upload extends MagicObject {
         return $result;
     }
 
-    public function validateDimensions(callable $cb = null): bool {
+    public function validateDimensions(callable|null $cb = null): bool {
         $result = true;
         foreach ($this->__attributes as $item) {
             if (!$item->validateDimensions($cb)) {
@@ -151,13 +151,13 @@ class Upload extends MagicObject {
         return $result;
     }
     
-    public function saveOne($file, int $index = 0) {
+    public function saveOne(mixed $file, int $index = 0) {
         return $this->__attributes[$index]
             ->setFile($file)
             ->save();
     }
 
-    public function getError(int $index = null) {
+    public function getError(int|null $index = null): mixed {
         if (!is_null($index)) {
             return $this->__attributes[$index]->getError();
         }

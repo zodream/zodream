@@ -26,7 +26,7 @@ class UploadFile extends BaseUpload {
         'UPLOAD_ERR_EXTENSION'
     ];
 
-    public function __construct(array $args = null) {
+    public function __construct(array|null $args = null) {
         if (!is_null($args)) {
             $this->load($args);
         }
@@ -42,6 +42,12 @@ class UploadFile extends BaseUpload {
             $error = $name['error'];
             $type = $name['type'];
             $name = $name['name'];
+        }
+        if (!is_string($name)) {
+            $this->setError(
+                __('ERROR_FILE_TOO_MANY')
+            );
+            return;
         }
         $this->name = $name;
         $this->tempName = $tempName;
