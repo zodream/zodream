@@ -114,7 +114,7 @@ class Request extends BaseInput implements Input {
     }
 
     public function isCli(): bool {
-        return !is_null($this->server('argv'));
+        return !is_null($this->server('argv')) && is_null($this->header('CONTENT_TYPE'));
     }
 
     public function isLinux(): bool {
