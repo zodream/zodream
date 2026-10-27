@@ -54,11 +54,11 @@ class CacheMiddleware implements MiddlewareInterface {
                 $cache = $res;
             }
         }
-        $cacheDriver->set($key, $page, $cache['time']);
+        $cacheDriver->set($key, $page, intval($cache['time']));
         return $page;
     }
 
-    private function formatPage($page, $args) {
+    private function formatPage(mixed $page, array $args) {
         if (!isset($args['callback']) || !is_callable($args['callback'])) {
             return $page;
         }
@@ -83,7 +83,7 @@ class CacheMiddleware implements MiddlewareInterface {
         return implode('-', $data);
     }
 
-    private function getPathParam($item, Input $input) {
+    private function getPathParam(mixed $item, Input $input) {
         if ($item === '@language') {
             return $this->app->getLocale();
         }
