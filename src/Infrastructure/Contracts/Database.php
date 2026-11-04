@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Zodream\Infrastructure\Contracts;
 
+use Closure;
 
 interface Database {
 
@@ -13,7 +14,7 @@ interface Database {
     public function addPrefix(string $table): string;
     public function changedSchema(string $schema): Database;
 
-    public function transaction($cb);
+    public function transaction(array|Closure $args): bool;
 
     public function insert(string $sql, array $parameters = []);
     public function insertBatch(string $sql, array $parameters = []);
