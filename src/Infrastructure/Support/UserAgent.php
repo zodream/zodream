@@ -242,7 +242,7 @@ class UserAgent {
             'Phoenix',
             'Firebird'
                  ] as $tag => $browser) {
-            if (is_integer($tag)) {
+            if (is_int($tag)) {
                 $tag = $browser;
             }
             $i = stripos($agent, $tag);

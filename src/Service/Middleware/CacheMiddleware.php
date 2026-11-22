@@ -108,7 +108,7 @@ class CacheMiddleware implements MiddlewareInterface {
                 call_user_func($time['match'], $path, $input) === true) {
                 return $time;
             }
-            if (is_integer($uri)) {
+            if (is_int($uri)) {
                 list($uri, $time) = [$time, 0];
             }
             if (!is_array($time)) {
