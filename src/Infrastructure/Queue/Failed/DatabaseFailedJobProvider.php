@@ -50,7 +50,7 @@ class DatabaseFailedJobProvider implements FailedJobProviderInterface {
      * @return array
      */
     public function all(): array {
-        return $this->getTable()->orderBy('id', 'desc')->get();
+        return $this->getTable()->orderBy('id', SORT_DESC)->get();
     }
 
     /**

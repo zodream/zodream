@@ -164,7 +164,7 @@ class DatabaseQueue extends Queue {
                 $this->isAvailable($query);
                 $this->isReservedButExpired($query);
             })
-            ->orderBy('id', 'asc')
+            ->orderBy('id', SORT_ASC)
             ->first();
         return $job ? new DatabaseJobRecord((object) $job) : null;
     }

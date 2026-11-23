@@ -24,7 +24,7 @@ class BoundMethod {
      * @param null $defaultMethod
      * @return mixed
      */
-    public static function call($callback, Container $container, array $parameters = [], $defaultMethod = null) {
+    public static function call(mixed $callback, Container $container, array $parameters = [], $defaultMethod = null) {
         if (is_string($callback) && ! $defaultMethod && method_exists($callback, '__invoke')) {
             $defaultMethod = '__invoke';
         }
@@ -48,7 +48,7 @@ class BoundMethod {
      * @return mixed|object
      * @throws ReflectionException
      */
-    public static function newClass($concrete, Container $container, $parameters = []) {
+    public static function newClass(mixed $concrete, Container $container, $parameters = []) {
         if ($concrete instanceof Closure) {
             return static::call($concrete, $container, $parameters);
         }
@@ -132,7 +132,7 @@ class BoundMethod {
         return $name;
     }
 
-    protected static function callBoundMethod($container, $callback, $default)
+    protected static function callBoundMethod(mixed $container, mixed $callback, mixed $default)
     {
         if (! is_array($callback)) {
             return static::unwrapIfClosure($default);
@@ -150,19 +150,19 @@ class BoundMethod {
         return static::unwrapIfClosure($default);
     }
 
-    protected static function normalizeMethod($callback)
+    protected static function normalizeMethod(mixed $callback)
     {
         $class = is_string($callback[0]) ? $callback[0] : get_class($callback[0]);
 
         return "{$class}@{$callback[1]}";
     }
 
-    protected static function unwrapIfClosure($value)
+    protected static function unwrapIfClosure(mixed $value)
     {
         return $value instanceof Closure ? $value() : $value;
     }
 
-    protected static function callClass($target, Container $container, array $parameters = [], $defaultMethod = null)
+    protected static function callClass(string $target, Container $container, array $parameters = [], string|null $defaultMethod = null)
     {
         $segments = explode('@', $target);
 
@@ -181,7 +181,7 @@ class BoundMethod {
         );
     }
 
-    protected static function getCallReflector($callback)
+    protected static function getCallReflector(mixed $callback)
     {
         if (is_string($callback) && str_contains($callback, '::')) {
             $callback = explode('::', $callback);
@@ -194,7 +194,7 @@ class BoundMethod {
             : new ReflectionFunction($callback);
     }
 
-    protected static function isCallableWithAtSign($callback)
+    protected static function isCallableWithAtSign(mixed $callback): bool
     {
         return is_string($callback) && str_contains($callback, '@');
     }
