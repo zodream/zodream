@@ -10,23 +10,23 @@ interface Application extends Container {
 
     public function getLocale(): string;
 
-    public function alias($abstract, $alias);
+    public function alias(string $abstract, string $alias);
 
-    public function singleton($abstract, $concrete = null);
+    public function singleton(mixed $abstract, mixed $concrete = null);
 
-    public function singletonIf($abstract, $concrete = null);
+    public function singletonIf(mixed $abstract, mixed $concrete = null);
 
-    public function instance(string $abstract, $instance);
+    public function instance(string $abstract, mixed $instance);
 
-    public function transient($abstract, $concrete = null);
+    public function transient(mixed $abstract, mixed $concrete = null);
 
-    public function transientIf($abstract, $concrete = null);
+    public function transientIf(mixed $abstract, mixed $concrete = null);
 
-    public function scoped($abstract, $concrete = null);
+    public function scoped(mixed $abstract, mixed $concrete = null);
 
-    public function scopedIf($abstract, $concrete = null);
+    public function scopedIf(mixed $abstract, mixed $concrete = null);
 
-    public function middleware(...$middlewares);
+    public function middleware(mixed ...$middlewares);
 
     public function listen(): void;
 

@@ -67,7 +67,7 @@ abstract class BaseInput {
      * @param $name
      * @return string|array|bool|integer|mixed|null
      */
-    protected function getCacheData($name) {
+    protected function getCacheData(string $name): mixed {
         if (isset($this->cacheItems[$name])) {
             return $this->cacheItems[$name];
         }
@@ -79,7 +79,7 @@ abstract class BaseInput {
             = call_user_func([$this, $method]);
     }
 
-    protected function getValueWithDefault(array $data, string|null $key = null, $default = null) {
+    protected function getValueWithDefault(array $data, string|null $key = null, mixed $default = null): mixed {
         if (empty($key)) {
             return $data;
         }
@@ -102,36 +102,36 @@ abstract class BaseInput {
      * @param array|string $data
      * @return array|string
      */
-    protected function cleanData($data) {
+    protected function cleanData(mixed $data): mixed {
         if (is_array($data)) {
             foreach ($data as $key => $value) {
                 unset($data[$key]);
                 $data[$this->cleanData($key)] = $this->cleanData($value);
             }
-        } else if (defined('APP_SAFE') && APP_SAFE){
+        } else if (is_string($data) && defined('APP_SAFE') && APP_SAFE){
             $data = htmlspecialchars($data, ENT_COMPAT);
         }
         return $data;
     }
 
-    public function offsetExists($offset): bool
+    public function offsetExists(mixed $offset): bool
     {
         return $this->has($offset);
     }
 
-    public function offsetGet($offset): mixed
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->get($offset);
     }
 
-    public function offsetSet($offset, $value): void
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->append([
             $offset => $value
         ]);
     }
 
-    public function offsetUnset($offset): void
+    public function offsetUnset(mixed $offset): void
     {
         unset($this->data[$offset]);
     }

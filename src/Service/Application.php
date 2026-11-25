@@ -109,7 +109,7 @@ class Application implements ApplicationInterface, ArrayAccess {
         }
     }
 
-    public function alias($abstract, $alias)
+    public function alias(string $abstract, string $alias)
     {
         if ($alias === $abstract) {
             throw new Exception("[{$abstract}] is aliased to itself.");
@@ -118,7 +118,7 @@ class Application implements ApplicationInterface, ArrayAccess {
         return $this;
     }
 
-    public function bind($abstract, $concrete = null, $shared = false) {
+    public function bind(string $abstract, mixed $concrete = null, bool $shared = false) {
         unset($this->instances[$abstract], $this->aliases[$abstract]);
 
         if (is_null($concrete)) {
@@ -133,13 +133,13 @@ class Application implements ApplicationInterface, ArrayAccess {
         return $this;
     }
 
-    public function singleton($abstract, $concrete = null)
+    public function singleton(mixed $abstract, mixed $concrete = null)
     {
         $this->bind($abstract, $concrete, true);
         return $this;
     }
 
-    public function singletonIf($abstract, $concrete = null)
+    public function singletonIf(mixed $abstract, mixed $concrete = null)
     {
         if (!$this->has($abstract)) {
             $this->singleton($abstract, $concrete);
@@ -147,20 +147,20 @@ class Application implements ApplicationInterface, ArrayAccess {
         return $this;
     }
 
-    public function instance(string $abstract, $instance)
+    public function instance(string $abstract, mixed $instance)
     {
         unset($this->aliases[$abstract]);
         $this->instances[$abstract] = $instance;
         return $this;
     }
 
-    public function transient($abstract, $concrete = null)
+    public function transient(mixed $abstract, mixed $concrete = null)
     {
         $this->bind($abstract, $concrete, false);
         return $this;
     }
 
-    public function transientIf($abstract, $concrete = null)
+    public function transientIf(mixed $abstract, mixed $concrete = null)
     {
         if (!$this->has($abstract)) {
             $this->transient($abstract, $concrete);
@@ -168,19 +168,19 @@ class Application implements ApplicationInterface, ArrayAccess {
         return $this;
     }
 
-    public function scoped($abstract, $concrete = null)
+    public function scoped(mixed $abstract, mixed $concrete = null)
     {
         $this->singleton($abstract, $concrete);
         return $this;
     }
 
-    public function scopedIf($abstract, $concrete = null)
+    public function scopedIf(mixed $abstract, mixed $concrete = null)
     {
         $this->singletonIf($abstract, $concrete);
         return $this;
     }
 
-    public function register($provider, $force = false)
+    public function register(mixed $provider, bool $force = false)
     {
         if (($registered = $this->getProvider($provider)) && ! $force) {
             return $registered;
@@ -220,7 +220,7 @@ class Application implements ApplicationInterface, ArrayAccess {
         return $provider;
     }
 
-    public function getProvider($provider)
+    public function getProvider(mixed $provider)
     {
         return array_values($this->getProviders($provider))[0] ?? null;
     }
@@ -231,7 +231,7 @@ class Application implements ApplicationInterface, ArrayAccess {
      * @param  ServiceProvider|string  $provider
      * @return array
      */
-    public function getProviders($provider)
+    public function getProviders(mixed $provider)
     {
         $name = is_string($provider) ? $provider : get_class($provider);
         return array_filter($this->serviceProviders, function ($value) use ($name) {
@@ -239,7 +239,7 @@ class Application implements ApplicationInterface, ArrayAccess {
         });
     }
 
-    public function middleware(...$middlewares)
+    public function middleware(mixed ...$middlewares)
     {
         $this->middlewares = array_merge($this->middlewares, $middlewares);
         return $this;
@@ -292,14 +292,14 @@ class Application implements ApplicationInterface, ArrayAccess {
             : $abstract;
     }
 
-    public function isShared($abstract)
+    public function isShared(string $abstract)
     {
         return isset($this->instances[$abstract]) ||
             (isset($this->bindings[$abstract]['shared']) &&
                 $this->bindings[$abstract]['shared'] === true);
     }
 
-    protected function getConcrete($abstract)
+    protected function getConcrete(string $abstract)
     {
         if (isset($this->bindings[$abstract])) {
             return $this->bindings[$abstract]['concrete'];
@@ -355,7 +355,7 @@ class Application implements ApplicationInterface, ArrayAccess {
         }
     }
 
-    public function offsetExists($key): bool {
+    public function offsetExists(mixed $key): bool {
         return $this->has($key);
     }
 
@@ -366,7 +366,7 @@ class Application implements ApplicationInterface, ArrayAccess {
      * @return mixed
      * @throws Exception
      */
-    public function offsetGet($key): mixed {
+    public function offsetGet(mixed $key): mixed {
         return $this->make($key);
     }
 
@@ -377,7 +377,7 @@ class Application implements ApplicationInterface, ArrayAccess {
      * @param  mixed   $value
      * @return void
      */
-    public function offsetSet($key, $value): void {
+    public function offsetSet(mixed $key, mixed $value): void {
         $this->instance($key, $value);
     }
 
@@ -387,7 +387,7 @@ class Application implements ApplicationInterface, ArrayAccess {
      * @param  string  $key
      * @return void
      */
-    public function offsetUnset($key): void {
+    public function offsetUnset(mixed $key): void {
         unset($this->bindings[$key], $this->instances[$key]);
     }
 
@@ -397,7 +397,7 @@ class Application implements ApplicationInterface, ArrayAccess {
      * @param  string  $key
      * @return mixed
      */
-    public function __get($key) {
+    public function __get(mixed $key) {
         return $this[$key];
     }
 
@@ -408,12 +408,12 @@ class Application implements ApplicationInterface, ArrayAccess {
      * @param mixed $value
      * @return void
      */
-    public function __set($key, $value) {
+    public function __set(mixed $key, mixed $value) {
         $this[$key] = $value;
     }
 
 
-    public function get($id) {
+    public function get(string $id): mixed {
         return $this->make($id);
     }
 

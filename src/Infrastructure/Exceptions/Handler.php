@@ -55,7 +55,8 @@ class Handler implements ExceptionHandler {
 
         logger()->error(
             $e->getMessage(),
-            array_merge($this->context(), ['exception' => $e]
+            array_merge(
+                $this->context(), ['exception' => $e]
             ));
     }
 

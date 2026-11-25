@@ -4,13 +4,13 @@ namespace Zodream\Infrastructure\Contracts;
 
 interface HttpContext extends Container {
 
-    public function middleware(...$middlewares);
+    public function middleware(mixed ...$middlewares);
 
-    public function input($request);
+    public function input(mixed $request);
 
     public function path(): string;
 
-    public function instance(string $key, $instance);
+    public function instance(string $key, mixed $instance);
 
     public function handle(Route $route);
 }

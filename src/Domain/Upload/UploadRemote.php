@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Zodream\Domain\Upload;
 
 use Zodream\Disk\FileSystem;
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 use Zodream\Http\MIME;
 
 class UploadRemote extends BaseUpload {
@@ -38,7 +38,7 @@ class UploadRemote extends BaseUpload {
             $this->setError('INVALID_IP');
             return;
         }
-        $client = new Http($url);
+        $client = new HttpClient($url);
         $headers = $client->getHeaders();
         //获取请求头并检测死链
         if ($client->getStatusCode() !== 200) {
@@ -76,7 +76,7 @@ class UploadRemote extends BaseUpload {
         if (empty($this->url)) {
             return false;
         }
-        $client = new Http($this->url);
+        $client = new HttpClient($this->url);
         $client->save($this->file);
         if (!$this->file->exist()) {
             $this->setError(

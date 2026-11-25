@@ -23,7 +23,7 @@ class HttpContext implements HttpContextInterface, ArrayAccess {
         $this->app = $app;
     }
 
-    public function middleware(...$middlewares) {
+    public function middleware(mixed ...$middlewares) {
         $this->middlewares = array_merge($this->middlewares, $middlewares);
         return $this;
     }
@@ -31,7 +31,7 @@ class HttpContext implements HttpContextInterface, ArrayAccess {
     /**
      * @param Input|string $request
      */
-    public function input($request) {
+    public function input(mixed $request) {
         if ($request instanceof Input) {
             $this->instance('request', $request);
             $this->instance('path', $request->routePath());
@@ -40,12 +40,12 @@ class HttpContext implements HttpContextInterface, ArrayAccess {
         return $this['request']->get($request);
     }
 
-    public function instance(string $key, $instance) {
+    public function instance(string $key, mixed $instance) {
         $this->instances[$key] = $instance;
         return $this;
     }
 
-    public function output($response) {
+    public function output(mixed $response) {
         return $this->instance('response', $response);
     }
 
@@ -83,22 +83,22 @@ class HttpContext implements HttpContextInterface, ArrayAccess {
         return $this->app->make($abstract);
     }
 
-    public function offsetExists($offset): bool
+    public function offsetExists(mixed $offset): bool
     {
         return $this->has($offset);
     }
 
-    public function offsetGet($offset): mixed
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->make($offset);
     }
 
-    public function offsetSet($offset, $value): void
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->instance($offset, $value);
     }
 
-    public function offsetUnset($offset): void
+    public function offsetUnset(mixed $offset): void
     {
         unset($this->instances[$offset]);
         $this->app->offsetUnset($offset);
@@ -110,7 +110,7 @@ class HttpContext implements HttpContextInterface, ArrayAccess {
      * @param  string  $key
      * @return mixed
      */
-    public function __get($key) {
+    public function __get(mixed $key) {
         return $this[$key];
     }
 
@@ -121,7 +121,7 @@ class HttpContext implements HttpContextInterface, ArrayAccess {
      * @param mixed $value
      * @return void
      */
-    public function __set($key, $value) {
+    public function __set(mixed $key, mixed $value) {
         $this[$key] = $value;
     }
 }
