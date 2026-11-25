@@ -13,7 +13,7 @@ interface JsonResponse {
      * @param $data
      * @return Output
      */
-    public function render($data): Output;
+    public function render(mixed $data): Output;
 
     /**
      * 成功返回数据
@@ -21,7 +21,7 @@ interface JsonResponse {
      * @param string $message
      * @return Output
      */
-    public function renderData($data, string $message = ''): Output;
+    public function renderData(mixed $data, string $message = ''): Output;
 
     /**
      * 成功返回分页数据

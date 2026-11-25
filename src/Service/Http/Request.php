@@ -36,22 +36,22 @@ class Request extends BaseInput implements Input {
         return null;
     }
 
-    public function post(string $key = '', $default = null)
+    public function post(string $key = '', mixed $default = null)
     {
         return $this->getValueWithDefault($_POST, $key, $default);
     }
 
-    public function request(string $key = '', $default = null)
+    public function request(string $key = '', mixed $default = null)
     {
         return $this->getValueWithDefault($_REQUEST, $key, $default);
     }
 
-    public function cookie(string $key = '', $default = null)
+    public function cookie(string $key = '', mixed $default = null)
     {
         return $this->getValueWithDefault($_COOKIE, $key, $default);
     }
 
-    public function header(string $key = '', $default = null)
+    public function header(string $key = '', mixed $default = null)
     {
         $data = $this->getCacheData(__FUNCTION__);
         if (isset($data[$key])) {
@@ -64,12 +64,12 @@ class Request extends BaseInput implements Input {
         return $this->getValueWithDefault($data, $key, $default);
     }
 
-    public function server(string $key = '', $default = null)
+    public function server(string $key = '', mixed $default = null)
     {
         return $this->getValueWithDefault($_SERVER, $key, $default);
     }
 
-    public function file(string $key = '', $default = null)
+    public function file(string $key = '', mixed $default = null)
     {
         return $this->getValueWithDefault($_FILES, $key, $default);
     }

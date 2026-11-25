@@ -7,5 +7,5 @@ interface HtmlObject{
 	 * 执行
 	 * @param mixed $args
 	 */
-	public function execute($args);
+	public function execute(mixed $args);
 }

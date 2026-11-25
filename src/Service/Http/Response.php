@@ -166,7 +166,7 @@ class Response implements HttpOutput {
         return $this;
     }
 
-    public function header(string $key, $value): Output
+    public function header(string $key, mixed $value): Output
     {
         $this->header->set($key, $value);
         return $this;
@@ -178,12 +178,12 @@ class Response implements HttpOutput {
         return $this;
     }
 
-    public function json($data): Output
+    public function json(mixed $data): Output
     {
         return $this->custom(is_array($data) ? Json::encode($data) : $data, 'json');
     }
 
-    public function jsonP($data): Output
+    public function jsonP(mixed $data): Output
     {
         return $this->json(
             $this->container->make('request')->get('callback', 'jsonpReturn').
@@ -191,22 +191,22 @@ class Response implements HttpOutput {
         );
     }
 
-    public function xml($data): Output
+    public function xml(mixed $data): Output
     {
         return $this->custom( !is_string($data) ? Xml::encode(Arr::toArray($data)) : $data, 'xml');
     }
 
-    public function html($data): Output
+    public function html(mixed $data): Output
     {
         return $this->custom($data, 'html');
     }
 
-    public function str($data): Output
+    public function str(mixed $data): Output
     {
         return $this->custom($data, 'text');
     }
 
-    public function rss($data): Output
+    public function rss(mixed $data): Output
     {
         return $this->custom($data, 'rss');
     }
@@ -297,14 +297,12 @@ class Response implements HttpOutput {
         return $this->setParameter($image);
     }
 
-    public function custom($data, string $type): Output
-    {
+    public function custom(mixed $data, string $type): Output {
         $this->contentType($type);
         return $this->setParameter(Str::value($data));
     }
 
-    public function redirect($url, int $time = 0): Output
-    {
+    public function redirect(string|Uri $url, int $time = 0): Output {
         $this->statusCode(302);
         $this->header->setRedirect($url, $time);
         return $this;
@@ -344,7 +342,7 @@ class Response implements HttpOutput {
      * @return Response
      * @throws \Exception
      */
-    public function fileUrl($uri, $name) {
+    public function fileUrl(Uri|string $uri, string $name) {
         $this->header->setContentType('application/save-as')->setContentDisposition($name);
         return $this->setParameter([
             'file' => $uri instanceof Uri ? $uri : new Uri($uri)

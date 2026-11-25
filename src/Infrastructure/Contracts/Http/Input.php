@@ -7,7 +7,7 @@ use ArrayAccess;
 interface Input extends ArrayAccess {
 
     public function has(string $key): bool;
-    public function get(string $key = '', $default = null);
+    public function get(string $key = '', mixed $default = null);
     public function bool(string $key, bool $default = false): bool;
     public function int(string $key, int $default = 0): int;
     public function float(string $key, float $default = 0): float;
@@ -15,12 +15,12 @@ interface Input extends ArrayAccess {
 
 
 
-    public function post(string $key = '', $default = null);
-    public function request(string $key = '', $default = null);
-    public function cookie(string $key = '', $default = null);
-    public function header(string $key = '', $default = null);
-    public function server(string $key = '', $default = null);
-    public function file(string $key = '', $default = null);
+    public function post(string $key = '', mixed $default = null);
+    public function request(string $key = '', mixed $default = null);
+    public function cookie(string $key = '', mixed $default = null);
+    public function header(string $key = '', mixed $default = null);
+    public function server(string $key = '', mixed $default = null);
+    public function file(string $key = '', mixed $default = null);
     public function input(): string;
     public function all(): array;
     public function append(array $data);
