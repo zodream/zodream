@@ -1,6 +1,5 @@
 <?php
 declare(strict_types = 1);
-
 namespace Zodream\Domain\Access;
 /**
  * AUTH CONTROL
@@ -19,13 +18,9 @@ class Auth implements AuthObject {
 	 */
 	protected $identity = false;
 
-    /**
-     * @var HttpContext
-     */
-	protected $app;
 
-	public function __construct(HttpContext $context) {
-	    $this->app = $context;
+	public function __construct(
+        protected readonly HttpContext $app) {
     }
 
     /**

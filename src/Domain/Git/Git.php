@@ -56,7 +56,7 @@ class Git {
      * @param   string $source directory to source
      * @return  GitRepo
      */
-    public static function &create($repoPath, $source = null) {
+    public static function &create(string $repoPath, string|null $source = null) {
         return GitRepo::createNew($repoPath, $source);
     }
 
@@ -69,7 +69,7 @@ class Git {
      * @param   string $repoPath repository path
      * @return  GitRepo
      */
-    public static function open($repoPath) {
+    public static function open(string $repoPath) {
         return new GitRepo($repoPath);
     }
 
@@ -85,7 +85,7 @@ class Git {
      * @param   string $reference reference path
      * @return  GitRepo
      **/
-    public static function &cloneRemote($repoPath, $remote, $reference = null) {
+    public static function &cloneRemote(string $repoPath, string $remote, string $reference = '') {
         return GitRepo::createNew($repoPath, $remote, true, $reference);
     }
 
@@ -98,7 +98,7 @@ class Git {
      * @param   mixed $var variable
      * @return  bool
      */
-    public static function isRepo($var) {
+    public static function isRepo(mixed $var): bool {
         return $var instanceof GitRepo;
     }
 }

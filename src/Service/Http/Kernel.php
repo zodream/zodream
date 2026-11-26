@@ -65,7 +65,7 @@ class Kernel implements KernelInterface {
         return $this->app;
     }
 
-    public function handle($request, array $middlewares = []): mixed {
+    public function handle(mixed $request, array $middlewares = []): mixed {
         if (!empty($middlewares)) {
             $this->middleware = array_merge($middlewares, $this->middleware);
         }
@@ -85,7 +85,7 @@ class Kernel implements KernelInterface {
         $this->getContainer()->bootstrapWith($this->bootstrapper);
     }
 
-    protected function sendRequestThroughRouter($request) {
+    protected function sendRequestThroughRouter(mixed $request) {
         $this->app->instance(Input::class, $request);
         $this->app->alias(Input::class, 'request');
         $this->bootstrap();
@@ -133,11 +133,11 @@ class Kernel implements KernelInterface {
      * @param Throwable $e
      * @return Response
      */
-    protected function renderException($request, Throwable $e) {
+    protected function renderException(mixed $request, Throwable $e) {
         return $this->app->make(ExceptionHandler::class)->render($e);
     }
 
-    public function terminate($request, $response): void {
+    public function terminate(mixed $request, mixed $response): void {
         // TODO: Implement terminate() method.
     }
 

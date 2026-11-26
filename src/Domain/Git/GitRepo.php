@@ -19,9 +19,9 @@ use Zodream\Infrastructure\Support\Process;
 
 class GitRepo {
 
-    protected $repoPath = null;
-    protected $bare = false;
-    protected $envOpts = array();
+    protected string $repoPath = '';
+    protected bool $bare = false;
+    protected array $envOpts = [];
 
     /**
      * Create a new git repository
@@ -32,7 +32,7 @@ class GitRepo {
      * @param $repoPath
      * @param null $source
      * @param bool $remoteSource
-     * @param null $reference
+     * @param string $reference
      * @return GitRepo
      * @throws Exception
      * @internal param repository $string path
@@ -40,10 +40,10 @@ class GitRepo {
      * @internal param reference $string path
      */
     public static function &createNew(
-        $repoPath,
-        $source = null,
-        $remoteSource = false,
-        $reference = null
+        string $repoPath,
+        string|null $source = null,
+        bool $remoteSource = false,
+        string $reference = ''
     ) {
         if (is_dir($repoPath) &&
             is_dir($repoPath.'/.git')) {
@@ -88,7 +88,7 @@ class GitRepo {
      * @param bool $init
      * @internal param create $bool if not exists?
      */
-    public function __construct($repoPath = null, $createNew = false, $init = true) {
+    public function __construct(string|null $repoPath = null, bool $createNew = false, bool $init = true) {
         if (is_string($repoPath)) {
             $this->setRepoPath($repoPath, $createNew, $init);
         }
@@ -107,7 +107,7 @@ class GitRepo {
      * @internal param create $bool if not exists?
      * @internal param initialize $bool new Git repo if not exists?
      */
-    public function setRepoPath($repoPath, $createNew = false, $init = true) {
+    public function setRepoPath(string $repoPath, bool $createNew = false, bool $init = true) {
         if (!is_string($repoPath)) {
             return;
         }
@@ -199,7 +199,7 @@ class GitRepo {
      * @return string
      * @throws Exception
      */
-    protected function runCommand($command) {
+    protected function runCommand(string|null $command) {
 
         /* Depending on the value of variables_order, $_ENV may be empty.
          * In that case, we have to explicitly set the new variables with
@@ -242,7 +242,7 @@ class GitRepo {
      * @param   string $command to run
      * @return  string
      */
-    public function run($command) {
+    public function run(string $command) {
         return $this->runCommand(Git::getBin().' '.$command);
     }
 
@@ -255,7 +255,7 @@ class GitRepo {
      * @param bool  $html
      * @return string
      */
-    public function status($html = false) {
+    public function status(bool $html = false) {
         $msg = $this->run('status');
         if ($html == true) {
             $msg = str_replace("\n", "<br />", $msg);
@@ -272,7 +272,7 @@ class GitRepo {
      * @param   mixed  $files to add
      * @return  string
      */
-    public function add($files = '*') {
+    public function add(array|string $files = '*') {
         if (is_array($files)) {
             $files = '"'.implode('" "', $files).'"';
         }
@@ -289,7 +289,7 @@ class GitRepo {
      * @param   Boolean $cached use the --cached flag?
      * @return  string
      */
-    public function rm($files = '*', $cached = false) {
+    public function rm(array|string $files = '*', bool $cached = false) {
         if (is_array($files)) {
             $files = '"'.implode('" "', $files).'"';
         }
@@ -307,7 +307,7 @@ class GitRepo {
      * @param   boolean $commitAll should all files be committed automatically (-a flag)
      * @return  string
      */
-    public function commit($message = '', $commitAll = true) {
+    public function commit(string $message = '', bool $commitAll = true) {
         $flags = $commitAll ? '-av' : '-v';
         return $this->run('commit '.$flags.' -m '.escapeshellarg($message));
     }
@@ -322,7 +322,7 @@ class GitRepo {
      * @param   string  $target directory
      * @return  string
      */
-    public function cloneTo($target) {
+    public function cloneTo(string $target) {
         return $this->run('clone --local '.$this->repoPath." $target");
     }
 
@@ -336,7 +336,7 @@ class GitRepo {
      * @param   string  $source directory
      * @return  string
      */
-    public function cloneFrom($source) {
+    public function cloneFrom(string $source) {
         return $this->run("clone --local $source ".$this->repoPath);
     }
 
@@ -351,7 +351,7 @@ class GitRepo {
      * @param   string  $reference path
      * @return  string
      */
-    public function cloneRemote($source, $reference) {
+    public function cloneRemote(string $source, string $reference) {
         return $this->run("clone $reference $source ".$this->repoPath);
     }
 
@@ -365,7 +365,7 @@ class GitRepo {
      * @param   bool $force   force clean?
      * @return  string
      */
-    public function clean($dirs = false, $force = false) {
+    public function clean(bool $dirs = false, bool $force = false) {
         return $this->run('clean'.(($force) ? ' -f' : '').(($dirs) ? ' -d' : ''));
     }
 
@@ -378,7 +378,7 @@ class GitRepo {
      * @param   string  $branch name
      * @return  string
      */
-    public function createBranch($branch) {
+    public function createBranch(string $branch) {
         return $this->run("branch $branch");
     }
 
@@ -392,7 +392,7 @@ class GitRepo {
      * @param bool $force
      * @return string
      */
-    public function deleteBranch($branch, $force = false) {
+    public function deleteBranch(string $branch, bool $force = false) {
         return $this->run('branch '.(($force) ? '-D' : '-d')." $branch");
     }
 
@@ -403,7 +403,7 @@ class GitRepo {
      * @param   bool  $keepAsterisk  keep asterisk mark on active branch
      * @return  array
      */
-    public function listBranches($keepAsterisk = false) {
+    public function listBranches(bool $keepAsterisk = false) {
         $branchArray = explode("\n", $this->run('branch'));
         foreach($branchArray as $i => &$branch) {
             $branch = trim($branch);
@@ -443,7 +443,7 @@ class GitRepo {
      * @param   bool $keepAsterisk   keep asterisk mark on branch name
      * @return  string
      */
-    public function activeBranch($keepAsterisk = false) {
+    public function activeBranch(bool $keepAsterisk = false) {
         $branchArray = $this->listBranches(true);
         $activeBranch = preg_grep('/^\*/', $branchArray);
         reset($activeBranch);
@@ -462,7 +462,7 @@ class GitRepo {
      * @param   string  $branch name
      * @return  string
      */
-    public function checkout($branch) {
+    public function checkout(string $branch) {
         return $this->run("checkout $branch");
     }
 
@@ -476,7 +476,7 @@ class GitRepo {
      * @param   string $branch
      * @return  string
      */
-    public function merge($branch) {
+    public function merge(string $branch) {
         return $this->run("merge $branch --no-ff");
     }
 
@@ -500,7 +500,7 @@ class GitRepo {
      * @param string $message
      * @return string
      */
-    public function addTag($tag, $message = null) {
+    public function addTag(string $tag, string|null $message = null) {
         if ($message === null) {
             $message = $tag;
         }
@@ -516,7 +516,7 @@ class GitRepo {
      * @param	string	$pattern	Shell wildcard pattern to match tags against.
      * @return	array				Available repository tags.
      */
-    public function listTags($pattern = null) {
+    public function listTags(string|null $pattern = null) {
         $tagArray = explode("\n", $this->run("tag -l $pattern"));
         foreach ($tagArray as $i => &$tag) {
             $tag = trim($tag);
@@ -536,7 +536,7 @@ class GitRepo {
      * @param string $branch
      * @return string
      */
-    public function push($remote, $branch) {
+    public function push(string $remote, string $branch) {
         return $this->run("push --tags $remote $branch");
     }
 
@@ -549,7 +549,7 @@ class GitRepo {
      * @param string $branch
      * @return string
      */
-    public function pull($remote, $branch) {
+    public function pull(string $remote, string $branch) {
         return $this->run("pull $remote $branch");
     }
 
@@ -559,7 +559,7 @@ class GitRepo {
      * @param string $format
      * @return string
      */
-    public function log($format = null) {
+    public function log(string|null $format = null) {
         if ($format === null)
             return $this->run('log');
         else
@@ -571,7 +571,7 @@ class GitRepo {
      *
      * @param string $new
      */
-    public function setDescription($new) {
+    public function setDescription(string $new) {
         $path = $this->gitDirectoryPath();
         file_put_contents($path.'/description', $new);
     }
@@ -592,7 +592,7 @@ class GitRepo {
      * @param string $key
      * @param string $value
      */
-    public function setEnv($key, $value) {
+    public function setEnv(string $key, string $value) {
         $this->envOpts[$key] = $value;
     }
 }

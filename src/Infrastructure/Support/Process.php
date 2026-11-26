@@ -48,7 +48,7 @@ class Process {
      * @param array $options
      * @return Process
      */
-    public static function factory($command = null, array $options = []) {
+    public static function factory(string|null $command = null, array $options = []) {
         $obj = new self();
 
         if ($command !== null) {

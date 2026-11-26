@@ -18,19 +18,8 @@ class Broker {
      * Url of SSO server
      * @var Uri
      */
-    protected $url;
+    protected readonly Uri $url;
 
-    /**
-     * My identifier, given by SSO provider.
-     * @var string
-     */
-    public $broker;
-
-    /**
-     * My secret word, given by SSO provider.
-     * @var string
-     */
-    protected $secret;
 
     /**
      * Session token of the client
@@ -45,12 +34,6 @@ class Broker {
     protected $userinfo;
 
     /**
-     * Cookie lifetime
-     * @var int
-     */
-    protected $cookie_lifetime;
-
-    /**
      * Class constructor
      *
      * @param string $url Url of SSO server
@@ -58,15 +41,15 @@ class Broker {
      * @param string $secret My secret word, given by SSO provider.
      * @param int $cookie_lifetime
      */
-    public function __construct($url, $broker, $secret, $cookie_lifetime = 3600) {
+    public function __construct($url, 
+        protected readonly string $broker, 
+        protected readonly string $secret, 
+        protected readonly int $cookie_lifetime = 3600) {
         if (!$url) throw new \InvalidArgumentException("SSO server URL not specified");
-        if (!$broker) throw new \InvalidArgumentException("SSO broker id not specified");
-        if (!$secret) throw new \InvalidArgumentException("SSO broker secret not specified");
+        if (!$this->broker) throw new \InvalidArgumentException("SSO broker id not specified");
+        if (!$this->secret) throw new \InvalidArgumentException("SSO broker secret not specified");
 
         $this->url = $url instanceof Uri ? $url : new Uri($url);
-        $this->broker = $broker;
-        $this->secret = $secret;
-        $this->cookie_lifetime = $cookie_lifetime;
 
         $this->token = request()->cookie($this->getCookieName());
     }
@@ -89,7 +72,9 @@ class Broker {
      * @return string
      */
     protected function getSessionId(): string {
-        if (!isset($this->token)) return '';
+        if (!isset($this->token)) {
+             return '';
+        }
 
         $checksum = hash('sha256', 'session' . $this->token . $this->secret);
         return "SSO-{$this->broker}-{$this->token}-$checksum";

@@ -8,11 +8,11 @@ interface Kernel {
 
     public function getContainer(): Container;
 
-    public function handle($request, array $middlewares = []): mixed;
+    public function handle(mixed $request, array $middlewares = []): mixed;
 
     public function bootstrap(): void;
 
-    public function terminate($request, $response): void;
+    public function terminate(mixed $request, mixed $response): void;
 
     /**
      * 接收信息，并进行格式化

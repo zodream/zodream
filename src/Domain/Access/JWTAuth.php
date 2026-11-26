@@ -39,7 +39,7 @@ class JWTAuth extends Token {
      * @param null $default
      * @return array|mixed|string
      */
-    public function getConfigs($key = null, $default = null) {
+    public function getConfigs(string|null $key = null, mixed $default = null) {
         if (empty($this->configs)) {
             $this->configs = config('auth', [
                 'key' => 'uZXUa9ssSS5nr1lWvjTSwYhVxBxNsAyj',
@@ -73,7 +73,7 @@ class JWTAuth extends Token {
      * @param $value
      * @return JWTAuth
      */
-    public function setConfigs($key, $value = null) {
+    public function setConfigs(mixed $key, mixed $value = null) {
         $configs = $this->getConfigs();
         if (is_array($key)) {
             $this->configs = array_merge($configs, $value);
@@ -87,7 +87,7 @@ class JWTAuth extends Token {
     /**
      * @param mixed $payload
      */
-    public function setPayload($payload) {
+    public function setPayload(mixed $payload) {
         $this->payload = $payload;
     }
 
@@ -199,7 +199,7 @@ class JWTAuth extends Token {
         return $this->createPayloadToken($payload, $refreshTTL);
     }
 
-    protected function createPayloadToken(array $payload, $refreshTTL = 0): string {
+    protected function createPayloadToken(array $payload, int $refreshTTL = 0): string {
         $configs = $this->getConfigs();
         $time = time();
         $payload['exp'] = $time + $configs['TTL'] + $refreshTTL;
@@ -210,7 +210,7 @@ class JWTAuth extends Token {
 
     protected function setRememberToken(UserObject $user): void {}
 
-    protected function setRememberTokenFromUser(UserObject $user, $token): void {}
+    protected function setRememberTokenFromUser(UserObject $user, string $token): void {}
 
     /**
      * @throws \Exception

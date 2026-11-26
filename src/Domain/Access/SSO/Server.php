@@ -29,12 +29,12 @@ abstract class Server {
     /**
      * @var string
      */
-    protected $returnType;
+    protected string|null $returnType;
 
     /**
-     * @var mixed
+     * @var string
      */
-    protected $brokerId;
+    protected string|null $brokerId;
 
 
     /**
@@ -60,7 +60,9 @@ abstract class Server {
      * Start the session for broker requests to the SSO server
      */
     public function startBrokerSession(): void {
-        if (isset($this->brokerId)) return;
+        if (isset($this->brokerId)) {
+            return;
+        }
 
         $sid = $this->getBrokerSessionID();
 
@@ -324,7 +326,7 @@ abstract class Server {
      * @param string $key
      * @param string $value
      */
-    protected function setSessionData($key, $value) {
+    protected function setSessionData(string $key, mixed $value) {
         if (!isset($value)) {
             unset($_SESSION[$key]);
             return;
@@ -339,7 +341,7 @@ abstract class Server {
      * @param string $key
      * @return null|string
      */
-    protected function getSessionData($key) {
+    protected function getSessionData(string $key) {
         if ($key === 'id') return session_id();
 
         return $_SESSION[$key] ?? null;
