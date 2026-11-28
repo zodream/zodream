@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Zodream\Infrastructure\Event;
 
-use Zodream\Infrastructure\Queue\QueueManager;
+use Zodream\Infrastructure\Queue\QueuePool;
 use Zodream\Infrastructure\Queue\ShouldQueue;
 
 /**
@@ -16,7 +16,7 @@ class ListenerAction {
     protected mixed $function;
     protected mixed $file;
 
-    public function __construct($class, $function = null, $file = null) {
+    public function __construct(mixed $class, mixed $function = null, mixed $file = null) {
         if (is_null($function) && is_string($class) && strpos($class, '@')) {
             list($class, $function) = explode('@', $class, 2);
         }
@@ -80,10 +80,7 @@ class ListenerAction {
             return;
         }
         list($listener, $job) = $this->createListenerAndJob($this->class, $this->function, $arguments);
-
-        $connection = QueueManager::connection(
-            $listener->connection ?? ''
-        );
+        $connection = app(QueuePool::class)->get($listener->connection ?? '');
 
         $queue = $listener->queue ?? '';
         isset($listener->delay)
@@ -91,14 +88,14 @@ class ListenerAction {
             : $connection->pushOn($queue, $job);
     }
 
-    protected function createListenerAndJob($class, $method, $arguments): array {
+    protected function createListenerAndJob(string $class, string $method, array $arguments): array {
         $listener = (new \ReflectionClass($class))->newInstanceWithoutConstructor();
         return [$listener, $this->propagateListenerOptions(
             $listener, new CallQueuedListener($class, $method, $arguments)
         )];
     }
 
-    protected function propagateListenerOptions($listener, $job) {
+    protected function propagateListenerOptions(object $listener, object $job) {
         $job->tries = $listener->tries ?? null;
         $job->timeout = $listener->timeout ?? null;
         $job->timeoutAt = method_exists($listener, 'retryUntil')
@@ -106,7 +103,7 @@ class ListenerAction {
         return $job;
     }
 
-    protected function handlerWantsToBeQueued($class, array $arguments) {
+    protected function handlerWantsToBeQueued(object $class, array $arguments) {
         if (method_exists($class, 'shouldQueue')) {
             return (is_string($class) ? app($class) : $class)->shouldQueue($arguments[0]);
         }

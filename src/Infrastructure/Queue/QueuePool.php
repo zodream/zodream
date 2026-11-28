@@ -3,13 +3,11 @@ declare(strict_types=1);
 namespace Zodream\Infrastructure\Queue;
 
 
-use Zodream\Database\Manager;
+use Zodream\Infrastructure\Pool\EnginePool;
 use Zodream\Infrastructure\Queue\Events\JobFailed;
 use Zodream\Infrastructure\Queue\Failed\FailedJobProviderInterface;
-use Zodream\Infrastructure\Concerns\SingletonPattern;
 
-class QueueManager extends Manager {
-    use SingletonPattern;
+class QueuePool extends EnginePool {
 
     protected string $configKey = 'queue';
 
@@ -45,13 +43,13 @@ class QueueManager extends Manager {
      * @return Queue
      * @throws \Exception
      */
-    public static function connection(string $name = '') {
-        return static::getInstance()->getEngine($name);
+    public function get(string $name = ''): Queue {
+        return $this->getEngine($name);
     }
 
-    public static function logFailedJob() {
+    public function logFailedJob(): void {
         event()->listen(JobFailed::class, function (JobFailed $event) {
-            $failer = static::getInstance()->getFailedProvider();
+            $failer = $this->getFailedProvider();
             if (empty($failer)) {
                 return;
             }

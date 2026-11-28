@@ -2,21 +2,29 @@
 declare(strict_types=1);
 namespace Zodream\Infrastructure\Queue;
 
-
-use Zodream\Database\Engine\Redis;
-use Zodream\Database\RedisManager;
+use Override;
 use Zodream\Helpers\Str;
 use Zodream\Infrastructure\Error\Exception;
 use Zodream\Infrastructure\Queue\Jobs\Job;
 use Zodream\Infrastructure\Queue\Jobs\RedisJob;
+use Predis\ClientInterface;
+use Zodream\Infrastructure\Pool\RedisPool;
 
 class RedisQueue extends Queue {
     protected array $configs = [
-        'connection' => '',
         'default' => 'default',
         'retryAfter' => 60,
         'blockFor' => null,
     ];
+
+    private readonly ClientInterface $clent;
+
+    #[Override]
+    public function __construct(array $configs)
+    {
+        parent::__construct($configs);
+        $this->client = app(RedisPool::class)->get($this->configs['connection']);
+    }
 
     /**
      * Get the size of the queue.
@@ -29,7 +37,7 @@ class RedisQueue extends Queue {
     {
         $queue = $this->getQueue($queue);
 
-        return $this->getConnection()->getDriver()->eval(
+        return $this->client->eval(
             LuaScripts::size(), 3, $queue, $queue.':delayed', $queue.':reserved'
         );
     }
@@ -159,7 +167,7 @@ class RedisQueue extends Queue {
      */
     public function migrateExpiredJobs(string $from, string $to): array
     {
-        return $this->getConnection()->getDriver()->eval(
+        return $this->client->eval(
             LuaScripts::migrateExpiredJobs(), [$from, $to, time()], 2
         );
     }
@@ -176,7 +184,7 @@ class RedisQueue extends Queue {
             return $this->blockingPop($queue);
         }
 
-        return $this->getConnection()->getDriver()->eval(
+        return $this->client->eval(
             LuaScripts::pop(), [$queue, $queue.':reserved',
             time() + $this->configs['retryAfter']], 2
         );
@@ -190,7 +198,7 @@ class RedisQueue extends Queue {
      */
     protected function blockingPop(string $queue)
     {
-        $rawBody = $this->getConnection()->getDriver()->blpop($queue, $this->configs['blockFor']);
+        $rawBody = $this->client->blpop($queue, $this->configs['blockFor']);
 
         if (! empty($rawBody)) {
             $payload = json_decode($rawBody[1], true);
@@ -218,7 +226,7 @@ class RedisQueue extends Queue {
      */
     public function deleteReserved(string $queue, RedisJob  $job)
     {
-        $this->getConnection()->getDriver()->zrem($this->getQueue($queue).':reserved', $job->getReservedJob());
+        $this->client->zrem($this->getQueue($queue).':reserved', $job->getReservedJob());
     }
 
     /**
@@ -232,7 +240,7 @@ class RedisQueue extends Queue {
     public function deleteAndRelease(string $queue, RedisJob $job, int $delay) {
         $queue = $this->getQueue($queue);
 
-        $this->getConnection()->getDriver()->eval(
+        $this->client->eval(
             LuaScripts::release(), [$queue.':delayed', $queue.':reserved',
             $job->getReservedJob(), time() + $delay], 2
         );
@@ -258,12 +266,4 @@ class RedisQueue extends Queue {
         return 'queues:'.($queue ?: $this->configs['default']);
     }
 
-    /**
-     * Get the connection for the queue.
-     *
-     * @return Redis
-     */
-    protected function getConnection(): Redis {
-        return RedisManager::connection($this->configs['connection']);
-    }
 }

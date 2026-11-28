@@ -46,6 +46,7 @@ class Worker {
         }
 
         $lastRestart = $this->getTimestampOfLastQueueRestart();
+        $instance = app(QueuePool::class)->get($connectionName);
 
         while (true) {
             // Before reserving any jobs, we will make sure this queue is not paused and
@@ -61,7 +62,7 @@ class Worker {
             // register the timeout handler and reset the alarm for this job so it is
             // not stuck in a frozen state forever. Then, we can fire off this job.
             $job = $this->getNextJob(
-                QueueManager::connection($connectionName), $queue
+                $instance, $queue
             );
 
             if ($this->supportsAsyncSignals()) {
@@ -175,8 +176,9 @@ class Worker {
      */
     public function runNextJob(string $connectionName, string $queue, WorkerOptions $options)
     {
+        $instance = app(QueuePool::class)->get($connectionName);
         $job = $this->getNextJob(
-            QueueManager::connection($connectionName), $queue
+            $instance, $queue
         );
 
         // If we're able to pull a job off of the stack, we will process it and then return

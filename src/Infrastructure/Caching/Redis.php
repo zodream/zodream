@@ -2,7 +2,8 @@
 declare(strict_types=1);
 namespace Zodream\Infrastructure\Caching;
 
-use Zodream\Database\RedisManager;
+use Predis\ClientInterface;
+use Zodream\Infrastructure\Pool\RedisPool;
 
 /**
  * Created by PhpStorm.
@@ -13,26 +14,31 @@ use Zodream\Database\RedisManager;
 class Redis extends Cache {
 
     protected array $configs = [
+        'connection' => '',
         'gc' => 10,
-        'connection' => null,
         'serializer' => null,
         'keyPrefix' => ''
     ];
 
-    public function __construct() {
+    private readonly ClientInterface $clent;
+
+    public function __construct(
+        RedisPool $pool
+    ) {
         $this->loadConfigs();
+        $this->client = $pool->get($this->configs['connection']);
     }
 
 
     protected function getValue(string $key) {
-        return $this->getConnection()->get($key);
+        return $this->client->get($key);
     }
 
     protected function setValue(string $key, mixed $value, int $duration) {
         if ($duration < 0) {
             $duration = 0;
         }
-        return $this->getConnection()->setex($key, $duration, $value);
+        return $this->client->setex($key, $duration, $value);
     }
 
     protected function addValue(string $key, mixed $value, int $duration) {
@@ -41,14 +47,10 @@ class Redis extends Cache {
 
 
     protected function deleteValue(string $key) {
-        return $this->getConnection()->del($key);
+        return $this->client->del($key);
     }
 
     protected function clearValue() {
-        return $this->getConnection()->flushDB();
-    }
-
-    protected function getConnection() {
-        return RedisManager::connection($this->configs['connection']);
+        return $this->client->flushDB();
     }
 }

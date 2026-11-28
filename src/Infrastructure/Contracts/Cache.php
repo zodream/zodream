@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace Zodream\Infrastructure\Contracts;
 
+use Closure;
+
 interface Cache {
 
     public function store(string $store): Cache;
